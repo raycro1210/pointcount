@@ -811,7 +811,7 @@
     const CONFIG = {
       VERSION: "v1.2.0",
       // 請替換為您在 Apps Script 發布的 Web App URL
-      GAS_API_URL: "https://script.google.com/macros/s/AKfycby-s1iL3w52R2r6gN3P1y6e_a0q7WzI9A/exec",
+      GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
       DEBOUNCE_DELAY: 5000,
       POLLING_INTERVAL: 2000 // 電腦端投影待命輪詢週期 (2秒)
     };
@@ -1007,7 +1007,7 @@
 
       // 手機端發送廣播揭榜訊號
       async broadcastRevealSignal() {
-        if (!CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec")) {
+        if (!CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) {
           alert('請先填入 Google Apps Script 網址以使用雲端遙控廣播！');
           return;
         }
