@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 - v1.3.0</title>
+  <title>魔法學院教務魔導系統 - v1.3.1</title>
   <!-- 內嵌金色魔法徽章 Favicon (消滅 404 報錯) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   
@@ -701,12 +701,12 @@
         <div id="gateLoginForm">
           <input type="password" id="gatePasswordInput" class="gate-password-input" placeholder="••••" maxlength="8">
           <button class="btn-gold-action" onclick="App.handlePasswordVerify()">驗證導師印記</button>
-          <button class="btn-tv-mode" id="btnTvModeStandby" onclick="App.startTvStandbyMode()">🖥️ 電腦投影大螢幕（接收手機廣播揭榜）</button>
+          <button class="btn-tv-mode" id="btnTvModeStandby" onclick="App.startTvStandbyMode()">🖥️️ 電腦投影大螢幕（接收手機廣播揭榜）</button>
         </div>
 
         <div class="portal-dispatcher" id="portalDispatcher">
           <button class="btn-portal-item" onclick="App.selectDestination('workspace')">
-            <span>⚔️️ 課堂計分與備課後台</span> <span>➔</span>
+            <span>⚔️ 課堂計分與備課後台</span> <span>➔</span>
           </button>
           <button class="btn-portal-item" onclick="App.selectDestination('leaderboard')">
             <span>🏆 榮譽揭榜投影大典</span> <span>➔</span>
@@ -828,7 +828,7 @@
     ====================================================================================================
     */
     const CONFIG = {
-      VERSION: "v1.3.0",
+      VERSION: "v1.3.1",
       
       // 👇👇👇 請將下面雙引號內的網址換成您 Google Apps Script 部署後的真實網址 (結尾必須是 /exec) 👇👇👇
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
@@ -837,7 +837,8 @@
       // 專屬安全 MQTT 廣播頻道 (全球唯一，保證毫秒直達)
       MQTT_BROKER: "wss://broker.hivemq.com:8884/mqtt",
       MQTT_TOPIC: "magic_raycro_classroom_2026_stream",
-      DEBOUNCE_DELAY: 5000
+      DEBOUNCE_DELAY: 5000,
+      AUTO_RESYNC_INTERVAL: 30000 // 每 30 秒靜默對齊一次
     };
     /*
     ====================================================================================================
@@ -868,7 +869,6 @@
         osc.start(this.ctx.currentTime + delay);
         osc.stop(this.ctx.currentTime + delay + duration);
       },
-      playScoreDing() { this.playTone(987.77, 'sine', 0.12, 0, 0.2); },
       playGateOpen() { this.playTone(90, 'triangle', 1.0, 0, 0.35); },
       playGateClose() { this.playTone(70, 'sawtooth', 0.8, 0, 0.25); },
       playDrumBeat() { this.playTone(130, 'square', 0.25, 0, 0.18); },
@@ -891,6 +891,7 @@
       isTvStandby: false,
       mqttClient: null,
       syncTimer: null,
+      resyncTimer: null,
       data: {
         classes: ['魔法一年級A班', '魔法一年級B班', '魔法二年級A班', '魔法二年級B班', '高階符文專研班'],
         students: [],
@@ -909,6 +910,15 @@
         this.setSyncStatus('synced');
         this.initMqttChannel();
         this.fetchCloudData();
+        this.startSilentResyncLoop(); // 啟動每 30 秒全班靜默對齊迴圈
+      },
+
+      // 每 30 秒自動向雲端拉取最新資料，靜默對齊兩端
+      startSilentResyncLoop() {
+        clearInterval(this.resyncTimer);
+        this.resyncTimer = setInterval(() => {
+          this.fetchCloudData(true); // true 代表靜默模式，不跳提示、不干擾畫面
+        }, CONFIG.AUTO_RESYNC_INTERVAL);
       },
 
       initMqttChannel() {
@@ -1256,8 +1266,8 @@
         });
       },
 
+      // 日常加分：純手機微震動，不干擾電腦投影端
       recordScore(student) {
-        SoundFx.playScoreDing();
         if (navigator.vibrate) navigator.vibrate(18);
 
         student.totalScore += this.currentWeight;
@@ -1494,10 +1504,10 @@
         }
       },
 
-      async fetchCloudData() {
+      async fetchCloudData(isSilent = false) {
         if (!CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("SAMPLE")) return;
         try {
-          const res = await fetch(CONFIG.GAS_API_URL + "?action=fetch_all");
+          const res = await fetch(CONFIG.GAS_API_URL + "?action=fetch_all&t=" + Date.now());
           const json = await res.json();
           if (json.status === 'success' && json.students && json.students.length > 0) {
             this.data.classes = json.classes || this.data.classes;
@@ -1509,13 +1519,17 @@
               });
             }
             this.saveStorageData();
-            this.renderClassTabs();
-            this.populateLeaderboardSelect();
-            this.renderStudentCards();
-            this.renderNotesSection();
+            
+            // 靜默更新：若處於課堂後台或榜單頁面，只無感刷新數字節點
+            if (document.getElementById('view-workspace').classList.contains('active')) {
+              this.renderStudentCards();
+            }
+            if (document.getElementById('view-leaderboard').classList.contains('active') && !this.isTvStandby) {
+              this.loadLeaderboardData();
+            }
           }
         } catch (e) {
-          console.log("離線或後台拉取靜默跳過");
+          if (!isSilent) console.log("離線或後台拉取靜默跳過");
         }
       },
 
