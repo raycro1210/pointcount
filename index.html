@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 - v1.2.2</title>
+  <title>魔法學院教務魔導系統 - v1.2.3</title>
   <style>
     :root {
       --bg-dark: #071912;
@@ -474,7 +474,7 @@
     }
 
     /* =========================================================
-       3. 電腦端投影揭榜大典 (滿版劇場視圖)
+       3. 榮譽揭榜視圖 (電腦滿版投影 + 手機純遙控面板)
     ========================================================= */
     #view-leaderboard {
       height: calc(100% - 52px);
@@ -483,33 +483,35 @@
       align-items: center;
       position: relative;
     }
-    .tv-full-screen #view-leaderboard {
-      height: 100% !important;
-    }
+    .tv-theater-mode #view-leaderboard { height: 100% !important; }
 
     .confetti-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
     
     .theater-action-header {
       width: 100%;
-      padding: 12px 18px;
+      padding: 12px 16px;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       gap: 8px;
       z-index: 20;
+      background: rgba(5, 20, 14, 0.85);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
     }
     .board-select-group { display: flex; gap: 6px; align-items: center; }
     .select-magic {
       background: #061911;
-      border: 1px solid var(--gold-primary);
+      border: 1.5px solid var(--gold-primary);
       color: var(--gold-light);
       padding: 6px 10px;
       border-radius: 4px;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       outline: none;
     }
 
+    .remote-actions-group { display: flex; gap: 8px; align-items: center; }
+    
     .btn-remote-broadcast {
       background: linear-gradient(180deg, #f1c40f 0%, #d4af37 100%);
       color: #071912;
@@ -518,10 +520,23 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      font-size: 0.95rem;
       box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);
       animation: broadcastGlow 1.8s infinite alternate;
     }
-    @keyframes broadcastGlow { from { transform: scale(1); } to { transform: scale(1.04); } }
+    @keyframes broadcastGlow { from { transform: scale(1); } to { transform: scale(1.03); } }
+
+    .btn-remote-close {
+      background: rgba(184, 75, 41, 0.25);
+      border: 1.5px solid #e67e22;
+      color: #f39c12;
+      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn-remote-close:active { background: #e67e22; color: #fff; }
 
     .podium-stage {
       width: 90%;
@@ -683,7 +698,7 @@
   <!-- 通用頂部導航列 -->
   <header id="appHeader">
     <div class="brand-box">
-      <span>⚜️</span> 魔法教務魔導系統
+      <span>⚜️️</span> 魔法教務魔導系統
     </div>
     <div class="header-actions">
       <span class="sync-gem" id="cloudSyncIndicator" title="連線狀態燈號" onclick="App.openConfigModal()"></span>
@@ -767,21 +782,22 @@
       </div>
     </section>
 
-    <!-- 3. 電腦投影揭榜大典 -->
+    <!-- 3. 榮譽揭榜視圖 (電腦投影劇場 / 手機純遙控器) -->
     <section id="view-leaderboard" class="view-panel">
       <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
+      
       <div class="theater-action-header">
         <div class="board-select-group">
           <select id="leaderboardClassSelect" class="select-magic" onchange="App.onLeaderboardClassChange()"></select>
-          <button class="btn-nav-magic" id="btnToggleRankingType" onclick="App.toggleRankingPeriod()">【總排行榜】</button>
+          <button class="btn-nav-magic" id="btnToggleRankingType" onclick="App.toggleRankingPeriod()">目前為：【週排行榜】</button>
         </div>
-        <div>
+        <div class="remote-actions-group">
           <button class="btn-remote-broadcast" onclick="App.broadcastRevealSignal()">📢 廣播電腦大螢幕：開始揭榜</button>
-          <button class="btn-nav-magic" onclick="App.startRevealSequence()">✨ 本機播放</button>
+          <button class="btn-remote-close" onclick="App.broadcastCloseSignal()">🚪 命令電腦關門・待命下一班</button>
         </div>
       </div>
 
-      <div class="podium-stage">
+      <div class="podium-stage" id="podiumStage">
         <div class="podium-col rank-second" id="podiumCol2">
           <div class="podium-badge">
             <div class="badge-name" id="podiumName2">--</div>
@@ -806,7 +822,7 @@
       </div>
 
       <div class="roster-parchment-sheet" id="rosterParchmentSheet">
-        <h3 class="roster-sheet-title" id="rosterSheetTitle">全班學員成績名冊</h3>
+        <h3 class="roster-sheet-title" id="rosterSheetTitle">全班學員成績名冊 (以座號排序)</h3>
         <div class="roster-sheet-grid" id="rosterSheetGrid"></div>
       </div>
     </section>
@@ -830,7 +846,7 @@
     <div class="config-box">
       <h3 style="color: var(--gold-light); margin-bottom: 8px;">⚙️ GAS API 連線設定</h3>
       <p style="font-size: 0.8rem; color: #9cb5ab;">請貼上您的 Google Apps Script 發布網址（結尾必須為 /exec）：</p>
-      <input type="text" id="cfgGasUrlInput" class="config-input" placeholder="https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec">
+      <input type="text" id="cfgGasUrlInput" class="config-input" placeholder="https://script.google.com/macros/s/.../exec">
       <div style="display: flex; gap: 8px; margin-top: 10px;">
         <button class="btn-gold-action" style="flex: 1;" onclick="App.saveGasConfig()">儲存設定</button>
         <button class="btn-nav-magic" style="flex: 1;" onclick="App.testGasConnection()">🔍 測試連線</button>
@@ -841,10 +857,10 @@
 
   <script>
     const DEFAULT_CONFIG = {
-      VERSION: "v1.2.2",
+      VERSION: "v1.2.3",
       GAS_API_URL: "https://script.google.com/macros/s/AKfycby-s1iL3w52R2r6gN3P1y6e_a0q7WzI9A/exec",
       DEBOUNCE_DELAY: 5000,
-      POLLING_INTERVAL: 1200 // 縮減至 1.2 秒加速感應
+      POLLING_INTERVAL: 1200 // 1.2 秒加速感應
     };
 
     const SoundFx = {
@@ -873,6 +889,7 @@
       },
       playScoreDing() { this.playTone(987.77, 'sine', 0.12, 0, 0.2); },
       playGateOpen() { this.playTone(90, 'triangle', 1.0, 0, 0.35); },
+      playGateClose() { this.playTone(70, 'sawtooth', 0.8, 0, 0.25); },
       playDrumBeat() { this.playTone(130, 'square', 0.25, 0, 0.18); },
       playFanfareVictory() {
         const sequence = [
@@ -888,10 +905,11 @@
     const App = {
       currentClass: "魔法一年級A班",
       currentWeight: 1,
-      rankingPeriod: "total",
+      rankingPeriod: "weekly", // 預設週榜優先
       sessionUnlocked: false,
       isTvStandby: false,
-      lastRemoteTimestamp: 0,
+      baselineTimestamp: 0,    // 防早產基準線
+      lastProcessedTimestamp: 0,
       pollTimer: null,
       syncTimer: null,
       gasUrl: "",
@@ -1012,7 +1030,7 @@
         this.sessionUnlocked = false;
         sessionStorage.removeItem('magic_auth_unlocked_v12');
         document.getElementById('appHeader').classList.remove('authorized');
-        document.body.classList.remove('tv-full-screen');
+        document.body.classList.remove('tv-theater-mode');
         
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
         const gate = document.getElementById('view-gate');
@@ -1030,27 +1048,54 @@
         document.getElementById('btnTvModeStandby').disabled = false;
       },
 
-      // 電腦端投影待命啟動
-      startTvStandbyMode() {
+      // 電腦端投影待命啟動 (解決 Autoplay 限制 + 錨定時間基準線防早產)
+      async startTvStandbyMode() {
+        SoundFx.init(); // 解鎖音訊環境
+        SoundFx.playTone(440, 'sine', 0.05, 0, 0.001); // 無感微音防靜音攔截
+
         this.isTvStandby = true;
+        this.baselineTimestamp = Date.now(); // 錨定本機進入待命的時間
+        this.lastProcessedTimestamp = this.baselineTimestamp;
+
         document.getElementById('gatePasswordInput').disabled = true;
         document.getElementById('btnTvModeStandby').innerText = "🟢 電腦投影待命中 (等待手機廣播)";
         document.getElementById('btnTvModeStandby').disabled = true;
         document.getElementById('gateSubTitle').innerText = "🖥️ 大門待命中...手機發送廣播後將自動拉開揭榜";
+
+        // 向 GAS 同步獲取雲端最新時間戳，取較大者確保徹底避開舊訊號
+        if (this.gasUrl) {
+          try {
+            const res = await fetch(this.gasUrl + "?action=poll_reveal&t=" + Date.now());
+            const json = await res.json();
+            if (json.status === 'success' && json.timestamp > this.baselineTimestamp) {
+              this.baselineTimestamp = json.timestamp;
+              this.lastProcessedTimestamp = json.timestamp;
+            }
+          } catch (e) {
+            console.warn("基準線初始同步完成");
+          }
+        }
+
         this.startPollingRemoteSignal();
       },
 
       startPollingRemoteSignal() {
         clearInterval(this.pollTimer);
         this.pollTimer = setInterval(async () => {
-          if (!this.gasUrl) return;
+          if (!this.gasUrl || !this.isTvStandby) return;
           try {
             const res = await fetch(this.gasUrl + "?action=poll_reveal&t=" + Date.now());
             const json = await res.json();
-            if (json.status === 'success' && json.timestamp > this.lastRemoteTimestamp) {
-              this.lastRemoteTimestamp = json.timestamp;
-              // 立即觸發大門拉開與揭榜
-              this.executeRemoteReveal(json.classId, json.period);
+            
+            // 只有時間戳嚴格大於基準線，才是點進待命後的手機新廣播
+            if (json.status === 'success' && json.timestamp > this.lastProcessedTimestamp) {
+              this.lastProcessedTimestamp = json.timestamp;
+
+              if (json.command === 'REVEAL') {
+                this.executeRemoteReveal(json.classId, json.period);
+              } else if (json.command === 'CLOSE') {
+                this.executeRemoteClose();
+              }
             }
           } catch (e) {
             console.log("輪詢待命中...");
@@ -1058,7 +1103,7 @@
         }, DEFAULT_CONFIG.POLLING_INTERVAL);
       },
 
-      // 電腦端專屬：收到廣播後的直接跳轉與劇場啟動
+      // 電腦端接收揭榜指令：拉開大門並播放劇場
       executeRemoteReveal(targetClass, targetPeriod) {
         if (targetClass) this.currentClass = targetClass;
         if (targetPeriod) this.rankingPeriod = targetPeriod;
@@ -1066,8 +1111,7 @@
         this.renderClassTabs();
         this.loadLeaderboardData();
 
-        // 鎖定為全螢幕劇場，隱藏一般導航列避免干擾
-        document.body.classList.add('tv-full-screen');
+        document.body.classList.add('tv-theater-mode');
         document.getElementById('appHeader').classList.remove('authorized');
 
         SoundFx.playGateOpen();
@@ -1075,19 +1119,39 @@
         gate.classList.add('door-opening');
 
         setTimeout(() => {
-          // 徹底關閉大門與其他面板，直接將 view-leaderboard 設定為唯一 active
           document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
           const lbView = document.getElementById('view-leaderboard');
           lbView.classList.add('active');
-
           gate.classList.remove('door-opening');
           
           setTimeout(() => {
-            this.startRevealSequence();
-          }, 400);
+            this.startRevealTheater();
+          }, 300);
         }, 1100);
       },
 
+      // 電腦端接收關門指令：大門緩緩拉合回待命
+      executeRemoteClose() {
+        SoundFx.playGateClose();
+        
+        // 重新顯示大門層並準備向內閉合
+        const gate = document.getElementById('view-gate');
+        gate.classList.add('active');
+        gate.classList.add('door-opening'); // 處於開門態
+
+        // 刷新基準線
+        this.baselineTimestamp = Date.now();
+        this.lastProcessedTimestamp = this.baselineTimestamp;
+
+        setTimeout(() => {
+          gate.classList.remove('door-opening'); // 3D 動態反向閉合
+          document.getElementById('view-leaderboard').classList.remove('active');
+          document.body.classList.remove('tv-theater-mode');
+          document.getElementById('gateSubTitle').innerText = "🖥️ 大門已重新閉合，等待下一班廣播...";
+        }, 50);
+      },
+
+      // 手機端發送揭榜廣播 (純遙控器模式：手機本機不跑動畫，直接顯示名冊)
       async broadcastRevealSignal() {
         if (!this.gasUrl) {
           alert('請先在設定中輸入 Google Apps Script 網址！');
@@ -1105,12 +1169,41 @@
           const json = await response.json();
 
           if (json.status === 'success') {
-            alert(`📢 廣播成功！電腦大螢幕即刻開門！\n班級：${this.currentClass}\n榜別：${this.rankingPeriod === 'total' ? '總榜' : '週榜'}`);
+            if (navigator.vibrate) navigator.vibrate(25);
+            // 手機純遙控器模式：靜態展開名冊供台下查閱
+            this.loadLeaderboardData();
+            document.getElementById('podiumCol1').classList.add('reveal');
+            document.getElementById('podiumCol2').classList.add('reveal');
+            document.getElementById('podiumCol3').classList.add('reveal');
+            document.getElementById('rosterParchmentSheet').classList.add('active-show');
+
+            alert(`📢 廣播成功！前方大螢幕揭榜中！\n班級：${this.currentClass}\n榜別：${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}`);
           } else {
             alert('廣播回應異常：' + JSON.stringify(json));
           }
         } catch (e) {
-          alert('廣播發送失敗，請確認網路連線或檢查 GAS 設定。\n錯誤細節：' + e.message);
+          alert('廣播發送失敗，請確認網路連線。\n錯誤細節：' + e.message);
+        }
+      },
+
+      // 手機端發送關門指令
+      async broadcastCloseSignal() {
+        if (!this.gasUrl) {
+          alert('請先在設定中輸入 Google Apps Script 網址！');
+          return;
+        }
+
+        try {
+          const queryUrl = this.gasUrl + "?action=broadcast_close&t=" + Date.now();
+          const response = await fetch(queryUrl);
+          const json = await response.json();
+
+          if (json.status === 'success') {
+            if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
+            alert('🚪 已命令電腦大門向內閉合，進入待命狀態！');
+          }
+        } catch (e) {
+          alert('關門指令發送失敗，請檢查網路連線');
         }
       },
 
@@ -1121,17 +1214,19 @@
         document.querySelectorAll('.btn-nav-magic').forEach(b => b.classList.remove('active'));
 
         const target = document.getElementById('view-' + viewKey);
-        if (target) {
-          target.classList.add('active');
-        }
+        if (target) target.classList.add('active');
 
-        // 精準對應頂部高亮按鈕
         if (viewKey === 'workspace') document.getElementById('navBtnWorkspace').classList.add('active');
         if (viewKey === 'leaderboard') document.getElementById('navBtnLeaderboard').classList.add('active');
         if (viewKey === 'roster') document.getElementById('navBtnRoster').classList.add('active');
 
         if (viewKey === 'leaderboard') {
           this.loadLeaderboardData();
+          // 手機端若切換進來，預設為靜態對照狀態
+          document.getElementById('podiumCol1').classList.add('reveal');
+          document.getElementById('podiumCol2').classList.add('reveal');
+          document.getElementById('podiumCol3').classList.add('reveal');
+          document.getElementById('rosterParchmentSheet').classList.add('active-show');
         } else if (viewKey === 'roster') {
           this.loadRosterManagerText();
         }
@@ -1259,9 +1354,7 @@
 
       recordScore(student) {
         SoundFx.playScoreDing();
-        if (navigator.vibrate) {
-          navigator.vibrate(18);
-        }
+        if (navigator.vibrate) navigator.vibrate(18);
 
         student.totalScore += this.currentWeight;
         student.weeklyScore += this.currentWeight;
@@ -1360,16 +1453,17 @@
         alert('✨ 備課筆記已成功存檔！');
       },
 
+      // 切換週榜 / 總榜 (同班級即時刷新，大門免開闔)
       toggleRankingPeriod() {
-        this.rankingPeriod = (this.rankingPeriod === 'total') ? 'weekly' : 'total';
+        this.rankingPeriod = (this.rankingPeriod === 'weekly') ? 'total' : 'weekly';
         document.getElementById('btnToggleRankingType').innerText = 
-          `【${this.rankingPeriod === 'total' ? '總排行榜' : '週排行榜'}】`;
+          `目前為：【${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}】`;
         this.loadLeaderboardData();
       },
 
       loadLeaderboardData() {
         const classStudents = this.data.students.filter(s => s.classId === this.currentClass);
-        const scoreKey = (this.rankingPeriod === 'total') ? 'totalScore' : 'weeklyScore';
+        const scoreKey = (this.rankingPeriod === 'weekly') ? 'weeklyScore' : 'totalScore';
         
         const sortedList = [...classStudents].sort((a, b) => b[scoreKey] - a[scoreKey]);
 
@@ -1400,11 +1494,10 @@
           `;
           rosterGrid.appendChild(item);
         });
-
-        document.getElementById('rosterParchmentSheet').classList.remove('active-show');
       },
 
-      startRevealSequence() {
+      // 電腦大螢幕專屬：依序揭曉前三名 + 號角 + 2秒後展開全班榜單
+      startRevealTheater() {
         SoundFx.init();
         const p1 = document.getElementById('podiumCol1');
         const p2 = document.getElementById('podiumCol2');
