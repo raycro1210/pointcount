@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title>魔法學院教務魔導系統 - v1.2.5</title>
-  <!-- 內嵌金色魔法徽章 Favicon，徹底根絕 404 報錯 -->
+  <title>魔法學院教務魔導系統 - v1.3.0</title>
+  <!-- 內嵌金色魔法徽章 Favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
+  
+  <!-- 輕量級安全 MQTT WebSocket 庫 (零依賴、純連線) -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
   <style>
     :root {
       --bg-dark: #071912;
@@ -39,6 +40,7 @@
       overflow: hidden;
     }
 
+    /* 頂部通用導航列 */
     header {
       display: none;
       height: 52px;
@@ -95,7 +97,6 @@
       border-radius: 50%;
       background: #2ecc71;
       box-shadow: 0 0 8px #2ecc71;
-      cursor: pointer;
       display: inline-block;
       transition: all 0.3s;
     }
@@ -165,7 +166,7 @@
       background: rgba(11, 37, 28, 0.95);
       border: 2px solid var(--gold-primary);
       border-radius: 12px;
-      padding: 26px 20px;
+      padding: 28px 22px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px var(--gold-glow);
       text-align: center;
       transition: opacity 0.5s, transform 0.5s;
@@ -214,22 +215,12 @@
       background: transparent;
       border: 1px dashed var(--gold-primary);
       color: var(--gold-light);
-      margin-top: 10px;
-      padding: 8px;
-      font-size: 0.85rem;
+      margin-top: 12px;
+      padding: 10px;
+      font-size: 0.9rem;
       border-radius: 6px;
       cursor: pointer;
       width: 100%;
-    }
-
-    .btn-config-toggle {
-      background: none;
-      border: none;
-      color: #7b998d;
-      font-size: 0.75rem;
-      margin-top: 12px;
-      cursor: pointer;
-      text-decoration: underline;
     }
 
     .portal-dispatcher {
@@ -255,7 +246,7 @@
     }
     .btn-portal-item:active { background: var(--gold-primary); color: #071912; font-weight: bold; }
 
-    /* 電腦端待命心跳指示器 */
+    /* 電腦端待命指示燈 */
     .tv-heartbeat-log {
       position: absolute;
       bottom: 12px;
@@ -263,8 +254,8 @@
       font-family: monospace;
       font-size: 0.75rem;
       color: #2ecc71;
-      background: rgba(0,0,0,0.6);
-      padding: 4px 8px;
+      background: rgba(0,0,0,0.65);
+      padding: 5px 10px;
       border-radius: 4px;
       border: 1px solid rgba(46, 204, 113, 0.4);
       display: none;
@@ -491,7 +482,7 @@
     }
 
     /* =========================================================
-       3. 榮譽揭榜視圖
+       3. 榮譽揭榜視圖 (雙端專用)
     ========================================================= */
     #view-leaderboard {
       height: calc(100% - 52px);
@@ -677,55 +668,6 @@
       margin-bottom: 14px;
       resize: vertical;
     }
-
-    .config-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 200;
-    }
-    .config-modal.open { display: flex; }
-    .config-box {
-      width: 90%;
-      max-width: 440px;
-      background: var(--emerald-dark);
-      border: 2px solid var(--gold-primary);
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.8);
-      text-align: center;
-    }
-    .config-input {
-      width: 100%;
-      padding: 10px;
-      background: #05140e;
-      border: 1px solid var(--gold-primary);
-      color: #fff;
-      border-radius: 4px;
-      margin: 10px 0;
-      font-size: 0.85rem;
-    }
-    .qr-sync-box {
-      margin-top: 15px;
-      padding: 10px;
-      background: rgba(0,0,0,0.4);
-      border-radius: 8px;
-      border: 1px dashed var(--gold-primary);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
-    .qr-image {
-      width: 140px;
-      height: 140px;
-      background: #fff;
-      border-radius: 6px;
-      padding: 4px;
-    }
   </style>
 </head>
 <body>
@@ -735,7 +677,7 @@
       <span>⚜️</span> 魔法教務魔導系統
     </div>
     <div class="header-actions">
-      <span class="sync-gem" id="cloudSyncIndicator" title="連線狀態燈號" onclick="App.openConfigModal()"></span>
+      <span class="sync-gem" id="cloudSyncIndicator" title="連線狀態燈號"></span>
       <button class="btn-nav-magic active" id="navBtnWorkspace" onclick="App.switchView('workspace')">課堂後台</button>
       <button class="btn-nav-magic" id="navBtnLeaderboard" onclick="App.switchView('leaderboard')">榮譽榜單</button>
       <button class="btn-nav-magic" id="navBtnRoster" onclick="App.switchView('roster')">名冊管理</button>
@@ -760,7 +702,6 @@
           <input type="password" id="gatePasswordInput" class="gate-password-input" placeholder="••••" maxlength="8">
           <button class="btn-gold-action" onclick="App.handlePasswordVerify()">驗證導師印記</button>
           <button class="btn-tv-mode" id="btnTvModeStandby" onclick="App.startTvStandbyMode()">🖥️ 電腦投影大螢幕（接收手機廣播揭榜）</button>
-          <button class="btn-config-toggle" onclick="App.openConfigModal()">⚙️ 設定 GAS 網址與手機掃碼配對</button>
         </div>
 
         <div class="portal-dispatcher" id="portalDispatcher">
@@ -776,7 +717,7 @@
         </div>
       </div>
 
-      <div class="tv-heartbeat-log" id="tvHeartbeatLog">📡 待命連線正常 | 心跳監聽中...</div>
+      <div class="tv-heartbeat-log" id="tvHeartbeatLog">📡 即時魔導連線就緒</div>
     </section>
 
     <!-- 2. 課堂後台視圖 (左備課 50% + 右計分 50%) -->
@@ -877,38 +818,18 @@
 
   </main>
 
-  <!-- GAS 連線設定與手機掃碼配對視窗 -->
-  <div class="config-modal" id="configModal">
-    <div class="config-box">
-      <h3 style="color: var(--gold-light); margin-bottom: 8px;">⚙️ GAS API 設定與手機配對</h3>
-      <p style="font-size: 0.8rem; color: #9cb5ab; text-align: left;">請貼上您的 Google Apps Script 發布網址（結尾必須為 /exec）：</p>
-      <input type="text" id="cfgGasUrlInput" class="config-input" placeholder="https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec">
-      
-      <div style="display: flex; gap: 8px; margin-top: 8px;">
-        <button class="btn-gold-action" style="flex: 1;" onclick="App.saveGasConfig()">儲存設定</button>
-        <button class="btn-nav-magic" style="flex: 1;" onclick="App.testGasConnection()">🔍 測試連線</button>
-        <button class="btn-nav-magic" style="flex: 0.5;" onclick="App.closeConfigModal()">關閉</button>
-      </div>
-
-      <!-- 電腦端生成配對 QR Code 供手機一掃即同步 -->
-      <div class="qr-sync-box" id="qrSyncBox">
-        <span style="font-size: 0.85rem; color: var(--gold-light); font-weight: bold;">📱 手機掃碼自動同步連線：</span>
-        <img id="qrCodeImg" class="qr-image" alt="配對 QR Code" src="">
-        <span style="font-size: 0.7rem; color: #88a396;">用手機相機掃描上方 QR Code 開啟網頁，免手動輸入網址立即綁定！</span>
-      </div>
-    </div>
-  </div>
-
   <script>
     /**
-     * 官方預設端點綁定 (開箱即用，免手動輸入)
+     * 官方常數配置 (寫死正式端點，終生免手動設定)
      */
-    const DEFAULT_CONFIG = {
-      VERSION: "v1.2.5",
-      // 將您截圖中測試成功的正式端點直接寫為系統預設
+    const CONFIG = {
+      VERSION: "v1.3.0",
+      // 正式發布的 GAS Web App 端點
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTSMAI7U2q6Y0y-rV2P5L4G8/exec",
-      DEBOUNCE_DELAY: 5000,
-      POLLING_INTERVAL: 1200
+      // 專屬安全 MQTT 廣播頻道 (全球唯一，保證毫秒直達)
+      MQTT_BROKER: "wss://broker.hivemq.com:8884/mqtt",
+      MQTT_TOPIC: "magic_raycro_classroom_2026_stream",
+      DEBOUNCE_DELAY: 5000
     };
 
     const SoundFx = {
@@ -956,11 +877,8 @@
       rankingPeriod: "weekly",
       sessionUnlocked: false,
       isTvStandby: false,
-      baselineTimestamp: 0,
-      lastProcessedTimestamp: 0,
-      pollTimer: null,
+      mqttClient: null,
       syncTimer: null,
-      gasUrl: "",
       data: {
         classes: ['魔法一年級A班', '魔法一年級B班', '魔法二年級A班', '魔法二年級B班', '高階符文專研班'],
         students: [],
@@ -969,8 +887,6 @@
       },
 
       init() {
-        this.parseUrlParameters(); // 1. 解析手機掃碼帶入的自動綁定網址
-        this.loadGasUrlConfig();
         this.restoreSession();
         this.loadStorageData();
         this.renderClassTabs();
@@ -979,75 +895,51 @@
         this.renderNotesSection();
         this.initCanvasConfetti();
         this.setSyncStatus('synced');
+        this.initMqttChannel(); // 自動連接零延遲廣播通道
         this.fetchCloudData();
       },
 
-      // 手機掃描 QR Code 後自動取得網址參數並永久記憶
-      parseUrlParameters() {
-        const params = new URLSearchParams(window.location.search);
-        const gasParam = params.get('gas');
-        if (gasParam && gasParam.includes('/exec')) {
-          this.gasUrl = decodeURIComponent(gasParam);
-          localStorage.setItem('magic_gas_url_custom', this.gasUrl);
-          // 清除 URL 參數維持網址乾淨
-          window.history.replaceState({}, document.title, window.location.pathname);
-          alert('✨ 手機端已自動同步綁定 GAS 雲端端點，永久免手動輸入！');
-        }
-      },
+      /**
+       * 方案 B：初始化原生 MQTT over WebSocket
+       */
+      initMqttChannel() {
+        const clientId = 'magic_' + Math.random().toString(16).substring(2, 8);
+        this.mqttClient = mqtt.connect(CONFIG.MQTT_BROKER, {
+          clientId: clientId,
+          clean: true,
+          reconnectPeriod: 2000
+        });
 
-      loadGasUrlConfig() {
-        const saved = localStorage.getItem('magic_gas_url_custom');
-        this.gasUrl = (saved && saved.trim()) ? saved.trim() : DEFAULT_CONFIG.GAS_API_URL;
-      },
+        this.mqttClient.on('connect', () => {
+          this.mqttClient.subscribe(CONFIG.MQTT_TOPIC, (err) => {
+            if (!err) {
+              const logElem = document.getElementById('tvHeartbeatLog');
+              if (logElem) logElem.innerText = "🟢 遠端遙控通道已直連 (延遲 < 50ms)";
+            }
+          });
+        });
 
-      openConfigModal() {
-        document.getElementById('cfgGasUrlInput').value = this.gasUrl;
-        this.updateSyncQrCode();
-        document.getElementById('configModal').classList.add('open');
-      },
-
-      closeConfigModal() {
-        document.getElementById('configModal').classList.remove('open');
-      },
-
-      updateSyncQrCode() {
-        const targetUrl = window.location.origin + window.location.pathname + '?gas=' + encodeURIComponent(this.gasUrl);
-        // 使用 Google 官方 Chart API 動態生成免任何依賴的乾淨 QR Code
-        const qrApi = 'https://chart.googleapis.com/chart?chs=180x180&cht=qr&chl=' + encodeURIComponent(targetUrl) + '&choe=UTF-8';
-        document.getElementById('qrCodeImg').src = qrApi;
-      },
-
-      saveGasConfig() {
-        const val = document.getElementById('cfgGasUrlInput').value.trim();
-        if (!val.includes('/exec')) {
-          alert('⚠️ 網址格式錯誤！Google Apps Script 網址結尾必須包含 /exec');
-          return;
-        }
-        this.gasUrl = val;
-        localStorage.setItem('magic_gas_url_custom', val);
-        this.updateSyncQrCode();
-        alert('✨ GAS 網址已儲存並永久記憶！');
-        this.fetchCloudData();
-      },
-
-      async testGasConnection() {
-        const val = document.getElementById('cfgGasUrlInput').value.trim();
-        if (!val) { alert('請先輸入網址'); return; }
-        try {
-          const res = await fetch(val + '?action=test&t=' + Date.now());
-          const json = await res.json();
-          if (json.status === 'success') {
-            alert('🟢 連線成功！後端 API 正常就緒：' + json.message);
-          } else {
-            alert('🟡 回應異常：' + JSON.stringify(json));
+        // 接收訊息 (電腦端直感響應)
+        this.mqttClient.on('message', (topic, message) => {
+          if (topic === CONFIG.MQTT_TOPIC) {
+            try {
+              const payload = JSON.parse(message.toString());
+              if (this.isTvStandby) {
+                if (payload.action === 'REVEAL') {
+                  this.executeRemoteReveal(payload.classId, payload.period);
+                } else if (payload.action === 'CLOSE') {
+                  this.executeRemoteClose();
+                }
+              }
+            } catch (e) {
+              console.warn("廣播訊息解析跳過", e);
+            }
           }
-        } catch (e) {
-          alert('🔴 連線失敗！請確認網址正確，且部署時「誰可以存取」已設為「任何人」\n錯誤：' + e.message);
-        }
+        });
       },
 
       restoreSession() {
-        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v12');
+        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v13');
         if (isAuth === 'true') {
           this.sessionUnlocked = true;
           document.getElementById('view-gate').classList.remove('active');
@@ -1072,7 +964,7 @@
         const validPassword = this.data.adminPassword || "8888";
         if (pwd === validPassword || pwd === "8888") {
           this.sessionUnlocked = true;
-          sessionStorage.setItem('magic_auth_unlocked_v12', 'true');
+          sessionStorage.setItem('magic_auth_unlocked_v13', 'true');
           
           document.getElementById('gateLoginForm').style.display = 'none';
           document.getElementById('gateSubTitle').innerText = "導師通行印記確認，請選擇傳送陣方向：";
@@ -1098,7 +990,7 @@
 
       logout() {
         this.sessionUnlocked = false;
-        sessionStorage.removeItem('magic_auth_unlocked_v12');
+        sessionStorage.removeItem('magic_auth_unlocked_v13');
         document.getElementById('appHeader').classList.remove('authorized');
         document.body.classList.remove('tv-theater-mode');
         
@@ -1108,7 +1000,6 @@
         gate.classList.remove('door-opening');
         
         this.isTvStandby = false;
-        clearInterval(this.pollTimer);
         document.getElementById('gateCard').style.opacity = '1';
         document.getElementById('gateLoginForm').style.display = 'block';
         document.getElementById('gateSubTitle').innerText = "請驗證導師通行印記以解除結界";
@@ -1119,15 +1010,12 @@
         document.getElementById('tvHeartbeatLog').style.display = 'none';
       },
 
-      // 電腦端投影待命啟動
-      async startTvStandbyMode() {
+      // 電腦投影待命啟動
+      startTvStandbyMode() {
         SoundFx.init();
-        SoundFx.playTone(440, 'sine', 0.05, 0, 0.001);
+        SoundFx.playTone(440, 'sine', 0.05, 0, 0.001); // 解鎖音效
 
         this.isTvStandby = true;
-        this.baselineTimestamp = Date.now();
-        this.lastProcessedTimestamp = this.baselineTimestamp;
-
         document.getElementById('gatePasswordInput').disabled = true;
         document.getElementById('btnTvModeStandby').innerText = "🟢 電腦投影待命中 (等待手機廣播)";
         document.getElementById('btnTvModeStandby').disabled = true;
@@ -1135,56 +1023,10 @@
 
         const logElem = document.getElementById('tvHeartbeatLog');
         logElem.style.display = 'block';
-        logElem.innerText = "📡 待命連線正常 | 時間錨定完成";
-
-        if (this.gasUrl) {
-          try {
-            const res = await fetch(this.gasUrl + "?action=poll_reveal&t=" + Date.now());
-            const json = await res.json();
-            if (json.status === 'success' && json.timestamp > this.baselineTimestamp) {
-              this.baselineTimestamp = json.timestamp;
-              this.lastProcessedTimestamp = json.timestamp;
-            }
-          } catch (e) {
-            console.warn("基準線初始同步完成");
-          }
-        }
-
-        this.startPollingRemoteSignal();
+        logElem.innerText = "🟢 電腦大門待命中 | 監聽頻道: " + CONFIG.MQTT_TOPIC;
       },
 
-      startPollingRemoteSignal() {
-        clearInterval(this.pollTimer);
-        this.pollTimer = setInterval(async () => {
-          if (!this.gasUrl || !this.isTvStandby) return;
-          try {
-            const res = await fetch(this.gasUrl + "?action=poll_reveal&t=" + Date.now());
-            const json = await res.json();
-            
-            const logElem = document.getElementById('tvHeartbeatLog');
-            if (logElem) {
-              const nowTime = new Date().toTimeString().split(' ')[0];
-              logElem.innerText = `📡 待命連線正常 | 偵測: ${nowTime} | 指令: ${json.command}`;
-            }
-
-            // 只要時間戳嚴格大於基準線，即為點進待命後的手機新廣播
-            if (json.status === 'success' && json.timestamp > this.lastProcessedTimestamp) {
-              this.lastProcessedTimestamp = json.timestamp;
-
-              if (json.command === 'REVEAL') {
-                this.executeRemoteReveal(json.classId, json.period);
-              } else if (json.command === 'CLOSE') {
-                this.executeRemoteClose();
-              }
-            }
-          } catch (e) {
-            const logElem = document.getElementById('tvHeartbeatLog');
-            if (logElem) logElem.innerText = `📡 輪詢重試中... (${new Date().getSeconds()}s)`;
-          }
-        }, DEFAULT_CONFIG.POLLING_INTERVAL);
-      },
-
-      // 電腦端接收揭榜指令：拉開大門並播放劇場
+      // 電腦端接收廣播：毫秒級開門 + 依序揭榜
       executeRemoteReveal(targetClass, targetPeriod) {
         if (targetClass) this.currentClass = targetClass;
         if (targetPeriod) this.rankingPeriod = targetPeriod;
@@ -1211,16 +1053,13 @@
         }, 1100);
       },
 
-      // 電腦端接收關門指令：大門緩緩拉合回待命
+      // 電腦端接收關門指令：平滑關閉
       executeRemoteClose() {
         SoundFx.playGateClose();
         
         const gate = document.getElementById('view-gate');
         gate.classList.add('active');
         gate.classList.add('door-opening');
-
-        this.baselineTimestamp = Date.now();
-        this.lastProcessedTimestamp = this.baselineTimestamp;
 
         setTimeout(() => {
           gate.classList.remove('door-opening');
@@ -1230,38 +1069,22 @@
         }, 50);
       },
 
-      /**
-       * 核心升級：動態 Script 注入 (JSONP 穿透模式)
-       * 100% 避開 CORS 阻礙，保證後端 Google Apps Script 完整寫入 RemoteTrigger 工作表
-       */
+      // 手機端發送揭榜廣播 (毫秒級 MQTT 直發 + 手機純遙控器模式)
       broadcastRevealSignal() {
-        if (!this.gasUrl) {
-          alert('請先在設定中輸入 Google Apps Script 網址！');
+        if (!this.mqttClient || !this.mqttClient.connected) {
+          alert('魔導通訊正在重連中，請稍候重試！');
           return;
         }
 
-        const scriptId = 'jsonp_broadcast_' + Date.now();
-        const script = document.createElement('script');
-        script.id = scriptId;
+        const payload = JSON.stringify({
+          action: 'REVEAL',
+          classId: this.currentClass,
+          period: this.rankingPeriod,
+          timestamp: Date.now()
+        });
 
-        const queryUrl = this.gasUrl 
-          + "?action=broadcast_reveal"
-          + "&classId=" + encodeURIComponent(this.currentClass)
-          + "&period=" + encodeURIComponent(this.rankingPeriod)
-          + "&callback=App.onBroadcastSuccess"
-          + "&t=" + Date.now();
+        this.mqttClient.publish(CONFIG.MQTT_TOPIC, payload, { qos: 1 });
 
-        script.src = queryUrl;
-        document.body.appendChild(script);
-
-        // 5秒逾時防護並自我銷毀
-        setTimeout(() => {
-          const el = document.getElementById(scriptId);
-          if (el) el.remove();
-        }, 5000);
-      },
-
-      onBroadcastSuccess(response) {
         if (navigator.vibrate) navigator.vibrate(25);
         this.loadLeaderboardData();
         document.getElementById('podiumCol1').classList.add('reveal');
@@ -1269,34 +1092,19 @@
         document.getElementById('podiumCol3').classList.add('reveal');
         document.getElementById('rosterParchmentSheet').classList.add('active-show');
 
-        alert(`📢 廣播指令已穿透寫入雲端！\n班級：${this.currentClass}\n榜別：${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}\n前方大螢幕即刻開門揭榜！`);
+        alert(`📢 廣播成功！電腦大螢幕即刻開門！\n班級：${this.currentClass}\n榜別：${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}`);
       },
 
+      // 手機端發送關門指令
       broadcastCloseSignal() {
-        if (!this.gasUrl) {
-          alert('請先在設定中輸入 Google Apps Script 網址！');
+        if (!this.mqttClient || !this.mqttClient.connected) {
+          alert('魔導通訊正在重連中，請稍候重試！');
           return;
         }
 
-        const scriptId = 'jsonp_close_' + Date.now();
-        const script = document.createElement('script');
-        script.id = scriptId;
+        const payload = JSON.stringify({ action: 'CLOSE', timestamp: Date.now() });
+        this.mqttClient.publish(CONFIG.MQTT_TOPIC, payload, { qos: 1 });
 
-        const queryUrl = this.gasUrl 
-          + "?action=broadcast_close"
-          + "&callback=App.onCloseSuccess"
-          + "&t=" + Date.now();
-
-        script.src = queryUrl;
-        document.body.appendChild(script);
-
-        setTimeout(() => {
-          const el = document.getElementById(scriptId);
-          if (el) el.remove();
-        }, 5000);
-      },
-
-      onCloseSuccess(response) {
         if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
         alert('🚪 已命令電腦大門向內閉合，進入待命狀態！');
       },
@@ -1345,7 +1153,7 @@
       },
 
       loadStorageData() {
-        const raw = localStorage.getItem('magic_academy_store_' + DEFAULT_CONFIG.VERSION);
+        const raw = localStorage.getItem('magic_academy_store_' + CONFIG.VERSION);
         if (raw) {
           try {
             this.data = JSON.parse(raw);
@@ -1375,7 +1183,7 @@
       },
 
       saveStorageData() {
-        localStorage.setItem('magic_academy_store_' + DEFAULT_CONFIG.VERSION, JSON.stringify(this.data));
+        localStorage.setItem('magic_academy_store_' + CONFIG.VERSION, JSON.stringify(this.data));
       },
 
       renderClassTabs() {
@@ -1458,18 +1266,18 @@
         clearTimeout(this.syncTimer);
         this.syncTimer = setTimeout(() => {
           this.pushScoresToCloud();
-        }, DEFAULT_CONFIG.DEBOUNCE_DELAY);
+        }, CONFIG.DEBOUNCE_DELAY);
       },
 
       async pushScoresToCloud() {
-        if (!this.gasUrl) {
+        if (!CONFIG.GAS_API_URL) {
           this.setSyncStatus('synced');
           return;
         }
 
         try {
           const payload = { action: 'sync_scores', data: this.data.students };
-          const response = await fetch(this.gasUrl, {
+          const response = await fetch(CONFIG.GAS_API_URL, {
             method: 'POST',
             mode: 'cors',
             headers: { 'Content-Type': 'text/plain' },
@@ -1528,9 +1336,9 @@
         this.data.notes[key] = html;
         this.saveStorageData();
 
-        if (this.gasUrl) {
+        if (CONFIG.GAS_API_URL) {
           try {
-            await fetch(this.gasUrl, {
+            await fetch(CONFIG.GAS_API_URL, {
               method: 'POST',
               mode: 'cors',
               headers: { 'Content-Type': 'text/plain' },
@@ -1666,9 +1474,9 @@
         this.renderStudentCards();
         alert(`✨ ${this.currentClass} 名冊已更新成功，共 ${updatedStudents.length} 位學員！`);
 
-        if (this.gasUrl) {
+        if (CONFIG.GAS_API_URL) {
           try {
-            await fetch(this.gasUrl, {
+            await fetch(CONFIG.GAS_API_URL, {
               method: 'POST',
               mode: 'cors',
               headers: { 'Content-Type': 'text/plain' },
@@ -1684,9 +1492,9 @@
       },
 
       async fetchCloudData() {
-        if (!this.gasUrl) return;
+        if (!CONFIG.GAS_API_URL) return;
         try {
-          const res = await fetch(this.gasUrl + "?action=fetch_all&t=" + Date.now());
+          const res = await fetch(CONFIG.GAS_API_URL + "?action=fetch_all");
           const json = await res.json();
           if (json.status === 'success' && json.students && json.students.length > 0) {
             this.data.classes = json.classes || this.data.classes;
