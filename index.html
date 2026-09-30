@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 - v1.1.0</title>
+  <title>魔法學院教務魔導系統 - v1.2.0</title>
   <style>
     :root {
       --bg-dark: #071912;
@@ -34,13 +34,13 @@
       overflow: hidden;
     }
 
-    /* 頂部通用導航列 (未驗證時完全隱藏) */
+    /* 頂部通用導航列 */
     header {
       display: none;
       height: 52px;
       background: linear-gradient(180deg, #05140e 0%, var(--emerald-dark) 100%);
       border-bottom: 2px solid var(--gold-primary);
-      padding: 0 14px;
+      padding: 0 12px;
       justify-content: space-between;
       align-items: center;
       position: relative;
@@ -57,13 +57,13 @@
       gap: 6px;
       letter-spacing: 1px;
     }
-    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .header-actions { display: flex; gap: 6px; align-items: center; }
 
     .btn-nav-magic {
       background: rgba(212, 175, 55, 0.12);
       border: 1px solid var(--gold-primary);
       color: var(--gold-light);
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 4px;
       cursor: pointer;
       font-size: 0.85rem;
@@ -74,6 +74,15 @@
       background: var(--gold-primary);
       color: var(--emerald-dark);
       font-weight: bold;
+    }
+    .btn-nav-logout {
+      background: rgba(231, 76, 60, 0.2);
+      border: 1px solid #e74c3c;
+      color: #ff9999;
+      padding: 6px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
     }
 
     .sync-gem {
@@ -90,22 +99,13 @@
     .sync-gem.error { background: #e74c3c; box-shadow: 0 0 10px #e74c3c; }
     @keyframes gemPulse { from { transform: scale(1); } to { transform: scale(1.2); } }
 
-    /* 全局視圖切換容器 */
-    .app-viewport {
-      width: 100%;
-      height: 100%;
-      position: relative;
-    }
-    .view-panel {
-      position: absolute;
-      inset: 0;
-      display: none;
-      flex-direction: column;
-    }
+    /* 全域視圖切換容器 */
+    .app-viewport { width: 100%; height: 100%; position: relative; }
+    .view-panel { position: absolute; inset: 0; display: none; flex-direction: column; }
     .view-panel.active { display: flex; }
 
     /* =========================================================
-       1. 學院大門頁面 (3D 雙開大門特效)
+       1. 學院大門頁面 (3D 雙開大門 + 分流之鏡)
     ========================================================= */
     #view-gate {
       background: radial-gradient(circle at center, #103326 0%, #030a07 100%);
@@ -116,7 +116,6 @@
       z-index: 100;
     }
 
-    /* 雙扇門結構 */
     .gate-portal {
       position: absolute;
       inset: 0;
@@ -132,7 +131,6 @@
       box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
       position: relative;
       transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-      transform-origin: center center;
     }
     .gate-door.left {
       border-right: 2px solid var(--gold-primary);
@@ -142,32 +140,22 @@
       border-left: 2px solid var(--gold-primary);
       transform-origin: right center;
     }
-    /* 門扉古典雕紋 */
     .door-relief {
       position: absolute;
-      inset: 30px;
-      border: 2px solid var(--gold-border, rgba(212, 175, 55, 0.3));
+      inset: 28px;
+      border: 2px solid rgba(212, 175, 55, 0.3);
       border-radius: 6px;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-    .door-relief::after {
-      content: "⚜️";
-      font-size: 3rem;
-      opacity: 0.3;
-    }
+    .door-relief::after { content: "⚜️"; font-size: 3rem; opacity: 0.3; }
 
-    /* 開門動效觸發類別 */
-    #view-gate.door-opening .gate-door.left {
-      transform: rotateY(-105deg);
-    }
-    #view-gate.door-opening .gate-door.right {
-      transform: rotateY(105deg);
-    }
+    #view-gate.door-opening .gate-door.left { transform: rotateY(-105deg); }
+    #view-gate.door-opening .gate-door.right { transform: rotateY(105deg); }
 
-    /* 解鎖密碼卡片 */
-    .gate-dialog {
+    /* 密碼卡片 */
+    .gate-card {
       position: relative;
       z-index: 20;
       width: 90%;
@@ -175,16 +163,13 @@
       background: rgba(11, 37, 28, 0.95);
       border: 2px solid var(--gold-primary);
       border-radius: 12px;
-      padding: 30px 24px;
+      padding: 30px 22px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px var(--gold-glow);
       text-align: center;
-      transition: opacity 0.6s, transform 0.6s;
+      transition: opacity 0.5s, transform 0.5s;
     }
-    #view-gate.door-opening .gate-dialog {
-      opacity: 0;
-      transform: scale(0.9);
-      pointer-events: none;
-    }
+    #view-gate.door-opening .gate-card { opacity: 0; transform: scale(0.9); pointer-events: none; }
+
     .gate-dialog-title {
       font-family: var(--font-serif);
       font-size: 1.6rem;
@@ -192,11 +177,8 @@
       margin-bottom: 6px;
       letter-spacing: 2px;
     }
-    .gate-dialog-subtitle {
-      color: #9cb5ab;
-      font-size: 0.85rem;
-      margin-bottom: 20px;
-    }
+    .gate-dialog-subtitle { color: #9cb5ab; font-size: 0.85rem; margin-bottom: 20px; }
+
     .gate-password-input {
       width: 100%;
       padding: 12px;
@@ -207,7 +189,7 @@
       color: var(--gold-light);
       border-radius: 6px;
       outline: none;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       letter-spacing: 4px;
     }
     .btn-gold-action {
@@ -226,8 +208,44 @@
     }
     .btn-gold-action:active { transform: scale(0.98); }
 
+    .btn-tv-mode {
+      background: transparent;
+      border: 1px dashed var(--gold-primary);
+      color: var(--gold-light);
+      margin-top: 12px;
+      padding: 8px;
+      font-size: 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    /* 導向分流之鏡 (驗證通過後大門不開，先選功能) */
+    .portal-dispatcher {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .btn-portal-item {
+      padding: 12px;
+      background: rgba(18, 62, 47, 0.85);
+      border: 1.5px solid var(--gold-primary);
+      border-radius: 8px;
+      color: #fff;
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .btn-portal-item:active { background: var(--gold-primary); color: #071912; font-weight: bold; }
+
     /* =========================================================
-       2. 課堂後台視圖 (計分 + 備課雙態自適應)
+       2. 課堂後台視圖 (左側備課 50% + 右側計分 50%)
     ========================================================= */
     #view-workspace {
       height: calc(100% - 52px);
@@ -236,11 +254,11 @@
     }
     #view-workspace.active { display: flex; flex-direction: column; }
 
-    /* 外螢幕專用切換分頁籤 (大螢幕時隱藏) */
+    /* 外螢幕專用切換標籤 (大螢幕自動隱藏) */
     .phone-mode-switcher {
       display: flex;
       background: #05140e;
-      border-bottom: 1px solid var(--gold-border, rgba(212, 175, 55, 0.3));
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
     }
     .phone-mode-btn {
       flex: 1;
@@ -261,7 +279,7 @@
       font-weight: bold;
     }
 
-    /* 班級選擇橫條 */
+    /* 班級選擇列 */
     .class-tabs-container {
       display: flex;
       overflow-x: auto;
@@ -289,7 +307,7 @@
       box-shadow: 0 0 10px var(--gold-glow);
     }
 
-    /* 工作台主體分割區 */
+    /* 雙欄主工作區 */
     .workspace-split {
       flex: 1;
       display: flex;
@@ -297,7 +315,7 @@
       position: relative;
     }
 
-    /* 計分面板 */
+    /* 計分面板 (單手外螢幕預設顯示) */
     .scoring-column {
       flex: 1;
       display: flex;
@@ -305,7 +323,6 @@
       height: 100%;
       background: var(--bg-dark);
     }
-    /* 學生名單雙列網格 */
     .students-scroll-area {
       flex: 1;
       overflow-y: auto;
@@ -356,7 +373,6 @@
       color: var(--gold-primary);
     }
 
-    /* 底部常駐計分快捷列 */
     .scoring-bottom-toolbar {
       height: 58px;
       background: #05140e;
@@ -371,7 +387,7 @@
     .weight-chip {
       flex: 1;
       height: 42px;
-      border: 1px solid var(--gold-border, rgba(212, 175, 55, 0.4));
+      border: 1px solid rgba(212, 175, 55, 0.4);
       border-radius: 6px;
       background: rgba(212, 175, 55, 0.08);
       color: var(--gold-light);
@@ -389,7 +405,7 @@
       box-shadow: 0 0 12px var(--gold-glow);
     }
 
-    /* 備課筆記面板 */
+    /* 備課筆記面板 (項目符號內邊距修正) */
     .notes-column {
       flex: 1;
       display: none;
@@ -425,31 +441,43 @@
     }
     .notes-wysiwyg {
       flex: 1;
-      padding: 16px;
+      padding: 18px 20px 18px 24px;
       outline: none;
       overflow-y: auto;
       font-size: 1.05rem;
-      line-height: 1.6;
+      line-height: 1.65;
+    }
+    /* 修正項目號貼邊問題 */
+    .notes-wysiwyg ul, .notes-wysiwyg ol {
+      padding-left: 28px !important;
+      margin: 8px 0;
+    }
+    .notes-wysiwyg li {
+      margin-bottom: 4px;
     }
 
     /* =========================================================
-       3. 摺疊展開大螢幕適配 (寬度 >= 680px)
+       3. 摺疊展開大螢幕適配 (重構為：左側備課 50% + 右側計分 50%)
     ========================================================= */
     @media (min-width: 680px) {
       .phone-mode-switcher { display: none !important; }
-      .scoring-column {
-        flex: 0 0 50%;
-        border-right: 2px solid var(--gold-primary);
-        display: flex !important;
-      }
+      /* 左側：備課筆記 */
       .notes-column {
-        flex: 0 0 50%;
+        flex: 0 0 50% !important;
         display: flex !important;
+        order: 1;
+        border-right: 2px solid var(--gold-primary);
+      }
+      /* 右側：學生計分 */
+      .scoring-column {
+        flex: 0 0 50% !important;
+        display: flex !important;
+        order: 2;
       }
     }
 
     /* =========================================================
-       4. 電腦端投影揭榜大典 (劇場模式)
+       4. 電腦端投影揭榜大典 (劇場模式 + 防劇透)
     ========================================================= */
     #view-leaderboard {
       height: calc(100% - 52px);
@@ -458,20 +486,42 @@
       align-items: center;
       position: relative;
     }
-    .confetti-canvas {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 10;
-    }
+    .confetti-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+    
     .theater-action-header {
       width: 100%;
-      padding: 14px 20px;
+      padding: 12px 18px;
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
+      gap: 8px;
       z-index: 20;
     }
+    .board-select-group { display: flex; gap: 6px; align-items: center; }
+    .select-magic {
+      background: #061911;
+      border: 1px solid var(--gold-primary);
+      color: var(--gold-light);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .btn-remote-broadcast {
+      background: linear-gradient(180deg, #f1c40f 0%, #d4af37 100%);
+      color: #071912;
+      font-weight: bold;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);
+      animation: broadcastGlow 1.8s infinite alternate;
+    }
+    @keyframes broadcastGlow { from { transform: scale(1); } to { transform: scale(1.04); } }
+
     .podium-stage {
       width: 90%;
       max-width: 640px;
@@ -504,22 +554,10 @@
       border-radius: 8px 8px 0 0;
       box-shadow: 0 0 25px rgba(0,0,0,0.6);
     }
-    .rank-first .podium-block {
-      height: 145px;
-      background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
-      font-size: 2.2rem;
-      border: 2px solid #fff;
-    }
-    .rank-second .podium-block {
-      height: 110px;
-      background: linear-gradient(180deg, #e6e6e6 0%, #8c8c8c 100%);
-      font-size: 1.8rem;
-    }
-    .rank-third .podium-block {
-      height: 85px;
-      background: linear-gradient(180deg, #cd7f32 0%, #7c471d 100%);
-      font-size: 1.5rem;
-    }
+    .rank-first .podium-block { height: 145px; background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%); font-size: 2.2rem; border: 2px solid #fff; }
+    .rank-second .podium-block { height: 110px; background: linear-gradient(180deg, #e6e6e6 0%, #8c8c8c 100%); font-size: 1.8rem; }
+    .rank-third .podium-block { height: 85px; background: linear-gradient(180deg, #cd7f32 0%, #7c471d 100%); font-size: 1.5rem; }
+
     .podium-badge {
       background: rgba(11, 37, 28, 0.95);
       border: 1.5px solid var(--gold-primary);
@@ -532,16 +570,25 @@
     .badge-name { font-size: 1.15rem; font-weight: bold; color: #fff; }
     .badge-score { font-family: var(--font-serif); font-size: 0.95rem; color: var(--gold-light); }
 
-    /* 全班座號榮譽榜名冊 */
+    /* 全班名冊防劇透卷軸 (初始隱藏，第一名公布後 2 秒滑入) */
     .roster-parchment-sheet {
       width: 90%;
       max-width: 760px;
-      background: rgba(9, 29, 22, 0.92);
-      border: 2px solid var(--gold-border, rgba(212, 175, 55, 0.4));
+      background: rgba(9, 29, 22, 0.95);
+      border: 2px solid var(--gold-primary);
       border-radius: 10px;
       padding: 16px;
       margin-bottom: 40px;
       z-index: 20;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 1s ease-out;
+      pointer-events: none;
+    }
+    .roster-parchment-sheet.active-show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
     }
     .roster-sheet-title {
       font-family: var(--font-serif);
@@ -556,7 +603,7 @@
       gap: 8px;
     }
     .roster-sheet-item {
-      background: rgba(255,255,255,0.04);
+      background: rgba(255,255,255,0.05);
       border: 1px solid rgba(212, 175, 55, 0.2);
       border-radius: 6px;
       padding: 6px 10px;
@@ -567,7 +614,7 @@
     .roster-rank-num { color: var(--gold-light); font-weight: bold; }
 
     /* =========================================================
-       5. 名冊批次管理抽屜視圖
+       5. 名冊批次管理頁面
     ========================================================= */
     #view-roster-manager {
       height: calc(100% - 52px);
@@ -583,12 +630,7 @@
       border-radius: 10px;
       padding: 20px;
     }
-    .manager-title {
-      font-family: var(--font-serif);
-      color: var(--gold-primary);
-      font-size: 1.25rem;
-      margin-bottom: 12px;
-    }
+    .manager-title { font-family: var(--font-serif); color: var(--gold-primary); font-size: 1.25rem; margin-bottom: 12px; }
     .manager-textarea {
       width: 100%;
       height: 180px;
@@ -607,7 +649,7 @@
 </head>
 <body>
 
-  <!-- 通用頂部導航列 (驗證前物理隱蔽) -->
+  <!-- 通用頂部導航列 (授權後顯示) -->
   <header id="appHeader">
     <div class="brand-box">
       <span>⚜️</span> 魔法教務魔導系統
@@ -617,52 +659,59 @@
       <button class="btn-nav-magic active" onclick="App.switchView('workspace')">課堂後台</button>
       <button class="btn-nav-magic" onclick="App.switchView('leaderboard')">榮譽榜單</button>
       <button class="btn-nav-magic" onclick="App.switchView('roster')">名冊管理</button>
+      <button class="btn-nav-logout" onclick="App.logout()">🔒 登出</button>
     </div>
   </header>
 
   <main class="app-viewport">
     
-    <!-- 1. 學院大門頁面 (3D 雙開大門) -->
+    <!-- 1. 學院大門頁面 (3D 雙開大門 + 分流之鏡) -->
     <section id="view-gate" class="view-panel active">
       <div class="gate-portal">
         <div class="gate-door left"><div class="door-relief"></div></div>
         <div class="gate-door right"><div class="door-relief"></div></div>
       </div>
-      <div class="gate-dialog">
+      
+      <div class="gate-card" id="gateCard">
         <h1 class="gate-dialog-title">魔法學院門扉</h1>
-        <p class="gate-dialog-subtitle">請驗證導師通行印記以解除結界</p>
-        <input type="password" id="gatePasswordInput" class="gate-password-input" placeholder="••••" maxlength="8">
-        <button class="btn-gold-action" onclick="App.verifyGateUnlock()">開啟學院大門</button>
+        <p class="gate-dialog-subtitle" id="gateSubTitle">請驗證導師通行印記以解除結界</p>
+        
+        <!-- 登入表單 -->
+        <div id="gateLoginForm">
+          <input type="password" id="gatePasswordInput" class="gate-password-input" placeholder="••••" maxlength="8">
+          <button class="btn-gold-action" onclick="App.handlePasswordVerify()">驗證導師印記</button>
+          <button class="btn-tv-mode" onclick="App.startTvStandbyMode()">🖥️ 電腦投影大螢幕（接收手機廣播揭榜）</button>
+        </div>
+
+        <!-- 導向分流之鏡 (驗證通過後顯示) -->
+        <div class="portal-dispatcher" id="portalDispatcher">
+          <button class="btn-portal-item" onclick="App.selectDestination('workspace')">
+            <span>⚔️️ 課堂計分與備課後台</span> <span>➔</span>
+          </button>
+          <button class="btn-portal-item" onclick="App.selectDestination('leaderboard')">
+            <span>🏆 榮譽揭榜投影大典</span> <span>➔</span>
+          </button>
+          <button class="btn-portal-item" onclick="App.selectDestination('roster')">
+            <span>📜 班級名冊與學員管理</span> <span>➔</span>
+          </button>
+        </div>
       </div>
     </section>
 
-    <!-- 2. 課堂後台視圖 -->
+    <!-- 2. 課堂後台視圖 (左備課 50% + 右計分 50%) -->
     <section id="view-workspace" class="view-panel">
-      <!-- 手機外螢幕切換籤 (大螢幕自動隱藏) -->
+      <!-- 手機外螢幕切換籤 -->
       <div class="phone-mode-switcher">
         <button class="phone-mode-btn active" id="btnPhoneScoring" onclick="App.switchPhoneMode('scoring')">⚔️ 計分面板</button>
         <button class="phone-mode-btn" id="btnPhoneNotes" onclick="App.switchPhoneMode('notes')">📜 備課卷軸</button>
       </div>
 
-      <!-- 班級快速選擇標籤列 -->
+      <!-- 班級選擇橫條 -->
       <div class="class-tabs-container" id="classTabBar"></div>
 
       <!-- 雙欄主工作區 -->
       <div class="workspace-split">
-        <!-- 左側/外螢幕計分區 -->
-        <div class="scoring-column" id="scoringColumn">
-          <div class="students-scroll-area" id="studentGrid"></div>
-          <div class="scoring-bottom-toolbar">
-            <button class="weight-chip" onclick="App.selectWeight(-5)">-5</button>
-            <button class="weight-chip" onclick="App.selectWeight(-2)">-2</button>
-            <button class="weight-chip" onclick="App.selectWeight(-1)">-1</button>
-            <button class="weight-chip active" onclick="App.selectWeight(1)">+1</button>
-            <button class="weight-chip" onclick="App.selectWeight(2)">+2</button>
-            <button class="weight-chip" onclick="App.selectWeight(5)">+5</button>
-          </div>
-        </div>
-
-        <!-- 右側/備課筆記區 -->
+        <!-- 備課筆記區 (大螢幕位於左側 50%) -->
         <div class="notes-column" id="notesColumn">
           <div class="notes-toolbar">
             <span class="notes-meta-info" id="notesHeadingInfo">今日備課重點</span>
@@ -675,6 +724,19 @@
           </div>
           <div class="notes-wysiwyg" id="notesEditor" contenteditable="true"></div>
         </div>
+
+        <!-- 計分面板區 (大螢幕位於右側 50%) -->
+        <div class="scoring-column" id="scoringColumn">
+          <div class="students-scroll-area" id="studentGrid"></div>
+          <div class="scoring-bottom-toolbar">
+            <button class="weight-chip" onclick="App.selectWeight(-5)">-5</button>
+            <button class="weight-chip" onclick="App.selectWeight(-2)">-2</button>
+            <button class="weight-chip" onclick="App.selectWeight(-1)">-1</button>
+            <button class="weight-chip active" onclick="App.selectWeight(1)">+1</button>
+            <button class="weight-chip" onclick="App.selectWeight(2)">+2</button>
+            <button class="weight-chip" onclick="App.selectWeight(5)">+5</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -682,8 +744,16 @@
     <section id="view-leaderboard" class="view-panel">
       <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
       <div class="theater-action-header">
-        <button class="btn-nav-magic" id="btnToggleRankingType" onclick="App.toggleRankingPeriod()">目前切換：【總排行榜】</button>
-        <button class="btn-gold-action" style="width: auto; padding: 6px 18px;" onclick="App.triggerRevealTheater()">✨ 揭曉前三名儀式</button>
+        <div class="board-select-group">
+          <select id="leaderboardClassSelect" class="select-magic" onchange="App.onLeaderboardClassChange()">
+            <!-- 班級下拉選單 -->
+          </select>
+          <button class="btn-nav-magic" id="btnToggleRankingType" onclick="App.toggleRankingPeriod()">【總排行榜】</button>
+        </div>
+        <div>
+          <button class="btn-remote-broadcast" onclick="App.broadcastRevealSignal()">📢 廣播電腦大螢幕：開始揭榜</button>
+          <button class="btn-nav-magic" onclick="App.startRevealSequence()">✨ 本機播放</button>
+        </div>
       </div>
 
       <div class="podium-stage">
@@ -713,8 +783,8 @@
         </div>
       </div>
 
-      <!-- 全班名冊總覽 (以座號排序) -->
-      <div class="roster-parchment-sheet">
+      <!-- 全班座號順序名單 (防劇透卷軸) -->
+      <div class="roster-parchment-sheet" id="rosterParchmentSheet">
         <h3 class="roster-sheet-title" id="rosterSheetTitle">全班學員成績名冊</h3>
         <div class="roster-sheet-grid" id="rosterSheetGrid"></div>
       </div>
@@ -725,7 +795,7 @@
       <div class="manager-card">
         <h2 class="manager-title">班級名冊批次匯入 / 管理</h2>
         <p style="color: #9cb5ab; font-size: 0.85rem; margin-bottom: 12px;">
-          請直接貼上學生名冊（一行一位，格式：座號 姓名，例如：<code>1 王小明</code>）。儲存後將即時寫入系統並同步至雲端試算表。
+          請直接貼上學生名冊（一行一位，格式：座號 姓名，例如：<code>1 王小明</code>）。
         </p>
         <textarea id="rosterBatchInput" class="manager-textarea" placeholder="1 王小明&#10;2 李小華&#10;3 張大同"></textarea>
         <button class="btn-gold-action" onclick="App.applyBatchRoster()">確認更新此班名冊</button>
@@ -739,14 +809,15 @@
      * 系統配置環境
      */
     const CONFIG = {
-      VERSION: "v1.1.0",
+      VERSION: "v1.2.0",
       // 請替換為您在 Apps Script 發布的 Web App URL
-      GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
-      DEBOUNCE_DELAY: 5000 // 5 秒防抖自動背景同步
+      GAS_API_URL: "https://script.google.com/macros/s/AKfycby-s1iL3w52R2r6gN3P1y6e_a0q7WzI9A/exec",
+      DEBOUNCE_DELAY: 5000,
+      POLLING_INTERVAL: 2000 // 電腦端投影待命輪詢週期 (2秒)
     };
 
     /**
-     * Web Audio API 音效合成引擎 (日系 RPG 結算音效、開門、加分)
+     * Web Audio API 音效合成引擎
      */
     const SoundFx = {
       ctx: null,
@@ -776,10 +847,10 @@
         osc.stop(this.ctx.currentTime + delay + duration);
       },
       playScoreDing() {
-        this.playTone(987.77, 'sine', 0.12, 0, 0.2); // B5 水滴魔法音
+        this.playTone(987.77, 'sine', 0.12, 0, 0.2); // B5 魔法清脆音
       },
       playGateOpen() {
-        this.playTone(90, 'triangle', 1.0, 0, 0.3); // 低沉開門共鳴
+        this.playTone(90, 'triangle', 1.0, 0, 0.35); // 厚重石門低鳴
       },
       playDrumBeat() {
         this.playTone(130, 'square', 0.25, 0, 0.18);
@@ -789,9 +860,9 @@
           { f: 523.25, d: 0.14, t: 0 },    // C5
           { f: 659.25, d: 0.14, t: 0.14 }, // E5
           { f: 783.99, d: 0.14, t: 0.28 }, // G5
-          { f: 1046.50, d: 0.5, t: 0.42 }  // C6 經典高音
+          { f: 1046.50, d: 0.5, t: 0.42 }  // C6 榮譽高音
         ];
-        sequence.forEach(n => this.playTone(n.f, 'square', n.d, n.t, 0.16));
+        sequence.forEach(n => this.playTone(n.f, 'square', n.d, n.t, 0.18));
       }
     };
 
@@ -801,8 +872,11 @@
     const App = {
       currentClass: "魔法一年級A班",
       currentWeight: 1,
-      rankingPeriod: "total", // 'total' | 'weekly'
+      rankingPeriod: "total",
       sessionUnlocked: false,
+      isTvStandby: false,
+      lastRemoteTimestamp: 0,
+      pollTimer: null,
       syncTimer: null,
       data: {
         classes: ['魔法一年級A班', '魔法一年級B班', '魔法二年級A班', '魔法二年級B班', '高階符文專研班'],
@@ -815,16 +889,16 @@
         this.restoreSession();
         this.loadStorageData();
         this.renderClassTabs();
+        this.populateLeaderboardSelect();
         this.renderStudentCards();
         this.renderNotesSection();
         this.initCanvasConfetti();
         this.setSyncStatus('synced');
-        this.fetchCloudData(); // 背景嘗試拉取試算表最新設定
+        this.fetchCloudData();
       },
 
-      // Session 狀態管理 (重新整頁免重新輸入密碼)
       restoreSession() {
-        const isAuth = sessionStorage.getItem('magic_auth_unlocked');
+        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v12');
         if (isAuth === 'true') {
           this.sessionUnlocked = true;
           document.getElementById('view-gate').classList.remove('active');
@@ -833,23 +907,125 @@
         }
       },
 
-      verifyGateUnlock() {
+      // 驗證密碼後先顯示分流之鏡，大門暫不開啟
+      handlePasswordVerify() {
         const pwd = document.getElementById('gatePasswordInput').value;
         if (pwd === this.data.adminPassword || pwd === "8888" || pwd === "") {
-          SoundFx.playGateOpen();
-          const gate = document.getElementById('view-gate');
-          gate.classList.add('door-opening');
-
-          setTimeout(() => {
-            this.sessionUnlocked = true;
-            sessionStorage.setItem('magic_auth_unlocked', 'true');
-            gate.classList.remove('active');
-            gate.classList.remove('door-opening');
-            document.getElementById('appHeader').classList.add('authorized');
-            this.switchView('workspace');
-          }, 1100);
+          this.sessionUnlocked = true;
+          sessionStorage.setItem('magic_auth_unlocked_v12', 'true');
+          
+          document.getElementById('gateLoginForm').style.display = 'none';
+          document.getElementById('gateSubTitle').innerText = "導師通行印記確認，請選擇傳送陣方向：";
+          document.getElementById('portalDispatcher').style.display = 'flex';
         } else {
           alert('結界印記不符，請重新確認通行密碼！');
+        }
+      },
+
+      // 選擇目的地後，大門開闔動畫啟動，無縫進入該功能
+      selectDestination(targetView) {
+        SoundFx.playGateOpen();
+        const gate = document.getElementById('view-gate');
+        gate.classList.add('door-opening');
+
+        setTimeout(() => {
+          gate.classList.remove('active');
+          gate.classList.remove('door-opening');
+          document.getElementById('appHeader').classList.add('authorized');
+          this.switchView(targetView);
+        }, 1100);
+      },
+
+      // 登出閉門機制
+      logout() {
+        this.sessionUnlocked = false;
+        sessionStorage.removeItem('magic_auth_unlocked_v12');
+        document.getElementById('appHeader').classList.remove('authorized');
+        
+        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+        const gate = document.getElementById('view-gate');
+        gate.classList.add('active');
+        gate.classList.remove('door-opening');
+        
+        document.getElementById('gateLoginForm').style.display = 'block';
+        document.getElementById('gateSubTitle').innerText = "請驗證導師通行印記以解除結界";
+        document.getElementById('portalDispatcher').style.display = 'none';
+        document.getElementById('gatePasswordInput').value = "";
+      },
+
+      // 電腦端投影待命模式 (免密碼)
+      startTvStandbyMode() {
+        this.isTvStandby = true;
+        document.getElementById('gateCard').style.opacity = '0.3';
+        document.getElementById('gateSubTitle').innerText = "🖥️ 電腦大螢幕待命中...等待手機遙控廣播";
+        this.startPollingRemoteSignal();
+      },
+
+      startPollingRemoteSignal() {
+        clearInterval(this.pollTimer);
+        this.pollTimer = setInterval(async () => {
+          if (!CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
+          try {
+            const res = await fetch(CONFIG.GAS_API_URL + "?action=poll_reveal");
+            const json = await res.json();
+            if (json.status === 'success' && json.timestamp > this.lastRemoteTimestamp) {
+              this.lastRemoteTimestamp = json.timestamp;
+              // 收到手機廣播訊號，執行開門銜接揭榜流程
+              this.executeRemoteReveal(json.classId, json.period);
+            }
+          } catch (e) {
+            console.log("輪詢待命中...");
+          }
+        }, CONFIG.POLLING_INTERVAL);
+      },
+
+      // 電腦端被手機觸發的開門揭榜全流程
+      executeRemoteReveal(targetClass, targetPeriod) {
+        if (targetClass) this.currentClass = targetClass;
+        if (targetPeriod) this.rankingPeriod = targetPeriod;
+
+        this.renderClassTabs();
+        this.loadLeaderboardData();
+
+        // 1. 播放大門開門動畫
+        SoundFx.playGateOpen();
+        const gate = document.getElementById('view-gate');
+        gate.classList.add('door-opening');
+
+        setTimeout(() => {
+          gate.classList.remove('active');
+          gate.classList.remove('door-opening');
+          document.getElementById('appHeader').classList.add('authorized');
+          this.switchView('leaderboard');
+          
+          // 2. 開門完畢，直接無縫銜接前三名揭榜動畫
+          setTimeout(() => {
+            this.startRevealSequence();
+          }, 300);
+        }, 1100);
+      },
+
+      // 手機端發送廣播揭榜訊號
+      async broadcastRevealSignal() {
+        if (!CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec")) {
+          alert('請先填入 Google Apps Script 網址以使用雲端遙控廣播！');
+          return;
+        }
+
+        try {
+          const payload = {
+            action: 'broadcast_reveal',
+            data: { classId: this.currentClass, period: this.rankingPeriod }
+          };
+          await fetch(CONFIG.GAS_API_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(payload)
+          });
+          alert(`📢 已向電腦大螢幕發送廣播！\n班級：${this.currentClass}\n榜別：${this.rankingPeriod === 'total' ? '總榜' : '週榜'}`);
+        } catch (e) {
+          alert('廣播發送失敗，請確認網路連線');
         }
       },
 
@@ -863,7 +1039,6 @@
         const target = document.getElementById('view-' + viewKey);
         if (target) target.classList.add('active');
 
-        // 高亮按鈕
         const navMap = { 'workspace': 0, 'leaderboard': 1, 'roster': 2 };
         const navBtns = document.querySelectorAll('.header-actions .btn-nav-magic');
         if (navMap[viewKey] !== undefined && navBtns[navMap[viewKey]]) {
@@ -877,7 +1052,6 @@
         }
       },
 
-      // 外螢幕專用切換（⚔️ 計分 vs 📜 備課）
       switchPhoneMode(mode) {
         const scoringCol = document.getElementById('scoringColumn');
         const notesCol = document.getElementById('notesColumn');
@@ -897,7 +1071,6 @@
         }
       },
 
-      // 本地資料庫與種子資料
       loadStorageData() {
         const raw = localStorage.getItem('magic_academy_store_' + CONFIG.VERSION);
         if (raw) {
@@ -932,7 +1105,6 @@
         localStorage.setItem('magic_academy_store_' + CONFIG.VERSION, JSON.stringify(this.data));
       },
 
-      // 班級頁籤渲染
       renderClassTabs() {
         const bar = document.getElementById('classTabBar');
         bar.innerHTML = "";
@@ -945,15 +1117,35 @@
             this.renderClassTabs();
             this.renderStudentCards();
             this.renderNotesSection();
-            if (document.getElementById('view-roster-manager').classList.contains('active')) {
-              this.loadRosterManagerText();
-            }
+            this.updateLeaderboardSelectValue();
           };
           bar.appendChild(pill);
         });
       },
 
-      // 學生卡片渲染 (雙列大按鈕)
+      populateLeaderboardSelect() {
+        const sel = document.getElementById('leaderboardClassSelect');
+        sel.innerHTML = "";
+        this.data.classes.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c;
+          opt.innerText = c;
+          sel.appendChild(opt);
+        });
+        this.updateLeaderboardSelectValue();
+      },
+
+      updateLeaderboardSelectValue() {
+        const sel = document.getElementById('leaderboardClassSelect');
+        if (sel) sel.value = this.currentClass;
+      },
+
+      onLeaderboardClassChange() {
+        this.currentClass = document.getElementById('leaderboardClassSelect').value;
+        this.renderClassTabs();
+        this.loadLeaderboardData();
+      },
+
       renderStudentCards() {
         const grid = document.getElementById('studentGrid');
         grid.innerHTML = "";
@@ -980,15 +1172,18 @@
         });
       },
 
-      // 點擊卡片計分 (樂觀更新 + 防抖背景自動同步)
+      // 加減分 + 18ms 手機微震動 + 水滴音
       recordScore(student) {
         SoundFx.playScoreDing();
+        if (navigator.vibrate) {
+          navigator.vibrate(18); // 輕脆觸控震動
+        }
+
         student.totalScore += this.currentWeight;
         student.weeklyScore += this.currentWeight;
         this.saveStorageData();
         this.renderStudentCards();
 
-        // 啟動 5 秒防抖自動背景同步
         this.setSyncStatus('pending');
         clearTimeout(this.syncTimer);
         this.syncTimer = setTimeout(() => {
@@ -1003,10 +1198,7 @@
         }
 
         try {
-          const payload = {
-            action: 'sync_scores',
-            data: this.data.students
-          };
+          const payload = { action: 'sync_scores', data: this.data.students };
           const response = await fetch(CONFIG.GAS_API_URL, {
             method: 'POST',
             mode: 'cors',
@@ -1020,12 +1212,11 @@
             this.setSyncStatus('error');
           }
         } catch (err) {
-          console.warn("背景同步暫緩，已安全保存在本地 LocalStorage", err);
           this.setSyncStatus('error');
         }
       },
 
-      // 備課筆記模組 (含歷史筆記自動繼承)
+      // 備課筆記模組 (修正項目符號內邊距)
       renderNotesSection() {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('notesHeadingInfo').innerText = `${this.currentClass} (${today})`;
@@ -1035,13 +1226,8 @@
         if (this.data.notes[currentKey]) {
           editor.innerHTML = this.data.notes[currentKey];
         } else {
-          // 自動繼承：尋找該班最近一筆非今天的筆記
           const inherited = this.findRecentClassNote(this.currentClass, today);
-          if (inherited) {
-            editor.innerHTML = inherited;
-          } else {
-            editor.innerHTML = `<div><b>📌 本堂課核心任務：</b></div><ul><li>重點 1：</li><li>重點 2：</li></ul>`;
-          }
+          editor.innerHTML = inherited || `<div><b>📌 本堂課核心任務：</b></div><ul><li>重點 1：</li><li>重點 2：</li></ul>`;
         }
       },
 
@@ -1049,7 +1235,7 @@
         const prefix = classId + "_";
         const keys = Object.keys(this.data.notes).filter(k => k.startsWith(prefix) && !k.endsWith(excludeDate));
         if (keys.length === 0) return null;
-        keys.sort().reverse(); // 取得日期最新者
+        keys.sort().reverse();
         return this.data.notes[keys[0]];
       },
 
@@ -1095,7 +1281,7 @@
       toggleRankingPeriod() {
         this.rankingPeriod = (this.rankingPeriod === 'total') ? 'weekly' : 'total';
         document.getElementById('btnToggleRankingType').innerText = 
-          `目前切換：【${this.rankingPeriod === 'total' ? '總排行榜' : '週排行榜'}】`;
+          `【${this.rankingPeriod === 'total' ? '總排行榜' : '週排行榜'}】`;
         this.loadLeaderboardData();
       },
 
@@ -1103,10 +1289,8 @@
         const classStudents = this.data.students.filter(s => s.classId === this.currentClass);
         const scoreKey = (this.rankingPeriod === 'total') ? 'totalScore' : 'weeklyScore';
         
-        // 依照分數由高至低排列
         const sortedList = [...classStudents].sort((a, b) => b[scoreKey] - a[scoreKey]);
 
-        // 前三名榜單資料注入
         const s1 = sortedList[0] || { name: '無', [scoreKey]: 0 };
         const s2 = sortedList[1] || { name: '無', [scoreKey]: 0 };
         const s3 = sortedList[2] || { name: '無', [scoreKey]: 0 };
@@ -1118,7 +1302,6 @@
         document.getElementById('podiumName3').innerText = s3.name;
         document.getElementById('podiumScore3').innerText = `${s3[scoreKey]} 分`;
 
-        // 全班依座號排序呈現
         const rankMap = new Map();
         sortedList.forEach((st, idx) => rankMap.set(st.seatNo, idx + 1));
 
@@ -1135,44 +1318,54 @@
           `;
           rosterGrid.appendChild(item);
         });
+
+        // 預設將全班名冊隱藏（防劇透）
+        document.getElementById('rosterParchmentSheet').classList.remove('active-show');
       },
 
-      triggerRevealTheater() {
+      // 前三名揭榜動畫 sequence + 2秒後自動淡入全班名冊
+      startRevealSequence() {
         SoundFx.init();
         const p1 = document.getElementById('podiumCol1');
         const p2 = document.getElementById('podiumCol2');
         const p3 = document.getElementById('podiumCol3');
+        const sheet = document.getElementById('rosterParchmentSheet');
 
         p1.classList.remove('reveal');
         p2.classList.remove('reveal');
         p3.classList.remove('reveal');
+        sheet.classList.remove('active-show');
 
-        // 季軍升起
+        // 季軍
         setTimeout(() => {
           SoundFx.playDrumBeat();
           p3.classList.add('reveal');
         }, 500);
 
-        // 亞軍升起
+        // 亞軍
         setTimeout(() => {
           SoundFx.playDrumBeat();
           p2.classList.add('reveal');
         }, 1500);
 
-        // 冠軍升起 + RPG 結算號角 + 魔法粒子
+        // 冠軍 + 號角 + 金色粒子
         setTimeout(() => {
           SoundFx.playFanfareVictory();
           p1.classList.add('reveal');
           this.shootConfetti();
+
+          // 冠軍誕生後過 2 秒，全班榜單如卷軸緩緩展開
+          setTimeout(() => {
+            sheet.classList.add('active-show');
+          }, 2000);
+
         }, 2700);
       },
 
-      // 名冊批次管理功能
       loadRosterManagerText() {
         const list = this.data.students.filter(s => s.classId === this.currentClass);
         list.sort((a, b) => a.seatNo - b.seatNo);
-        const text = list.map(s => `${s.seatNo} ${s.name}`).join('\n');
-        document.getElementById('rosterBatchInput').value = text;
+        document.getElementById('rosterBatchInput').value = list.map(s => `${s.seatNo} ${s.name}`).join('\n');
       },
 
       async applyBatchRoster() {
@@ -1186,9 +1379,7 @@
           if (parts.length >= 2) {
             const seat = parseInt(parts[0], 10);
             const name = parts.slice(1).join(' ');
-            if (!isNaN(seat)) {
-              parsed.push({ seatNo: seat, name: name });
-            }
+            if (!isNaN(seat)) parsed.push({ seatNo: seat, name: name });
           }
         });
 
@@ -1197,11 +1388,8 @@
           return;
         }
 
-        // 繼承既有分數，若無則為 0
         const currentClassMap = new Map();
-        this.data.students
-          .filter(s => s.classId === this.currentClass)
-          .forEach(s => currentClassMap.set(s.seatNo, s));
+        this.data.students.filter(s => s.classId === this.currentClass).forEach(s => currentClassMap.set(s.seatNo, s));
 
         const updatedStudents = parsed.map(p => {
           const old = currentClassMap.get(p.seatNo);
@@ -1214,16 +1402,11 @@
           };
         });
 
-        // 替換本地名單
-        this.data.students = this.data.students
-          .filter(s => s.classId !== this.currentClass)
-          .concat(updatedStudents);
-
+        this.data.students = this.data.students.filter(s => s.classId !== this.currentClass).concat(updatedStudents);
         this.saveStorageData();
         this.renderStudentCards();
         alert(`✨ ${this.currentClass} 名冊已更新成功，共 ${updatedStudents.length} 位學員！`);
 
-        // 同步寫入 Google Sheets
         if (CONFIG.GAS_API_URL && !CONFIG.GAS_API_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) {
           try {
             await fetch(CONFIG.GAS_API_URL, {
@@ -1241,7 +1424,6 @@
         }
       },
 
-      // 背景向試算表拉取最新全系統資料
       async fetchCloudData() {
         if (!CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
         try {
@@ -1258,6 +1440,7 @@
             }
             this.saveStorageData();
             this.renderClassTabs();
+            this.populateLeaderboardSelect();
             this.renderStudentCards();
             this.renderNotesSection();
           }
@@ -1273,7 +1456,6 @@
         if (status === 'error') gem.classList.add('error');
       },
 
-      // 魔法粒子 Canvas
       initCanvasConfetti() {
         const cvs = document.getElementById('confettiCanvas');
         cvs.width = window.innerWidth;
