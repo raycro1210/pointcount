@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 - v1.2.1</title>
+  <title>魔法學院教務魔導系統 - v1.2.2</title>
   <style>
     :root {
       --bg-dark: #071912;
@@ -99,13 +99,13 @@
     .sync-gem.error { background: #e74c3c; box-shadow: 0 0 10px #e74c3c; }
     @keyframes gemPulse { from { transform: scale(1); } to { transform: scale(1.2); } }
 
-    /* 全域視圖切換容器 */
+    /* 全域視圖容器 */
     .app-viewport { width: 100%; height: 100%; position: relative; }
-    .view-panel { position: absolute; inset: 0; display: none; flex-direction: column; }
+    .view-panel { position: absolute; inset: 0; display: none; flex-direction: column; background: var(--bg-dark); }
     .view-panel.active { display: flex; }
 
     /* =========================================================
-       1. 學院大門頁面 (3D 雙開大門 + 分流之鏡)
+       1. 學院大門頁面 (3D 雙開大門)
     ========================================================= */
     #view-gate {
       background: radial-gradient(circle at center, #103326 0%, #030a07 100%);
@@ -154,7 +154,6 @@
     #view-gate.door-opening .gate-door.left { transform: rotateY(-105deg); }
     #view-gate.door-opening .gate-door.right { transform: rotateY(105deg); }
 
-    /* 密碼卡片 */
     .gate-card {
       position: relative;
       z-index: 20;
@@ -475,7 +474,7 @@
     }
 
     /* =========================================================
-       3. 電腦端投影揭榜大典
+       3. 電腦端投影揭榜大典 (滿版劇場視圖)
     ========================================================= */
     #view-leaderboard {
       height: calc(100% - 52px);
@@ -484,6 +483,10 @@
       align-items: center;
       position: relative;
     }
+    .tv-full-screen #view-leaderboard {
+      height: 100% !important;
+    }
+
     .confetti-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
     
     .theater-action-header {
@@ -684,14 +687,14 @@
     </div>
     <div class="header-actions">
       <span class="sync-gem" id="cloudSyncIndicator" title="連線狀態燈號" onclick="App.openConfigModal()"></span>
-      <button class="btn-nav-magic active" onclick="App.switchView('workspace')">課堂後台</button>
-      <button class="btn-nav-magic" onclick="App.switchView('leaderboard')">榮譽榜單</button>
-      <button class="btn-nav-magic" onclick="App.switchView('roster')">名冊管理</button>
+      <button class="btn-nav-magic active" id="navBtnWorkspace" onclick="App.switchView('workspace')">課堂後台</button>
+      <button class="btn-nav-magic" id="navBtnLeaderboard" onclick="App.switchView('leaderboard')">榮譽榜單</button>
+      <button class="btn-nav-magic" id="navBtnRoster" onclick="App.switchView('roster')">名冊管理</button>
       <button class="btn-nav-logout" onclick="App.logout()">🔒 登出</button>
     </div>
   </header>
 
-  <main class="app-viewport">
+  <main class="app-viewport" id="appViewport">
     
     <!-- 1. 學院大門頁面 -->
     <section id="view-gate" class="view-panel active">
@@ -838,10 +841,10 @@
 
   <script>
     const DEFAULT_CONFIG = {
-      VERSION: "v1.2.1",
+      VERSION: "v1.2.2",
       GAS_API_URL: "https://script.google.com/macros/s/AKfycby-s1iL3w52R2r6gN3P1y6e_a0q7WzI9A/exec",
       DEBOUNCE_DELAY: 5000,
-      POLLING_INTERVAL: 2000
+      POLLING_INTERVAL: 1200 // 縮減至 1.2 秒加速感應
     };
 
     const SoundFx = {
@@ -965,7 +968,6 @@
         }
       },
 
-      // 嚴格修補空密碼漏洞：必須輸入且正確
       handlePasswordVerify() {
         if (this.isTvStandby) {
           alert('本機已進入電腦投影大螢幕待命狀態，無法登入後台！');
@@ -1010,6 +1012,7 @@
         this.sessionUnlocked = false;
         sessionStorage.removeItem('magic_auth_unlocked_v12');
         document.getElementById('appHeader').classList.remove('authorized');
+        document.body.classList.remove('tv-full-screen');
         
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
         const gate = document.getElementById('view-gate');
@@ -1023,13 +1026,15 @@
         document.getElementById('gateSubTitle').innerText = "請驗證導師通行印記以解除結界";
         document.getElementById('portalDispatcher').style.display = 'none';
         document.getElementById('gatePasswordInput').value = "";
+        document.getElementById('btnTvModeStandby').innerText = "🖥️ 電腦投影大螢幕（接收手機廣播揭榜）";
         document.getElementById('btnTvModeStandby').disabled = false;
       },
 
+      // 電腦端投影待命啟動
       startTvStandbyMode() {
         this.isTvStandby = true;
         document.getElementById('gatePasswordInput').disabled = true;
-        document.getElementById('btnTvModeStandby').innerText = "🟢 電腦投影大螢幕待命中 (等待手機廣播)";
+        document.getElementById('btnTvModeStandby').innerText = "🟢 電腦投影待命中 (等待手機廣播)";
         document.getElementById('btnTvModeStandby').disabled = true;
         document.getElementById('gateSubTitle').innerText = "🖥️ 大門待命中...手機發送廣播後將自動拉開揭榜";
         this.startPollingRemoteSignal();
@@ -1043,12 +1048,8 @@
             const res = await fetch(this.gasUrl + "?action=poll_reveal&t=" + Date.now());
             const json = await res.json();
             if (json.status === 'success' && json.timestamp > this.lastRemoteTimestamp) {
-              if (this.lastRemoteTimestamp === 0) {
-                // 首次連線僅記錄目前最新時間戳，避免載入時誤觸過去舊訊號
-                this.lastRemoteTimestamp = json.timestamp;
-                return;
-              }
               this.lastRemoteTimestamp = json.timestamp;
+              // 立即觸發大門拉開與揭榜
               this.executeRemoteReveal(json.classId, json.period);
             }
           } catch (e) {
@@ -1057,6 +1058,7 @@
         }, DEFAULT_CONFIG.POLLING_INTERVAL);
       },
 
+      // 電腦端專屬：收到廣播後的直接跳轉與劇場啟動
       executeRemoteReveal(targetClass, targetPeriod) {
         if (targetClass) this.currentClass = targetClass;
         if (targetPeriod) this.rankingPeriod = targetPeriod;
@@ -1064,23 +1066,28 @@
         this.renderClassTabs();
         this.loadLeaderboardData();
 
+        // 鎖定為全螢幕劇場，隱藏一般導航列避免干擾
+        document.body.classList.add('tv-full-screen');
+        document.getElementById('appHeader').classList.remove('authorized');
+
         SoundFx.playGateOpen();
         const gate = document.getElementById('view-gate');
         gate.classList.add('door-opening');
 
         setTimeout(() => {
-          gate.classList.remove('active');
+          // 徹底關閉大門與其他面板，直接將 view-leaderboard 設定為唯一 active
+          document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+          const lbView = document.getElementById('view-leaderboard');
+          lbView.classList.add('active');
+
           gate.classList.remove('door-opening');
-          document.getElementById('appHeader').classList.add('authorized');
-          this.switchView('leaderboard');
           
           setTimeout(() => {
             this.startRevealSequence();
-          }, 300);
+          }, 400);
         }, 1100);
       },
 
-      // 改用 GET 方式廣播，徹底避開 POST CORS 攔截
       async broadcastRevealSignal() {
         if (!this.gasUrl) {
           alert('請先在設定中輸入 Google Apps Script 網址！');
@@ -1114,13 +1121,14 @@
         document.querySelectorAll('.btn-nav-magic').forEach(b => b.classList.remove('active'));
 
         const target = document.getElementById('view-' + viewKey);
-        if (target) target.classList.add('active');
-
-        const navMap = { 'workspace': 0, 'leaderboard': 1, 'roster': 2 };
-        const navBtns = document.querySelectorAll('.header-actions .btn-nav-magic');
-        if (navMap[viewKey] !== undefined && navBtns[navMap[viewKey]]) {
-          navBtns[navMap[viewKey]].classList.add('active');
+        if (target) {
+          target.classList.add('active');
         }
+
+        // 精準對應頂部高亮按鈕
+        if (viewKey === 'workspace') document.getElementById('navBtnWorkspace').classList.add('active');
+        if (viewKey === 'leaderboard') document.getElementById('navBtnLeaderboard').classList.add('active');
+        if (viewKey === 'roster') document.getElementById('navBtnRoster').classList.add('active');
 
         if (viewKey === 'leaderboard') {
           this.loadLeaderboardData();
