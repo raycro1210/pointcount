@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>魔法學院教務魔導系統 - v1.3.0</title>
-  <!-- 內嵌金色魔法徽章 Favicon -->
+  <!-- 內嵌金色魔法徽章 Favicon (消滅 404 報錯) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   
-  <!-- 輕量級安全 MQTT WebSocket 庫 (零依賴、純連線) -->
+  <!-- 輕量安全 MQTT WebSocket 庫 (零依賴、純連線) -->
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
   <style>
@@ -246,7 +246,6 @@
     }
     .btn-portal-item:active { background: var(--gold-primary); color: #071912; font-weight: bold; }
 
-    /* 電腦端待命指示燈 */
     .tv-heartbeat-log {
       position: absolute;
       bottom: 12px;
@@ -672,6 +671,7 @@
 </head>
 <body>
 
+  <!-- 通用頂部導航列 -->
   <header id="appHeader">
     <div class="brand-box">
       <span>⚜️</span> 魔法教務魔導系統
@@ -706,7 +706,7 @@
 
         <div class="portal-dispatcher" id="portalDispatcher">
           <button class="btn-portal-item" onclick="App.selectDestination('workspace')">
-            <span>⚔️ 課堂計分與備課後台</span> <span>➔</span>
+            <span>⚔️️ 課堂計分與備課後台</span> <span>➔</span>
           </button>
           <button class="btn-portal-item" onclick="App.selectDestination('leaderboard')">
             <span>🏆 榮譽揭榜投影大典</span> <span>➔</span>
@@ -819,18 +819,30 @@
   </main>
 
   <script>
-    /**
-     * 官方常數配置 (寫死正式端點，終生免手動設定)
-     */
+    /*
+    ====================================================================================================
+    🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+    【全系統唯一設定區】請在這裡貼上您的 Google Apps Script 網址！
+    只需要貼這一次，手機與電腦打開同一網址自動連線，終生免手動重複設定！
+    🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+    ====================================================================================================
+    */
     const CONFIG = {
       VERSION: "v1.3.0",
-      // 正式發布的 GAS Web App 端點
-      GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTSMAI7U2q6Y0y-rV2P5L4G8/exec",
+      
+      // 👇👇👇 請將下面雙引號內的網址換成您 Google Apps Script 部署後的真實網址 (結尾必須是 /exec) 👇👇👇
+      GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
+      // 👆👆👆 替換完畢後直接存檔推播即可！ 👆👆👆
+
       // 專屬安全 MQTT 廣播頻道 (全球唯一，保證毫秒直達)
       MQTT_BROKER: "wss://broker.hivemq.com:8884/mqtt",
       MQTT_TOPIC: "magic_raycro_classroom_2026_stream",
       DEBOUNCE_DELAY: 5000
     };
+    /*
+    ====================================================================================================
+    🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+    */
 
     const SoundFx = {
       ctx: null,
@@ -895,13 +907,10 @@
         this.renderNotesSection();
         this.initCanvasConfetti();
         this.setSyncStatus('synced');
-        this.initMqttChannel(); // 自動連接零延遲廣播通道
+        this.initMqttChannel();
         this.fetchCloudData();
       },
 
-      /**
-       * 方案 B：初始化原生 MQTT over WebSocket
-       */
       initMqttChannel() {
         const clientId = 'magic_' + Math.random().toString(16).substring(2, 8);
         this.mqttClient = mqtt.connect(CONFIG.MQTT_BROKER, {
@@ -919,7 +928,6 @@
           });
         });
 
-        // 接收訊息 (電腦端直感響應)
         this.mqttClient.on('message', (topic, message) => {
           if (topic === CONFIG.MQTT_TOPIC) {
             try {
@@ -1010,10 +1018,9 @@
         document.getElementById('tvHeartbeatLog').style.display = 'none';
       },
 
-      // 電腦投影待命啟動
       startTvStandbyMode() {
         SoundFx.init();
-        SoundFx.playTone(440, 'sine', 0.05, 0, 0.001); // 解鎖音效
+        SoundFx.playTone(440, 'sine', 0.05, 0, 0.001);
 
         this.isTvStandby = true;
         document.getElementById('gatePasswordInput').disabled = true;
@@ -1023,10 +1030,9 @@
 
         const logElem = document.getElementById('tvHeartbeatLog');
         logElem.style.display = 'block';
-        logElem.innerText = "🟢 電腦大門待命中 | 監聽頻道: " + CONFIG.MQTT_TOPIC;
+        logElem.innerText = "🟢 電腦大門待命中 | 頻道: " + CONFIG.MQTT_TOPIC;
       },
 
-      // 電腦端接收廣播：毫秒級開門 + 依序揭榜
       executeRemoteReveal(targetClass, targetPeriod) {
         if (targetClass) this.currentClass = targetClass;
         if (targetPeriod) this.rankingPeriod = targetPeriod;
@@ -1053,7 +1059,6 @@
         }, 1100);
       },
 
-      // 電腦端接收關門指令：平滑關閉
       executeRemoteClose() {
         SoundFx.playGateClose();
         
@@ -1069,7 +1074,6 @@
         }, 50);
       },
 
-      // 手機端發送揭榜廣播 (毫秒級 MQTT 直發 + 手機純遙控器模式)
       broadcastRevealSignal() {
         if (!this.mqttClient || !this.mqttClient.connected) {
           alert('魔導通訊正在重連中，請稍候重試！');
@@ -1095,7 +1099,6 @@
         alert(`📢 廣播成功！電腦大螢幕即刻開門！\n班級：${this.currentClass}\n榜別：${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}`);
       },
 
-      // 手機端發送關門指令
       broadcastCloseSignal() {
         if (!this.mqttClient || !this.mqttClient.connected) {
           alert('魔導通訊正在重連中，請稍候重試！');
@@ -1270,7 +1273,7 @@
       },
 
       async pushScoresToCloud() {
-        if (!CONFIG.GAS_API_URL) {
+        if (!CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("SAMPLE")) {
           this.setSyncStatus('synced');
           return;
         }
@@ -1336,7 +1339,7 @@
         this.data.notes[key] = html;
         this.saveStorageData();
 
-        if (CONFIG.GAS_API_URL) {
+        if (CONFIG.GAS_API_URL && !CONFIG.GAS_API_URL.includes("SAMPLE")) {
           try {
             await fetch(CONFIG.GAS_API_URL, {
               method: 'POST',
@@ -1474,7 +1477,7 @@
         this.renderStudentCards();
         alert(`✨ ${this.currentClass} 名冊已更新成功，共 ${updatedStudents.length} 位學員！`);
 
-        if (CONFIG.GAS_API_URL) {
+        if (CONFIG.GAS_API_URL && !CONFIG.GAS_API_URL.includes("SAMPLE")) {
           try {
             await fetch(CONFIG.GAS_API_URL, {
               method: 'POST',
@@ -1492,7 +1495,7 @@
       },
 
       async fetchCloudData() {
-        if (!CONFIG.GAS_API_URL) return;
+        if (!CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("SAMPLE")) return;
         try {
           const res = await fetch(CONFIG.GAS_API_URL + "?action=fetch_all");
           const json = await res.json();
