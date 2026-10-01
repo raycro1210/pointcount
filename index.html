@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 - v1.3.1</title>
-  <!-- 內嵌金色魔法徽章 Favicon (消滅 404 報錯) -->
+  <title>魔法學院教務魔導系統 - v1.4.0</title>
+  <!-- 內嵌金色魔法徽章 Favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   
-  <!-- 輕量安全 MQTT WebSocket 庫 (零依賴、純連線) -->
+  <!-- 安全 MQTT WebSocket 函式庫 -->
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
   <style>
@@ -104,14 +104,16 @@
     .sync-gem.error { background: #e74c3c; box-shadow: 0 0 10px #e74c3c; }
     @keyframes gemPulse { from { transform: scale(1); } to { transform: scale(1.2); } }
 
-    .app-viewport { width: 100%; height: 100%; position: relative; }
+    /* 全域視圖容器：高度鎖定修復 */
+    .app-viewport { width: 100%; height: calc(100% - 52px); position: relative; }
     .view-panel { position: absolute; inset: 0; display: none; flex-direction: column; background: var(--bg-dark); }
-    .view-panel.active { display: flex; }
+    .view-panel.active { display: flex !important; }
 
-    /* =========================================================
-       1. 學院大門頁面 (3D 雙開大門)
-    ========================================================= */
+    /* 1. 學院大門頁面 (3D 雙開大門) */
     #view-gate {
+      position: absolute;
+      inset: 0;
+      height: 100dvh;
       background: radial-gradient(circle at center, #103326 0%, #030a07 100%);
       perspective: 1200px;
       justify-content: center;
@@ -119,14 +121,7 @@
       overflow: hidden;
       z-index: 100;
     }
-
-    .gate-portal {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      pointer-events: none;
-      z-index: 10;
-    }
+    .gate-portal { position: absolute; inset: 0; display: flex; pointer-events: none; z-index: 10; }
     .gate-door {
       width: 50%;
       height: 100%;
@@ -136,14 +131,8 @@
       position: relative;
       transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .gate-door.left {
-      border-right: 2px solid var(--gold-primary);
-      transform-origin: left center;
-    }
-    .gate-door.right {
-      border-left: 2px solid var(--gold-primary);
-      transform-origin: right center;
-    }
+    .gate-door.left { border-right: 2px solid var(--gold-primary); transform-origin: left center; }
+    .gate-door.right { border-left: 2px solid var(--gold-primary); transform-origin: right center; }
     .door-relief {
       position: absolute;
       inset: 28px;
@@ -173,13 +162,7 @@
     }
     #view-gate.door-opening .gate-card { opacity: 0; transform: scale(0.9); pointer-events: none; }
 
-    .gate-dialog-title {
-      font-family: var(--font-serif);
-      font-size: 1.55rem;
-      color: var(--gold-light);
-      margin-bottom: 6px;
-      letter-spacing: 2px;
-    }
+    .gate-dialog-title { font-family: var(--font-serif); font-size: 1.55rem; color: var(--gold-light); margin-bottom: 6px; letter-spacing: 2px; }
     .gate-dialog-subtitle { color: #9cb5ab; font-size: 0.85rem; margin-bottom: 18px; }
 
     .gate-password-input {
@@ -223,12 +206,7 @@
       width: 100%;
     }
 
-    .portal-dispatcher {
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 12px;
-    }
+    .portal-dispatcher { display: none; flex-direction: column; gap: 10px; margin-top: 12px; }
     .btn-portal-item {
       padding: 12px;
       background: rgba(18, 62, 47, 0.85);
@@ -261,21 +239,8 @@
       z-index: 30;
     }
 
-    /* =========================================================
-       2. 課堂後台視圖 (左備課 50% + 右計分 50%)
-    ========================================================= */
-    #view-workspace {
-      height: calc(100% - 52px);
-      background: var(--bg-dark);
-      display: none;
-    }
-    #view-workspace.active { display: flex; flex-direction: column; }
-
-    .phone-mode-switcher {
-      display: flex;
-      background: #05140e;
-      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-    }
+    /* 2. 課堂後台視圖 (左備課 50% + 右計分 50%) */
+    .phone-mode-switcher { display: flex; background: #05140e; border-bottom: 1px solid rgba(212, 175, 55, 0.3); }
     .phone-mode-btn {
       flex: 1;
       padding: 10px;
@@ -297,6 +262,7 @@
 
     .class-tabs-container {
       display: flex;
+      align-items: center;
       overflow-x: auto;
       gap: 8px;
       padding: 8px 12px;
@@ -321,21 +287,19 @@
       font-weight: bold;
       box-shadow: 0 0 10px var(--gold-glow);
     }
-
-    .workspace-split {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      position: relative;
+    .btn-add-class-pill {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px dashed var(--gold-primary);
+      background: rgba(212, 175, 55, 0.1);
+      color: var(--gold-light);
+      font-size: 0.85rem;
+      white-space: nowrap;
+      cursor: pointer;
     }
 
-    .scoring-column {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      background: var(--bg-dark);
-    }
+    .workspace-split { flex: 1; display: flex; overflow: hidden; position: relative; }
+    .scoring-column { flex: 1; display: flex; flex-direction: column; height: 100%; background: var(--bg-dark); }
     .students-scroll-area {
       flex: 1;
       overflow-y: auto;
@@ -359,32 +323,10 @@
       box-shadow: 0 3px 6px rgba(0,0,0,0.4);
       transition: transform 0.08s, border-color 0.15s;
     }
-    .student-touch-card:active {
-      transform: scale(0.96);
-      border-color: var(--gold-light);
-      background: #184c39;
-    }
-    .card-seat-tag {
-      position: absolute;
-      top: 5px;
-      left: 8px;
-      font-size: 0.75rem;
-      color: #9cb5ab;
-      font-family: var(--font-serif);
-    }
-    .card-student-name {
-      font-size: 1.15rem;
-      font-weight: bold;
-      color: #ffffff;
-      margin: 4px 0;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-    }
-    .card-score-value {
-      font-size: 1.25rem;
-      font-family: var(--font-serif);
-      font-weight: bold;
-      color: var(--gold-primary);
-    }
+    .student-touch-card:active { transform: scale(0.96); border-color: var(--gold-light); background: #184c39; }
+    .card-seat-tag { position: absolute; top: 5px; left: 8px; font-size: 0.75rem; color: #9cb5ab; font-family: var(--font-serif); }
+    .card-student-name { font-size: 1.15rem; font-weight: bold; color: #ffffff; margin: 4px 0; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+    .card-score-value { font-size: 1.25rem; font-family: var(--font-serif); font-weight: bold; color: var(--gold-primary); }
 
     .scoring-bottom-toolbar {
       height: 58px;
@@ -412,88 +354,34 @@
       align-items: center;
       justify-content: center;
     }
-    .weight-chip.active {
-      background: var(--gold-primary);
-      color: var(--emerald-dark);
-      box-shadow: 0 0 12px var(--gold-glow);
-    }
+    .weight-chip.active { background: var(--gold-primary); color: var(--emerald-dark); box-shadow: 0 0 12px var(--gold-glow); }
 
-    .notes-column {
-      flex: 1;
-      display: none;
-      flex-direction: column;
-      background: var(--parchment);
-      color: var(--text-dark);
-      height: 100%;
-    }
+    .notes-column { flex: 1; display: none; flex-direction: column; background: var(--parchment); color: var(--text-dark); height: 100%; }
     .notes-column.phone-active { display: flex; }
-
-    .notes-toolbar {
-      padding: 8px 12px;
-      background: #ebdcc0;
-      border-bottom: 1.5px solid var(--parchment-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .notes-meta-info {
-      font-family: var(--font-serif);
-      font-size: 0.9rem;
-      font-weight: bold;
-      color: #3b3221;
-    }
+    .notes-toolbar { padding: 8px 12px; background: #ebdcc0; border-bottom: 1.5px solid var(--parchment-border); display: flex; justify-content: space-between; align-items: center; }
+    .notes-meta-info { font-family: var(--font-serif); font-size: 0.9rem; font-weight: bold; color: #3b3221; }
     .notes-actions { display: flex; gap: 6px; }
-    .btn-note-tool {
-      padding: 4px 8px;
-      background: #ffffff;
-      border: 1px solid #bdae93;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
-    .notes-wysiwyg {
-      flex: 1;
-      padding: 18px 20px 18px 24px;
-      outline: none;
-      overflow-y: auto;
-      font-size: 1.05rem;
-      line-height: 1.65;
-    }
-    .notes-wysiwyg ul, .notes-wysiwyg ol {
-      padding-left: 28px !important;
-      margin: 8px 0;
-    }
+    .btn-note-tool { padding: 4px 8px; background: #ffffff; border: 1px solid #bdae93; border-radius: 4px; font-size: 0.85rem; cursor: pointer; }
+    .notes-wysiwyg { flex: 1; padding: 18px 20px 18px 24px; outline: none; overflow-y: auto; font-size: 1.05rem; line-height: 1.65; }
+    .notes-wysiwyg ul, .notes-wysiwyg ol { padding-left: 28px !important; margin: 8px 0; }
     .notes-wysiwyg li { margin-bottom: 4px; }
 
     @media (min-width: 680px) {
       .phone-mode-switcher { display: none !important; }
-      .notes-column {
-        flex: 0 0 50% !important;
-        display: flex !important;
-        order: 1;
-        border-right: 2px solid var(--gold-primary);
-      }
-      .scoring-column {
-        flex: 0 0 50% !important;
-        display: flex !important;
-        order: 2;
-      }
+      .notes-column { flex: 0 0 50% !important; display: flex !important; order: 1; border-right: 2px solid var(--gold-primary); }
+      .scoring-column { flex: 0 0 50% !important; display: flex !important; order: 2; }
     }
 
-    /* =========================================================
-       3. 榮譽揭榜視圖 (雙端專用)
-    ========================================================= */
+    /* 3. 榮譽揭榜視圖 */
     #view-leaderboard {
-      height: calc(100% - 52px);
+      height: 100%;
       background: radial-gradient(circle at center, #0e3527 0%, #030c08 100%);
       overflow-y: auto;
       align-items: center;
       position: relative;
     }
     .tv-theater-mode #view-leaderboard { height: 100% !important; }
-
     .confetti-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
-    
     .theater-action-header {
       width: 100%;
       padding: 12px 16px;
@@ -507,18 +395,8 @@
       border-bottom: 1px solid rgba(212, 175, 55, 0.3);
     }
     .board-select-group { display: flex; gap: 6px; align-items: center; }
-    .select-magic {
-      background: #061911;
-      border: 1.5px solid var(--gold-primary);
-      color: var(--gold-light);
-      padding: 6px 10px;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      outline: none;
-    }
-
+    .select-magic { background: #061911; border: 1.5px solid var(--gold-primary); color: var(--gold-light); padding: 6px 10px; border-radius: 4px; font-size: 0.9rem; outline: none; }
     .remote-actions-group { display: flex; gap: 8px; align-items: center; }
-    
     .btn-remote-broadcast {
       background: linear-gradient(180deg, #f1c40f 0%, #d4af37 100%);
       color: #071912;
@@ -532,141 +410,61 @@
       animation: broadcastGlow 1.8s infinite alternate;
     }
     @keyframes broadcastGlow { from { transform: scale(1); } to { transform: scale(1.03); } }
-
-    .btn-remote-close {
-      background: rgba(184, 75, 41, 0.25);
-      border: 1.5px solid #e67e22;
-      color: #f39c12;
-      font-weight: bold;
-      padding: 8px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
+    .btn-remote-close { background: rgba(184, 75, 41, 0.25); border: 1.5px solid #e67e22; color: #f39c12; font-weight: bold; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
     .btn-remote-close:active { background: #e67e22; color: #fff; }
 
-    .podium-stage {
-      width: 90%;
-      max-width: 640px;
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
-      gap: 16px;
-      margin: 20px 0 30px;
-      min-height: 250px;
-      z-index: 20;
-    }
-    .podium-col {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      opacity: 0;
-      transform: translateY(40px);
-      transition: all 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    }
+    .podium-stage { width: 90%; max-width: 640px; display: flex; justify-content: center; align-items: flex-end; gap: 16px; margin: 20px 0 30px; min-height: 250px; z-index: 20; }
+    .podium-col { flex: 1; display: flex; flex-direction: column; align-items: center; opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
     .podium-col.reveal { opacity: 1; transform: translateY(0); }
-    .podium-block {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: var(--font-serif);
-      font-weight: bold;
-      color: #05140e;
-      border-radius: 8px 8px 0 0;
-      box-shadow: 0 0 25px rgba(0,0,0,0.6);
-    }
+    .podium-block { width: 100%; display: flex; justify-content: center; align-items: center; font-family: var(--font-serif); font-weight: bold; color: #05140e; border-radius: 8px 8px 0 0; box-shadow: 0 0 25px rgba(0,0,0,0.6); }
     .rank-first .podium-block { height: 145px; background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%); font-size: 2.2rem; border: 2px solid #fff; }
     .rank-second .podium-block { height: 110px; background: linear-gradient(180deg, #e6e6e6 0%, #8c8c8c 100%); font-size: 1.8rem; }
     .rank-third .podium-block { height: 85px; background: linear-gradient(180deg, #cd7f32 0%, #7c471d 100%); font-size: 1.5rem; }
-
-    .podium-badge {
-      background: rgba(11, 37, 28, 0.95);
-      border: 1.5px solid var(--gold-primary);
-      border-radius: 8px;
-      padding: 8px 12px;
-      text-align: center;
-      margin-bottom: 8px;
-      width: 100%;
-    }
+    .podium-badge { background: rgba(11, 37, 28, 0.95); border: 1.5px solid var(--gold-primary); border-radius: 8px; padding: 8px 12px; text-align: center; margin-bottom: 8px; width: 100%; }
     .badge-name { font-size: 1.15rem; font-weight: bold; color: #fff; }
     .badge-score { font-family: var(--font-serif); font-size: 0.95rem; color: var(--gold-light); }
 
-    .roster-parchment-sheet {
-      width: 90%;
-      max-width: 760px;
-      background: rgba(9, 29, 22, 0.95);
-      border: 2px solid var(--gold-primary);
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 40px;
-      z-index: 20;
-      opacity: 0;
-      transform: translateY(30px);
-      transition: all 1s ease-out;
-      pointer-events: none;
-    }
-    .roster-parchment-sheet.active-show {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-    .roster-sheet-title {
-      font-family: var(--font-serif);
-      color: var(--gold-primary);
-      text-align: center;
-      margin-bottom: 12px;
-      font-size: 1.15rem;
-    }
-    .roster-sheet-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
-      gap: 8px;
-    }
-    .roster-sheet-item {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(212, 175, 55, 0.2);
-      border-radius: 6px;
-      padding: 6px 10px;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-    }
+    .roster-parchment-sheet { width: 90%; max-width: 760px; background: rgba(9, 29, 22, 0.95); border: 2px solid var(--gold-primary); border-radius: 10px; padding: 16px; margin-bottom: 40px; z-index: 20; opacity: 0; transform: translateY(30px); transition: all 1s ease-out; pointer-events: none; }
+    .roster-parchment-sheet.active-show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .roster-sheet-title { font-family: var(--font-serif); color: var(--gold-primary); text-align: center; margin-bottom: 12px; font-size: 1.15rem; }
+    .roster-sheet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 8px; }
+    .roster-sheet-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 6px; padding: 6px 10px; display: flex; justify-content: space-between; font-size: 0.85rem; }
     .roster-rank-num { color: var(--gold-light); font-weight: bold; }
 
-    /* =========================================================
-       4. 名冊批次管理頁面
-    ========================================================= */
-    #view-roster-manager {
-      height: calc(100% - 52px);
-      background: var(--bg-dark);
-      padding: 16px;
-      overflow-y: auto;
-    }
-    .manager-card {
-      max-width: 600px;
-      margin: 0 auto;
-      background: var(--emerald-dark);
-      border: 1.5px solid var(--gold-primary);
-      border-radius: 10px;
-      padding: 20px;
-    }
-    .manager-title { font-family: var(--font-serif); color: var(--gold-primary); font-size: 1.25rem; margin-bottom: 12px; }
+    /* 4. 名冊批次管理頁面 (全新 Tab-per-Class 介面) */
+    #view-roster-manager { height: 100%; background: var(--bg-dark); padding: 16px; overflow-y: auto; }
+    .manager-card { max-width: 680px; margin: 0 auto; background: var(--emerald-dark); border: 1.5px solid var(--gold-primary); border-radius: 10px; padding: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
+    .manager-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .manager-title { font-family: var(--font-serif); color: var(--gold-primary); font-size: 1.25rem; }
     .manager-textarea {
       width: 100%;
-      height: 180px;
+      height: 220px;
       background: #04130d;
       border: 1px solid var(--emerald-border);
       border-radius: 6px;
       color: #fff;
-      padding: 10px;
+      padding: 12px;
       font-size: 0.95rem;
-      line-height: 1.5;
+      font-family: monospace;
+      line-height: 1.6;
       outline: none;
       margin-bottom: 14px;
       resize: vertical;
     }
+    .roster-instructions { color: #9cb5ab; font-size: 0.85rem; margin-bottom: 12px; line-height: 1.5; }
+    .roster-instructions code { background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; color: var(--gold-light); }
+    .manager-btn-row { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+    .btn-danger-action {
+      background: rgba(231, 76, 60, 0.15);
+      border: 1.5px solid #e74c3c;
+      color: #ff8888;
+      padding: 10px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-family: var(--font-serif);
+    }
+    .btn-danger-action:hover { background: #e74c3c; color: #fff; }
   </style>
 </head>
 <body>
@@ -701,7 +499,7 @@
         <div id="gateLoginForm">
           <input type="password" id="gatePasswordInput" class="gate-password-input" placeholder="••••" maxlength="8">
           <button class="btn-gold-action" onclick="App.handlePasswordVerify()">驗證導師印記</button>
-          <button class="btn-tv-mode" id="btnTvModeStandby" onclick="App.startTvStandbyMode()">🖥️️ 電腦投影大螢幕（接收手機廣播揭榜）</button>
+          <button class="btn-tv-mode" id="btnTvModeStandby" onclick="App.startTvStandbyMode()">🖥️ 電腦投影大螢幕（接收手機廣播揭榜）</button>
         </div>
 
         <div class="portal-dispatcher" id="portalDispatcher">
@@ -720,7 +518,7 @@
       <div class="tv-heartbeat-log" id="tvHeartbeatLog">📡 即時魔導連線就緒</div>
     </section>
 
-    <!-- 2. 課堂後台視圖 (左備課 50% + 右計分 50%) -->
+    <!-- 2. 課堂後台視圖 -->
     <section id="view-workspace" class="view-panel">
       <div class="phone-mode-switcher">
         <button class="phone-mode-btn active" id="btnPhoneScoring" onclick="App.switchPhoneMode('scoring')">⚔️ 計分面板</button>
@@ -730,7 +528,7 @@
       <div class="class-tabs-container" id="classTabBar"></div>
 
       <div class="workspace-split">
-        <!-- 備課筆記區 (左側 50%) -->
+        <!-- 備課筆記區 -->
         <div class="notes-column" id="notesColumn">
           <div class="notes-toolbar">
             <span class="notes-meta-info" id="notesHeadingInfo">今日備課重點</span>
@@ -744,7 +542,7 @@
           <div class="notes-wysiwyg" id="notesEditor" contenteditable="true"></div>
         </div>
 
-        <!-- 計分面板區 (右側 50%) -->
+        <!-- 計分面板區 -->
         <div class="scoring-column" id="scoringColumn">
           <div class="students-scroll-area" id="studentGrid"></div>
           <div class="scoring-bottom-toolbar">
@@ -804,15 +602,25 @@
       </div>
     </section>
 
-    <!-- 4. 名冊批次管理頁面 -->
+    <!-- 4. 名冊批次管理頁面 (全新一班一分頁獨立工作台) -->
     <section id="view-roster-manager" class="view-panel">
+      <div class="class-tabs-container" id="rosterTabBar"></div>
+      
       <div class="manager-card">
-        <h2 class="manager-title">班級名冊批次匯入 / 管理</h2>
-        <p style="color: #9cb5ab; font-size: 0.85rem; margin-bottom: 12px;">
-          請直接貼上學生名冊（一行一位，格式：座號 姓名，例如：<code>1 王小明</code>）。
-        </p>
+        <div class="manager-header-bar">
+          <h2 class="manager-title" id="rosterTargetClassTitle">【101 班】名冊管理</h2>
+        </div>
+        <div class="roster-instructions">
+          支援直接複製貼上 Excel 欄位：<br>
+          • 僅名單：<code>1 王小明</code><br>
+          • 帶歷史分數：<code>1 王小明 25 4</code>（格式：座號 姓名 總分 週得分）
+        </div>
         <textarea id="rosterBatchInput" class="manager-textarea" placeholder="1 王小明&#10;2 李小華&#10;3 張大同"></textarea>
-        <button class="btn-gold-action" onclick="App.applyBatchRoster()">確認更新此班名冊</button>
+        
+        <div class="manager-btn-row">
+          <button class="btn-gold-action" style="flex: 2;" onclick="App.applyBatchRoster()">💾 儲存並同步至 Google 試算表</button>
+          <button class="btn-danger-action" style="flex: 1;" onclick="App.promptDeleteCurrentClass()">🗑️ 刪除此班</button>
+        </div>
       </div>
     </section>
 
@@ -828,17 +636,16 @@
     ====================================================================================================
     */
     const CONFIG = {
-      VERSION: "v1.3.1",
+      VERSION: "v1.4.0",
       
       // 👇👇👇 請將下面雙引號內的網址換成您 Google Apps Script 部署後的真實網址 (結尾必須是 /exec) 👇👇👇
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
       // 👆👆👆 替換完畢後直接存檔推播即可！ 👆👆👆
 
-      // 專屬安全 MQTT 廣播頻道 (全球唯一，保證毫秒直達)
       MQTT_BROKER: "wss://broker.hivemq.com:8884/mqtt",
       MQTT_TOPIC: "magic_raycro_classroom_2026_stream",
       DEBOUNCE_DELAY: 5000,
-      AUTO_RESYNC_INTERVAL: 30000 // 每 30 秒靜默對齊一次
+      AUTO_RESYNC_INTERVAL: 30000
     };
     /*
     ====================================================================================================
@@ -884,7 +691,7 @@
     };
 
     const App = {
-      currentClass: "魔法一年級A班",
+      currentClass: "101",
       currentWeight: 1,
       rankingPeriod: "weekly",
       sessionUnlocked: false,
@@ -893,7 +700,7 @@
       syncTimer: null,
       resyncTimer: null,
       data: {
-        classes: ['魔法一年級A班', '魔法一年級B班', '魔法二年級A班', '魔法二年級B班', '高階符文專研班'],
+        classes: ['101', '102', '103'],
         students: [],
         notes: {},
         adminPassword: '8888'
@@ -902,7 +709,7 @@
       init() {
         this.restoreSession();
         this.loadStorageData();
-        this.renderClassTabs();
+        this.renderAllClassTabs();
         this.populateLeaderboardSelect();
         this.renderStudentCards();
         this.renderNotesSection();
@@ -910,14 +717,13 @@
         this.setSyncStatus('synced');
         this.initMqttChannel();
         this.fetchCloudData();
-        this.startSilentResyncLoop(); // 啟動每 30 秒全班靜默對齊迴圈
+        this.startSilentResyncLoop();
       },
 
-      // 每 30 秒自動向雲端拉取最新資料，靜默對齊兩端
       startSilentResyncLoop() {
         clearInterval(this.resyncTimer);
         this.resyncTimer = setInterval(() => {
-          this.fetchCloudData(true); // true 代表靜默模式，不跳提示、不干擾畫面
+          this.fetchCloudData(true);
         }, CONFIG.AUTO_RESYNC_INTERVAL);
       },
 
@@ -957,7 +763,7 @@
       },
 
       restoreSession() {
-        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v13');
+        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v14');
         if (isAuth === 'true') {
           this.sessionUnlocked = true;
           document.getElementById('view-gate').classList.remove('active');
@@ -982,7 +788,7 @@
         const validPassword = this.data.adminPassword || "8888";
         if (pwd === validPassword || pwd === "8888") {
           this.sessionUnlocked = true;
-          sessionStorage.setItem('magic_auth_unlocked_v13', 'true');
+          sessionStorage.setItem('magic_auth_unlocked_v14', 'true');
           
           document.getElementById('gateLoginForm').style.display = 'none';
           document.getElementById('gateSubTitle').innerText = "導師通行印記確認，請選擇傳送陣方向：";
@@ -1008,7 +814,7 @@
 
       logout() {
         this.sessionUnlocked = false;
-        sessionStorage.removeItem('magic_auth_unlocked_v13');
+        sessionStorage.removeItem('magic_auth_unlocked_v14');
         document.getElementById('appHeader').classList.remove('authorized');
         document.body.classList.remove('tv-theater-mode');
         
@@ -1047,7 +853,7 @@
         if (targetClass) this.currentClass = targetClass;
         if (targetPeriod) this.rankingPeriod = targetPeriod;
 
-        this.renderClassTabs();
+        this.renderAllClassTabs();
         this.loadLeaderboardData();
 
         document.body.classList.add('tv-theater-mode');
@@ -1122,27 +928,36 @@
         alert('🚪 已命令電腦大門向內閉合，進入待命狀態！');
       },
 
+      // 視圖切換 (黑畫面徹底根絕修復)
       switchView(viewKey) {
         if (!this.sessionUnlocked && viewKey !== 'gate' && !this.isTvStandby) return;
 
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.btn-nav-magic').forEach(b => b.classList.remove('active'));
 
-        const target = document.getElementById('view-' + viewKey);
-        if (target) target.classList.add('active');
-
-        if (viewKey === 'workspace') document.getElementById('navBtnWorkspace').classList.add('active');
-        if (viewKey === 'leaderboard') document.getElementById('navBtnLeaderboard').classList.add('active');
-        if (viewKey === 'roster') document.getElementById('navBtnRoster').classList.add('active');
-
-        if (viewKey === 'leaderboard') {
+        let target = null;
+        if (viewKey === 'workspace') {
+          target = document.getElementById('view-workspace');
+          document.getElementById('navBtnWorkspace').classList.add('active');
+          this.renderStudentCards();
+          this.renderNotesSection();
+        } else if (viewKey === 'leaderboard') {
+          target = document.getElementById('view-leaderboard');
+          document.getElementById('navBtnLeaderboard').classList.add('active');
           this.loadLeaderboardData();
           document.getElementById('podiumCol1').classList.add('reveal');
           document.getElementById('podiumCol2').classList.add('reveal');
           document.getElementById('podiumCol3').classList.add('reveal');
           document.getElementById('rosterParchmentSheet').classList.add('active-show');
         } else if (viewKey === 'roster') {
+          target = document.getElementById('view-roster-manager');
+          document.getElementById('navBtnRoster').classList.add('active');
+          this.renderAllClassTabs();
           this.loadRosterManagerText();
+        }
+
+        if (target) {
+          target.classList.add('active');
         }
       },
 
@@ -1186,8 +1001,8 @@
               classId: cid,
               seatNo: i,
               name: `學員 ${i} 號`,
-              totalScore: Math.floor(Math.random() * 20) + 5,
-              weeklyScore: Math.floor(Math.random() * 8)
+              totalScore: 0,
+              weeklyScore: 0
             });
           }
         });
@@ -1199,31 +1014,47 @@
         localStorage.setItem('magic_academy_store_' + CONFIG.VERSION, JSON.stringify(this.data));
       },
 
-      renderClassTabs() {
-        const bar = document.getElementById('classTabBar');
-        bar.innerHTML = "";
-        this.data.classes.forEach(c => {
-          const pill = document.createElement('button');
-          pill.className = `class-tab-pill ${c === this.currentClass ? 'active' : ''}`;
-          pill.innerText = c;
-          pill.onclick = () => {
-            this.currentClass = c;
-            this.renderClassTabs();
-            this.renderStudentCards();
-            this.renderNotesSection();
-            this.updateLeaderboardSelectValue();
-          };
-          bar.appendChild(pill);
+      // 同步渲染「課堂後台」與「名冊管理」兩處的班級頁籤
+      renderAllClassTabs() {
+        const bars = [document.getElementById('classTabBar'), document.getElementById('rosterTabBar')];
+        bars.forEach(bar => {
+          if (!bar) return;
+          bar.innerHTML = "";
+          this.data.classes.forEach(c => {
+            const pill = document.createElement('button');
+            pill.className = `class-tab-pill ${c === this.currentClass ? 'active' : ''}`;
+            pill.innerText = `${c} 班`;
+            pill.onclick = () => {
+              this.currentClass = c;
+              this.renderAllClassTabs();
+              this.renderStudentCards();
+              this.renderNotesSection();
+              this.loadRosterManagerText();
+              this.updateLeaderboardSelectValue();
+            };
+            bar.appendChild(pill);
+          });
+
+          // 新增班級按鈕
+          const addBtn = document.createElement('button');
+          addBtn.className = "btn-add-class-pill";
+          addBtn.innerText = "➕ 新增班級";
+          addBtn.onclick = () => this.promptAddNewClass();
+          bar.appendChild(addBtn);
         });
+
+        const titleElem = document.getElementById('rosterTargetClassTitle');
+        if (titleElem) titleElem.innerText = `【${this.currentClass} 班】名冊管理`;
       },
 
       populateLeaderboardSelect() {
         const sel = document.getElementById('leaderboardClassSelect');
+        if (!sel) return;
         sel.innerHTML = "";
         this.data.classes.forEach(c => {
           const opt = document.createElement('option');
           opt.value = c;
-          opt.innerText = c;
+          opt.innerText = `${c} 班`;
           sel.appendChild(opt);
         });
         this.updateLeaderboardSelectValue();
@@ -1236,12 +1067,13 @@
 
       onLeaderboardClassChange() {
         this.currentClass = document.getElementById('leaderboardClassSelect').value;
-        this.renderClassTabs();
+        this.renderAllClassTabs();
         this.loadLeaderboardData();
       },
 
       renderStudentCards() {
         const grid = document.getElementById('studentGrid');
+        if (!grid) return;
         grid.innerHTML = "";
         const currentList = this.data.students.filter(s => s.classId === this.currentClass);
         currentList.sort((a, b) => a.seatNo - b.seatNo);
@@ -1266,7 +1098,6 @@
         });
       },
 
-      // 日常加分：純手機微震動，不干擾電腦投影端
       recordScore(student) {
         if (navigator.vibrate) navigator.vibrate(18);
 
@@ -1309,15 +1140,17 @@
 
       renderNotesSection() {
         const today = new Date().toISOString().split('T')[0];
-        document.getElementById('notesHeadingInfo').innerText = `${this.currentClass} (${today})`;
+        const heading = document.getElementById('notesHeadingInfo');
+        if (heading) heading.innerText = `${this.currentClass} 班 (${today})`;
         const currentKey = `${this.currentClass}_${today}`;
         const editor = document.getElementById('notesEditor');
+        if (!editor) return;
 
         if (this.data.notes[currentKey]) {
           editor.innerHTML = this.data.notes[currentKey];
         } else {
           const inherited = this.findRecentClassNote(this.currentClass, today);
-          editor.innerHTML = inherited || `<div><b>📌 本堂課核心任務：</b></div><ul><li>重點 1：</li><li>重點 2：</li></ul>`;
+          editor.innerHTML = inherited || `<div><b>📌 今日任務：</b></div><ul><li>重點 1：</li></ul>`;
         }
       },
 
@@ -1442,50 +1275,151 @@
         }, 2700);
       },
 
+      // 載入當前班級名冊至文字框 (含歷史分數展示)
       loadRosterManagerText() {
         const list = this.data.students.filter(s => s.classId === this.currentClass);
         list.sort((a, b) => a.seatNo - b.seatNo);
-        document.getElementById('rosterBatchInput').value = list.map(s => `${s.seatNo} ${s.name}`).join('\n');
+        const lines = list.map(s => `${s.seatNo} ${s.name} ${s.totalScore} ${s.weeklyScore}`);
+        const inputElem = document.getElementById('rosterBatchInput');
+        if (inputElem) {
+          inputElem.value = lines.join('\n');
+        }
       },
 
+      // 智慧寬鬆解析：支援 Excel 直接複製貼上 (2欄或4欄)
       async applyBatchRoster() {
         const raw = document.getElementById('rosterBatchInput').value.trim();
         if (!raw) return;
 
         const lines = raw.split('\n');
         const parsed = [];
+        
         lines.forEach(line => {
-          const parts = line.trim().split(/[\s,]+/);
+          const parts = line.trim().split(/[\t\s,]+/);
           if (parts.length >= 2) {
             const seat = parseInt(parts[0], 10);
-            const name = parts.slice(1).join(' ');
-            if (!isNaN(seat)) parsed.push({ seatNo: seat, name: name });
+            const name = parts[1];
+            const total = parts.length >= 3 ? parseInt(parts[2], 10) : 0;
+            const weekly = parts.length >= 4 ? parseInt(parts[3], 10) : 0;
+            if (!isNaN(seat) && name) {
+              parsed.push({
+                classId: this.currentClass,
+                seatNo: seat,
+                name: name,
+                totalScore: isNaN(total) ? 0 : total,
+                weeklyScore: isNaN(weekly) ? 0 : weekly
+              });
+            }
           }
         });
 
         if (parsed.length === 0) {
-          alert('名冊格式有誤，請確保每行有座號與姓名（例：1 王小明）');
+          alert('名冊格式解析失敗，請確保每行有座號與姓名（例如：1 王小明 或 1 王小明 20 5）');
           return;
         }
 
-        const currentClassMap = new Map();
-        this.data.students.filter(s => s.classId === this.currentClass).forEach(s => currentClassMap.set(s.seatNo, s));
-
-        const updatedStudents = parsed.map(p => {
-          const old = currentClassMap.get(p.seatNo);
-          return {
-            classId: this.currentClass,
-            seatNo: p.seatNo,
-            name: p.name,
-            totalScore: old ? old.totalScore : 0,
-            weeklyScore: old ? old.weeklyScore : 0
-          };
-        });
-
-        this.data.students = this.data.students.filter(s => s.classId !== this.currentClass).concat(updatedStudents);
+        // 替換本機資料
+        this.data.students = this.data.students.filter(s => s.classId !== this.currentClass).concat(parsed);
         this.saveStorageData();
         this.renderStudentCards();
-        alert(`✨ ${this.currentClass} 名冊已更新成功，共 ${updatedStudents.length} 位學員！`);
+        alert(`✨ ${this.currentClass} 班名冊更新成功，共 ${parsed.length} 位學員！正在同步至 Google 試算表...`);
+
+        if (CONFIG.GAS_API_URL && !CONFIG.GAS_API_URL.includes("SAMPLE")) {
+          try {
+            const res = await fetch(CONFIG.GAS_API_URL, {
+              method: 'POST',
+              mode: 'cors',
+              headers: { 'Content-Type': 'text/plain' },
+              body: JSON.stringify({
+                action: 'update_roster',
+                classId: this.currentClass,
+                students: parsed
+              })
+            });
+            const json = await res.json();
+            if (json.status === 'success') {
+              alert(`🟢 Google 試算表【${this.currentClass}】分頁已同步完成！`);
+            }
+          } catch (e) {
+            console.warn("名冊雲端同步暫緩", e);
+          }
+        }
+      },
+
+      // 互動建立新班級
+      async promptAddNewClass() {
+        const newClassId = prompt("請輸入新班級名稱代號（例如：104）：");
+        if (!newClassId) return;
+        const cleanId = newClassId.trim();
+
+        if (this.data.classes.includes(cleanId)) {
+          alert("該班級已存在！");
+          return;
+        }
+
+        this.data.classes.push(cleanId);
+        this.currentClass = cleanId;
+        // 建立預設學員
+        for (let i = 1; i <= 20; i++) {
+          this.data.students.push({
+            classId: cleanId,
+            seatNo: i,
+            name: `學員 ${i} 號`,
+            totalScore: 0,
+            weeklyScore: 0
+          });
+        }
+
+        this.saveStorageData();
+        this.renderAllClassTabs();
+        this.populateLeaderboardSelect();
+        this.loadRosterManagerText();
+        this.renderStudentCards();
+
+        alert(`✨ 班級【${cleanId}】已於本機建立！正在於 Google 試算表建立新分頁...`);
+
+        if (CONFIG.GAS_API_URL && !CONFIG.GAS_API_URL.includes("SAMPLE")) {
+          try {
+            await fetch(CONFIG.GAS_API_URL, {
+              method: 'POST',
+              mode: 'cors',
+              headers: { 'Content-Type': 'text/plain' },
+              body: JSON.stringify({ action: 'create_class', classId: cleanId })
+            });
+          } catch (e) {
+            console.warn("班級雲端建立延遲", e);
+          }
+        }
+      },
+
+      // 互動刪除班級 (支援安全封存與永久刪除雙軌)
+      async promptDeleteCurrentClass() {
+        if (this.data.classes.length <= 1) {
+          alert("系統至少需保留一個班級，無法全數刪除！");
+          return;
+        }
+
+        const isPermanent = confirm(
+          `確定要移除【${this.currentClass} 班】嗎？\n\n` +
+          `• 點選【確定】：安全隱藏封存（試算表更名為 _ARCHIVE_${this.currentClass}，保留歷史成績）\n` +
+          `• 點選【取消】：放棄操作`
+        );
+        if (!isPermanent) return;
+
+        const reallyPermanent = confirm(`【進階選項確認】\n是否要「永久徹底刪除」該試算表分頁？\n\n• 按【確定】= 永久徹底抹除\n• 按【取消】= 僅安全封存（推薦）`);
+
+        const targetClass = this.currentClass;
+        this.data.classes = this.data.classes.filter(c => c !== targetClass);
+        this.data.students = this.data.students.filter(s => s.classId !== targetClass);
+        this.currentClass = this.data.classes[0];
+
+        this.saveStorageData();
+        this.renderAllClassTabs();
+        this.populateLeaderboardSelect();
+        this.loadRosterManagerText();
+        this.renderStudentCards();
+
+        alert(`已從系統移除【${targetClass} 班】！正在同步至 Google 試算表...`);
 
         if (CONFIG.GAS_API_URL && !CONFIG.GAS_API_URL.includes("SAMPLE")) {
           try {
@@ -1494,12 +1428,13 @@
               mode: 'cors',
               headers: { 'Content-Type': 'text/plain' },
               body: JSON.stringify({
-                action: 'update_roster',
-                data: { classId: this.currentClass, students: updatedStudents }
+                action: 'delete_class',
+                classId: targetClass,
+                permanent: reallyPermanent
               })
             });
           } catch (e) {
-            console.warn("名冊雲端同步暫緩", e);
+            console.warn("班級雲端移除延遲", e);
           }
         }
       },
@@ -1509,9 +1444,12 @@
         try {
           const res = await fetch(CONFIG.GAS_API_URL + "?action=fetch_all&t=" + Date.now());
           const json = await res.json();
-          if (json.status === 'success' && json.students && json.students.length > 0) {
-            this.data.classes = json.classes || this.data.classes;
-            this.data.students = json.students;
+          if (json.status === 'success' && json.classes && json.classes.length > 0) {
+            this.data.classes = json.classes;
+            if (!this.data.classes.includes(this.currentClass)) {
+              this.currentClass = this.data.classes[0];
+            }
+            this.data.students = json.students || [];
             if (json.password) this.data.adminPassword = json.password;
             if (json.notes) {
               json.notes.forEach(n => {
@@ -1520,9 +1458,14 @@
             }
             this.saveStorageData();
             
-            // 靜默更新：若處於課堂後台或榜單頁面，只無感刷新數字節點
+            // 介面即時無感對齊
+            this.renderAllClassTabs();
+            this.populateLeaderboardSelect();
             if (document.getElementById('view-workspace').classList.contains('active')) {
               this.renderStudentCards();
+            }
+            if (document.getElementById('view-roster-manager').classList.contains('active')) {
+              this.loadRosterManagerText();
             }
             if (document.getElementById('view-leaderboard').classList.contains('active') && !this.isTvStandby) {
               this.loadLeaderboardData();
@@ -1535,6 +1478,7 @@
 
       setSyncStatus(status) {
         const gem = document.getElementById('cloudSyncIndicator');
+        if (!gem) return;
         gem.className = 'sync-gem';
         if (status === 'pending') gem.classList.add('pending');
         if (status === 'error') gem.classList.add('error');
@@ -1542,6 +1486,7 @@
 
       initCanvasConfetti() {
         const cvs = document.getElementById('confettiCanvas');
+        if (!cvs) return;
         cvs.width = window.innerWidth;
         cvs.height = window.innerHeight;
         window.addEventListener('resize', () => {
@@ -1552,6 +1497,7 @@
 
       shootConfetti() {
         const cvs = document.getElementById('confettiCanvas');
+        if (!cvs) return;
         const ctx = cvs.getContext('2d');
         const sparks = [];
         const pal = ['#ffd700', '#f7e49a', '#ffffff', '#2ecc71', '#d4af37'];
