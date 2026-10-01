@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 - v1.6.0</title>
+  <title>魔法學院教務魔導系統 - v1.6.1</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
@@ -37,6 +37,7 @@
       overflow: hidden;
     }
 
+    /* 頂部通用導航列：加入版本號標記 */
     header {
       display: none;
       height: 52px;
@@ -57,13 +58,24 @@
       color: var(--gold-primary);
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       letter-spacing: 0.5px;
       white-space: nowrap;
       flex-shrink: 1;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .version-tag {
+      font-size: 0.75rem;
+      font-family: monospace;
+      color: var(--gold-light);
+      background: rgba(212, 175, 55, 0.2);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      padding: 1px 5px;
+      border-radius: 4px;
+      letter-spacing: 0;
+    }
+
     .header-actions {
       display: flex;
       gap: 4px;
@@ -117,7 +129,7 @@
 
     @media (max-width: 400px) {
       .brand-box span.brand-text { display: none; }
-      .brand-box::after { content: "魔導系統"; font-size: 0.9rem; }
+      .brand-box::after { content: "魔導系統"; font-size: 0.85rem; }
       .btn-nav-magic { padding: 5px 6px; font-size: 0.75rem; }
       .btn-nav-logout { padding: 5px 6px; font-size: 0.75rem; }
     }
@@ -419,11 +431,7 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .notes-unit-actions {
-      display: flex;
-      gap: 3px;
-      flex-shrink: 0;
-    }
+    .notes-unit-actions { display: flex; gap: 3px; flex-shrink: 0; }
     .btn-unit-tool {
       background: #ffffff;
       border: 1px solid #bdae93;
@@ -521,14 +529,8 @@
       font-size: 1.05rem;
       line-height: 1.7;
     }
-    .notes-container.readonly {
-      background: var(--parchment);
-      cursor: default;
-    }
-    .notes-container ul, .notes-container ol {
-      padding-left: 28px !important;
-      margin: 8px 0;
-    }
+    .notes-container.readonly { background: var(--parchment); cursor: default; }
+    .notes-container ul, .notes-container ol { padding-left: 28px !important; margin: 8px 0; }
     .notes-container li { margin-bottom: 5px; }
 
     @media (min-width: 680px) {
@@ -537,9 +539,7 @@
       .scoring-column { flex: 0 0 50% !important; display: flex !important; order: 2; }
     }
 
-    /* =========================================================
-       3. 榮譽揭榜視圖 (v1.6.0 前 10 名階梯式英雄榜 ＋ 雙層名冊)
-    ========================================================= */
+    /* 3. 榮譽揭榜視圖 */
     #view-leaderboard {
       height: 100%;
       background: radial-gradient(circle at center, #0e3527 0%, #030c08 100%);
@@ -633,10 +633,10 @@
     .badge-name { font-size: 1.15rem; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .badge-score { font-family: var(--font-serif); font-size: 0.95rem; color: var(--gold-light); }
 
-    /* 第 4～10 名：殿軍與優等英雄席 (總榜專用) */
+    /* 第 4～10 名：殿軍與優等英雄席 (總榜專用，同分並列不限人數) */
     .top10-tier-bar {
       width: 90%;
-      max-width: 820px;
+      max-width: 860px;
       display: none;
       flex-wrap: wrap;
       justify-content: center;
@@ -646,8 +646,8 @@
     }
     .top10-tier-bar.active { display: flex; }
     .tier-card {
-      flex: 1 1 100px;
-      max-width: 110px;
+      flex: 1 1 110px;
+      max-width: 125px;
       background: linear-gradient(145deg, rgba(16, 54, 40, 0.9), rgba(7, 30, 22, 0.9));
       border: 1px solid var(--gold-primary);
       border-radius: 6px;
@@ -663,10 +663,10 @@
       box-shadow: 0 0 12px var(--gold-glow);
     }
     .tier-rank { font-size: 0.75rem; color: var(--gold-light); font-weight: bold; margin-bottom: 2px; }
-    .tier-name { font-size: 0.9rem; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tier-name { font-size: 0.95rem; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .tier-score { font-size: 0.8rem; color: #a9cfbd; font-family: var(--font-serif); }
 
-    /* 全班名冊羊皮紙：上下雙層排版、寬螢幕 4 欄佈局、絕不換行 */
+    /* 全班名冊羊皮紙：上下雙層排版、永不換行 */
     .roster-parchment-sheet {
       width: 90%;
       max-width: 860px;
@@ -690,7 +690,7 @@
     
     .roster-sheet-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); /* 拉寬每格，避免擠壓 */
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
       gap: 10px;
     }
     .roster-sheet-card {
@@ -706,7 +706,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      white-space: nowrap !important; /* 強制姓名絕對不換行 */
+      white-space: nowrap !important;
       overflow: hidden;
     }
     .card-seat-num { font-size: 0.8rem; color: #8dafa0; font-family: var(--font-serif); flex-shrink: 0; }
@@ -763,10 +763,11 @@
 </head>
 <body>
 
-  <!-- 通用頂部導航列 -->
+  <!-- 通用頂部導航列 (正式包含 v1.6.1 標籤) -->
   <header id="appHeader">
     <div class="brand-box">
       <span>⚜️</span> <span class="brand-text">魔法教務魔導系統</span>
+      <span class="version-tag">v1.6.1</span>
     </div>
     <div class="header-actions">
       <span class="sync-gem" id="cloudSyncIndicator" title="連線狀態燈號"></span>
@@ -798,7 +799,7 @@
 
         <div class="portal-dispatcher" id="portalDispatcher">
           <button class="btn-portal-item" onclick="App.selectDestination('workspace')">
-            <span>⚔️ 課堂計分與備課後台</span> <span>➔</span>
+            <span>⚔️️ 課堂計分與備課後台</span> <span>➔</span>
           </button>
           <button class="btn-portal-item" onclick="App.selectDestination('leaderboard')">
             <span>🏆 榮譽揭榜投影大典</span> <span>➔</span>
@@ -830,7 +831,7 @@
               <div class="notes-unit-actions">
                 <button class="btn-unit-tool" title="新增課程單元" onclick="App.promptAddUnit()">➕</button>
                 <button class="btn-unit-tool" title="重新命名單元" onclick="App.promptRenameUnit()">✏️</button>
-                <button class="btn-unit-tool" title="隱藏封存單元" onclick="App.promptArchiveUnit()">🗑️</button>
+                <button class="btn-unit-tool" title="隱藏封存單元" onclick="App.promptArchiveUnit()">🗑️️</button>
               </div>
               <button class="btn-mode-toggle" id="btnNotesMode" onclick="App.toggleNotesMode()">📖 閱讀中</button>
             </div>
@@ -885,7 +886,7 @@
       </div>
     </section>
 
-    <!-- 3. 榮譽揭榜視圖 (v1.6.0 階梯式英雄榜 ＋ 雙層名冊) -->
+    <!-- 3. 榮譽揭榜視圖 (v1.6.1 總榜前10名同分並列＋雙端即時聯動) -->
     <section id="view-leaderboard" class="view-panel">
       <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
       
@@ -925,7 +926,7 @@
         </div>
       </div>
 
-      <!-- 第 4～10 名優等英雄席 (總榜專屬，快速亮起) -->
+      <!-- 第 4～10 名優等英雄席 (總榜專屬，同分同名次、取10名不限人數) -->
       <div class="top10-tier-bar" id="top10TierBar"></div>
 
       <!-- 全班名冊羊皮紙 (上下雙層排版，永不換行) -->
@@ -969,7 +970,7 @@
     ====================================================================================================
     */
     const CONFIG = {
-      VERSION: "v1.6.0",
+      VERSION: "v1.6.1",
       
       // 👇👇👇 請將下面雙引號內的網址換成您 Google Apps Script 部署後的真實網址 (結尾必須是 /exec) 👇👇👇
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
@@ -979,7 +980,7 @@
       MQTT_TOPIC: "magic_raycro_classroom_2026_stream",
       DEBOUNCE_DELAY: 5000,
       AUTO_RESYNC_INTERVAL: 30000,
-      HEARTBEAT_INTERVAL: 15000 // 15 秒心跳保活探針，杜絕靜默中斷
+      HEARTBEAT_INTERVAL: 15000
     };
     /*
     ====================================================================================================
@@ -1080,17 +1081,12 @@
         }, CONFIG.AUTO_RESYNC_INTERVAL);
       },
 
-      /*
-      ======================================================================
-      WebSocket MQTT 通道：雙向 Ping-Pong 保活機制（根治揭榜連線不穩定）
-      ======================================================================
-      */
       initMqttChannel() {
         const clientId = 'magic_' + Math.random().toString(16).substring(2, 8);
         this.mqttClient = mqtt.connect(CONFIG.MQTT_BROKER, {
           clientId: clientId,
           clean: true,
-          reconnectPeriod: 500, // 斷線 0.5 秒即時無感重連
+          reconnectPeriod: 500,
           keepalive: 30
         });
 
@@ -1098,17 +1094,28 @@
           this.mqttClient.subscribe(CONFIG.MQTT_TOPIC, (err) => {
             if (!err) {
               const logElem = document.getElementById('tvHeartbeatLog');
-              if (logElem) logElem.innerText = "🟢 遠端遙控通道已直連 (探針已啟動)";
+              if (logElem) logElem.innerText = "🟢 遠端遙控通道已直連 (v1.6.1 就緒)";
             }
           });
-          this.startHeartbeatProbe(); // 啟動心跳探針
+          this.startHeartbeatProbe();
         });
 
         this.mqttClient.on('message', (topic, message) => {
           if (topic === CONFIG.MQTT_TOPIC) {
             try {
               const payload = JSON.parse(message.toString());
-              if (payload.action === 'PING') return; // 忽略心跳包
+              if (payload.action === 'PING') return;
+
+              // 即時榜別聯動：手機端切換榜別，電腦端 0.05 秒同步變更
+              if (payload.action === 'SYNC_PERIOD') {
+                this.rankingPeriod = payload.period;
+                const btnToggle = document.getElementById('btnToggleRankingType');
+                if (btnToggle) {
+                  btnToggle.innerText = `目前為：【${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}】`;
+                }
+                this.loadLeaderboardData();
+                return;
+              }
 
               if (this.isTvStandby) {
                 if (payload.action === 'REVEAL') {
@@ -1133,7 +1140,6 @@
         clearInterval(this.heartbeatTimer);
         this.heartbeatTimer = setInterval(() => {
           if (this.mqttClient && this.mqttClient.connected) {
-            // 發送極輕量 PING 包維持 TCP 活耀，防止公共節點靜默關閉連接
             this.mqttClient.publish(CONFIG.MQTT_TOPIC, JSON.stringify({ action: 'PING', t: Date.now() }), { qos: 0 });
           }
         }, CONFIG.HEARTBEAT_INTERVAL);
@@ -1223,7 +1229,7 @@
 
         const logElem = document.getElementById('tvHeartbeatLog');
         logElem.style.display = 'block';
-        logElem.innerText = "🟢 電腦大門待命中 | 心跳保活監聽中";
+        logElem.innerText = "🟢 電腦大門待命中 | 榜別即時連動中 (v1.6.1)";
       },
 
       executeRemoteReveal(targetClass, targetPeriod) {
@@ -1287,6 +1293,7 @@
         document.getElementById('podiumCol1').classList.add('reveal');
         document.getElementById('podiumCol2').classList.add('reveal');
         document.getElementById('podiumCol3').classList.add('reveal');
+        document.querySelectorAll('.tier-card').forEach(c => c.classList.add('reveal'));
         document.getElementById('rosterParchmentSheet').classList.add('active-show');
 
         alert(`📢 廣播成功！電腦大螢幕即刻開門！\n班級：${this.currentClass}\n榜別：${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}`);
@@ -1332,6 +1339,7 @@
           document.getElementById('podiumCol1').classList.add('reveal');
           document.getElementById('podiumCol2').classList.add('reveal');
           document.getElementById('podiumCol3').classList.add('reveal');
+          document.querySelectorAll('.tier-card').forEach(c => c.classList.add('reveal'));
           document.getElementById('rosterParchmentSheet').classList.add('active-show');
         } else if (viewKey === 'roster') {
           target = document.getElementById('view-roster-manager');
@@ -1631,7 +1639,7 @@
         const editor = document.getElementById('notesEditor');
 
         if (this.isNotesEditMode) {
-          btn.innerText = "✏️ 編輯中";
+          btn.innerText = "✏️️ 編輯中";
           btn.classList.add('edit-mode');
           tb.classList.add('active');
           editor.contentEditable = "true";
@@ -1762,7 +1770,7 @@
 
       /*
       ======================================================================
-      排行榜邏輯 (v1.6.0 總榜第 4～10 名階梯式揭曉 ＋ 上下雙層全班名冊)
+      排行榜邏輯 (v1.6.1 同分並列、取10名不限人數、榜別即時連動)
       ======================================================================
       */
       populateLeaderboardSelect() {
@@ -1789,61 +1797,100 @@
         this.loadLeaderboardData();
       },
 
+      // 切換週榜 / 總榜：立即向對端廣播 SYNC_PERIOD 事件 (選項 A)
       toggleRankingPeriod() {
         this.rankingPeriod = (this.rankingPeriod === 'weekly') ? 'total' : 'weekly';
         document.getElementById('btnToggleRankingType').innerText = 
           `目前為：【${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}】`;
+        
+        // 即時廣播給電腦端
+        if (this.mqttClient && this.mqttClient.connected) {
+          this.mqttClient.publish(CONFIG.MQTT_TOPIC, JSON.stringify({
+            action: 'SYNC_PERIOD',
+            period: this.rankingPeriod,
+            t: Date.now()
+          }), { qos: 1 });
+        }
+
         this.loadLeaderboardData();
       },
 
-      loadLeaderboardData() {
+      // 標準競賽排名演算法（同分並列同名次）
+      computeRankedList(scoreKey) {
         const classStudents = this.data.students.filter(s => s.classId === this.currentClass);
+        // 先按分數由大到小排，同分則按座號由小到大排
+        const sorted = [...classStudents].sort((a, b) => (b[scoreKey] - a[scoreKey]) || (a.seatNo - b.seatNo));
+
+        let currentRank = 1;
+        const rankedList = [];
+
+        for (let i = 0; i < sorted.length; i++) {
+          if (i > 0 && sorted[i][scoreKey] < sorted[i - 1][scoreKey]) {
+            currentRank = i + 1; // 標準排名跳號（例如兩位第1名，下一位為第3名）
+          }
+          rankedList.push({
+            ...sorted[i],
+            rank: currentRank
+          });
+        }
+        return rankedList;
+      },
+
+      loadLeaderboardData() {
         const scoreKey = (this.rankingPeriod === 'weekly') ? 'weeklyScore' : 'totalScore';
-        
-        const sortedList = [...classStudents].sort((a, b) => b[scoreKey] - a[scoreKey]);
+        const rankedList = this.computeRankedList(scoreKey);
 
-        // 前 3 名石柱載入
-        const s1 = sortedList[0] || { name: '無', [scoreKey]: 0 };
-        const s2 = sortedList[1] || { name: '無', [scoreKey]: 0 };
-        const s3 = sortedList[2] || { name: '無', [scoreKey]: 0 };
+        // 前三名石柱提取：找出 rank <= 3 的學生
+        const top1List = rankedList.filter(s => s.rank === 1);
+        const top2List = rankedList.filter(s => s.rank === 2);
+        const top3List = rankedList.filter(s => s.rank === 3);
 
-        document.getElementById('podiumName1').innerText = s1.name;
-        document.getElementById('podiumScore1').innerText = `${s1[scoreKey]} 分`;
-        document.getElementById('podiumName2').innerText = s2.name;
-        document.getElementById('podiumScore2').innerText = `${s2[scoreKey]} 分`;
-        document.getElementById('podiumName3').innerText = s3.name;
-        document.getElementById('podiumScore3').innerText = `${s3[scoreKey]} 分`;
+        const s1Name = top1List.map(s => s.name).join('、') || '無';
+        const s1Score = top1List[0] ? `${top1List[0][scoreKey]} 分` : '-- 分';
+        const s2Name = top2List.map(s => s.name).join('、') || '無';
+        const s2Score = top2List[0] ? `${top2List[0][scoreKey]} 分` : '-- 分';
+        const s3Name = top3List.map(s => s.name).join('、') || '無';
+        const s3Score = top3List[0] ? `${top3List[0][scoreKey]} 分` : '-- 分';
 
-        // 第 4～10 名（總榜專屬）
+        document.getElementById('podiumName1').innerText = s1Name;
+        document.getElementById('podiumScore1').innerText = s1Score;
+        document.getElementById('podiumName2').innerText = s2Name;
+        document.getElementById('podiumScore2').innerText = s2Score;
+        document.getElementById('podiumName3').innerText = s3Name;
+        document.getElementById('podiumScore3').innerText = s3Score;
+
+        // 第 4～10 名優等英雄席（總排行榜專屬：同分同名次、取前10名不限人數、依現有人數展示）
         const tierBar = document.getElementById('top10TierBar');
         tierBar.innerHTML = "";
+
         if (this.rankingPeriod === 'total') {
           tierBar.classList.add('active');
-          for (let rank = 4; rank <= 10; rank++) {
-            const st = sortedList[rank - 1];
-            if (st) {
-              const card = document.createElement('div');
-              card.className = "tier-card";
-              card.id = `tierCard${rank}`;
-              card.innerHTML = `
-                <div class="tier-rank">第 ${rank} 名</div>
-                <div class="tier-name">${st.name}</div>
-                <div class="tier-score">${st[scoreKey]} 分</div>
-              `;
-              tierBar.appendChild(card);
-            }
-          }
+          // 篩選 4 <= rank <= 10 的所有學生
+          const tierStudents = rankedList.filter(s => s.rank >= 4 && s.rank <= 10);
+
+          tierStudents.forEach((st, idx) => {
+            const card = document.createElement('div');
+            card.className = "tier-card";
+            card.id = `tierCard_${st.seatNo}`;
+            card.dataset.rank = st.rank;
+            card.innerHTML = `
+              <div class="tier-rank">第 ${st.rank} 名</div>
+              <div class="tier-name">${st.name}</div>
+              <div class="tier-score">${st[scoreKey]} 分</div>
+            `;
+            tierBar.appendChild(card);
+          });
         } else {
           tierBar.classList.remove('active');
         }
 
         // 全班名冊（依座號排序，上下雙層卡片結構，永不換行）
         const rankMap = new Map();
-        sortedList.forEach((st, idx) => rankMap.set(st.seatNo, idx + 1));
+        rankedList.forEach(st => rankMap.set(st.seatNo, st.rank));
 
         const rosterGrid = document.getElementById('rosterSheetGrid');
         rosterGrid.innerHTML = "";
-        const seatSorted = [...classStudents].sort((a, b) => a.seatNo - b.seatNo);
+        const seatSorted = [...this.data.students.filter(s => s.classId === this.currentClass)].sort((a, b) => a.seatNo - b.seatNo);
 
         seatSorted.forEach(st => {
           const card = document.createElement('div');
@@ -1855,7 +1902,7 @@
             </div>
             <div class="card-row-bottom">
               <span class="card-score-text">${st[scoreKey]} 分</span>
-              <span class="card-rank-text">第 ${rankMap.get(st.seatNo)} 名</span>
+              <span class="card-rank-text">第 ${rankMap.get(st.seatNo) || '--'} 名</span>
             </div>
           `;
           rosterGrid.appendChild(card);
@@ -1864,7 +1911,7 @@
 
       /*
       ======================================================================
-      揭榜演出：總榜前 10 名階梯式揭曉 vs 週榜經典前 3 名
+      揭榜演出：總榜前 10 名階梯式揭曉 vs 週榜前 3 名
       ======================================================================
       */
       startRevealTheater() {
@@ -1879,37 +1926,34 @@
         p3.classList.remove('reveal');
         sheet.classList.remove('active-show');
 
-        // 清理第 4～10 名動畫狀態
-        for (let r = 4; r <= 10; r++) {
-          const el = document.getElementById(`tierCard${r}`);
-          if (el) el.classList.remove('reveal');
-        }
+        const tierCards = document.querySelectorAll('.tier-card');
+        tierCards.forEach(c => c.classList.remove('reveal'));
 
         if (this.rankingPeriod === 'total') {
-          // 【總排行榜】：第一階段（快速依序揭曉 10～4 名，約 1.8 秒）
+          // 【總排行榜】：第一階段（快速依序揭曉第 10 名至第 4 名，約 1.8 秒）
+          // 按名次由大到小排序揭曉
+          const sortedCards = Array.from(tierCards).sort((a, b) => Number(b.dataset.rank) - Number(a.dataset.rank));
           let delay = 300;
-          for (let rank = 10; rank >= 4; rank--) {
-            const currentRank = rank;
-            setTimeout(() => {
-              const el = document.getElementById(`tierCard${currentRank}`);
-              if (el) {
-                SoundFx.playTierPop(450 + (11 - currentRank) * 40);
-                el.classList.add('reveal');
-              }
-            }, delay);
-            delay += 240; // 每人間隔 0.24 秒快速亮出
-          }
 
-          // 第二階段：前三名隆重升起（約 2.4 秒後展開冠亞季軍）
+          sortedCards.forEach(card => {
+            const currentRank = Number(card.dataset.rank);
+            setTimeout(() => {
+              SoundFx.playTierPop(420 + (11 - currentRank) * 45);
+              card.classList.add('reveal');
+            }, delay);
+            delay += 180;
+          });
+
+          // 第二階段：前三名石柱依序升起
           setTimeout(() => {
             SoundFx.playDrumBeat();
             p3.classList.add('reveal');
-          }, delay + 400);
+          }, delay + 350);
 
           setTimeout(() => {
             SoundFx.playDrumBeat();
             p2.classList.add('reveal');
-          }, delay + 1400);
+          }, delay + 1350);
 
           setTimeout(() => {
             SoundFx.playFanfareVictory();
@@ -1918,8 +1962,8 @@
 
             setTimeout(() => {
               sheet.classList.add('active-show');
-            }, 2000);
-          }, delay + 2500);
+            }, 1800);
+          }, delay + 2450);
 
         } else {
           // 【週排行榜】：經典前 3 名節奏
