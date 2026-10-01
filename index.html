@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 - v1.5.0</title>
+  <title>魔法學院教務魔導系統 - v1.5.1</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
@@ -37,39 +37,52 @@
       overflow: hidden;
     }
 
+    /* 頂部通用導航列修復：防止挤壓、禁止文字折行 */
     header {
       display: none;
       height: 52px;
       background: linear-gradient(180deg, #05140e 0%, var(--emerald-dark) 100%);
       border-bottom: 2px solid var(--gold-primary);
-      padding: 0 12px;
+      padding: 0 8px;
       justify-content: space-between;
       align-items: center;
       position: relative;
       z-index: 50;
+      gap: 4px;
     }
     header.authorized { display: flex; }
 
     .brand-box {
       font-family: var(--font-serif);
-      font-size: 1.05rem;
+      font-size: 1rem;
       color: var(--gold-primary);
       display: flex;
       align-items: center;
-      gap: 6px;
-      letter-spacing: 1px;
+      gap: 4px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      flex-shrink: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .header-actions { display: flex; gap: 6px; align-items: center; }
+    .header-actions {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      flex-shrink: 0;
+    }
 
     .btn-nav-magic {
       background: rgba(212, 175, 55, 0.12);
       border: 1px solid var(--gold-primary);
       color: var(--gold-light);
-      padding: 6px 10px;
+      padding: 6px 8px;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-family: var(--font-serif);
+      white-space: nowrap;
+      flex-shrink: 0;
       transition: all 0.2s;
     }
     .btn-nav-magic:active, .btn-nav-magic.active {
@@ -85,20 +98,31 @@
       border-radius: 4px;
       cursor: pointer;
       font-size: 0.8rem;
+      white-space: nowrap;
+      flex-shrink: 0; /* 嚴禁被擠壓變形 */
     }
 
     .sync-gem {
-      width: 13px;
-      height: 13px;
+      width: 11px;
+      height: 11px;
       border-radius: 50%;
       background: #2ecc71;
       box-shadow: 0 0 8px #2ecc71;
       display: inline-block;
+      flex-shrink: 0;
       transition: all 0.3s;
     }
     .sync-gem.pending { background: #f39c12; box-shadow: 0 0 10px #f39c12; animation: gemPulse 1s infinite alternate; }
     .sync-gem.error { background: #e74c3c; box-shadow: 0 0 10px #e74c3c; }
     @keyframes gemPulse { from { transform: scale(1); } to { transform: scale(1.2); } }
+
+    /* 外螢幕（極窄螢幕 < 400px）極致微調 */
+    @media (max-width: 400px) {
+      .brand-box span.brand-text { display: none; } /* 隱藏文字保留圖示，釋放全部空間 */
+      .brand-box::after { content: "魔導系統"; font-size: 0.9rem; }
+      .btn-nav-magic { padding: 5px 6px; font-size: 0.75rem; }
+      .btn-nav-logout { padding: 5px 6px; font-size: 0.75rem; }
+    }
 
     .app-viewport { width: 100%; height: calc(100% - 52px); position: relative; }
     .view-panel { position: absolute; inset: 0; display: none; flex-direction: column; background: var(--bg-dark); }
@@ -234,7 +258,7 @@
       z-index: 30;
     }
 
-    /* 班級頁籤條與手動拖曳排序樣式 */
+    /* 班級頁籤條 */
     .class-tabs-container {
       display: flex;
       align-items: center;
@@ -244,6 +268,7 @@
       background: var(--emerald-dark);
       border-bottom: 1px solid rgba(212, 175, 55, 0.25);
       scrollbar-width: none;
+      flex-shrink: 0;
     }
     .class-tabs-container::-webkit-scrollbar { display: none; }
     .class-tab-pill {
@@ -256,6 +281,7 @@
       white-space: nowrap;
       cursor: grab;
       transition: transform 0.15s, background 0.15s;
+      flex-shrink: 0;
     }
     .class-tab-pill:active { cursor: grabbing; }
     .class-tab-pill.active {
@@ -278,10 +304,11 @@
       font-size: 0.85rem;
       white-space: nowrap;
       cursor: pointer;
+      flex-shrink: 0;
     }
 
     /* 2. 課堂後台視圖 */
-    .phone-mode-switcher { display: flex; background: #05140e; border-bottom: 1px solid rgba(212, 175, 55, 0.3); }
+    .phone-mode-switcher { display: flex; background: #05140e; border-bottom: 1px solid rgba(212, 175, 55, 0.3); flex-shrink: 0; }
     .phone-mode-btn {
       flex: 1;
       padding: 10px;
@@ -341,6 +368,7 @@
       align-items: center;
       gap: 6px;
       z-index: 30;
+      flex-shrink: 0;
     }
     .weight-chip {
       flex: 1;
@@ -359,65 +387,84 @@
     }
     .weight-chip.active { background: var(--gold-primary); color: var(--emerald-dark); box-shadow: 0 0 12px var(--gold-glow); }
 
-    /* 備課筆記模組全域樣式 (羊皮紙風格) */
+    /* 備課筆記模組修復：【閱讀中】按鈕防擠壓、彈性盒佈局 */
     .notes-column { flex: 1; display: none; flex-direction: column; background: var(--parchment); color: var(--text-dark); height: 100%; overflow: hidden; }
     .notes-column.phone-active { display: flex; }
 
     .notes-top-bar {
-      padding: 8px 12px;
+      padding: 8px 10px;
       background: #ebdcc0;
       border-bottom: 1.5px solid var(--parchment-border);
       display: flex;
       flex-direction: column;
       gap: 6px;
+      flex-shrink: 0;
     }
-    .notes-control-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .notes-control-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
     .notes-unit-select {
-      flex: 1;
-      max-width: 260px;
+      flex: 1 1 auto;
+      min-width: 0; /* 允許文字過長時彈性收縮，不擠壓右側按鈕 */
       background: #fff;
       border: 1px solid #bdae93;
       border-radius: 4px;
-      padding: 5px 8px;
-      font-size: 0.9rem;
+      padding: 6px 4px;
+      font-size: 0.85rem;
       font-family: var(--font-sans);
       color: var(--text-dark);
       outline: none;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
-    .notes-unit-actions { display: flex; gap: 5px; }
+    .notes-unit-actions {
+      display: flex;
+      gap: 3px;
+      flex-shrink: 0;
+    }
     .btn-unit-tool {
       background: #ffffff;
       border: 1px solid #bdae93;
       border-radius: 4px;
-      padding: 5px 8px;
+      padding: 6px 7px;
       font-size: 0.8rem;
       cursor: pointer;
       font-weight: bold;
+      flex-shrink: 0;
     }
     .btn-unit-tool:active { background: var(--gold-light); }
 
+    /* 【閱讀中 / 編輯中】按鈕：鎖死比例，嚴禁折行與擠壓變形 */
     .btn-mode-toggle {
       background: #27ae60;
       color: #fff;
       border: none;
       border-radius: 4px;
-      padding: 5px 12px;
-      font-size: 0.85rem;
+      padding: 6px 10px;
+      font-size: 0.8rem;
       font-weight: bold;
       cursor: pointer;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      min-width: fit-content;
       transition: background 0.2s;
     }
     .btn-mode-toggle.edit-mode { background: #d35400; }
 
-    /* 12 色富文字工具列 (編輯模式時顯示) */
+    /* 12 色富文字工具列 */
     .wysiwyg-toolbar {
       display: none;
       flex-wrap: wrap;
       align-items: center;
       gap: 5px;
-      padding: 6px 12px;
+      padding: 6px 10px;
       background: #dfcfaf;
       border-bottom: 1px solid #c9b896;
+      flex-shrink: 0;
     }
     .wysiwyg-toolbar.active { display: flex; }
 
@@ -425,7 +472,7 @@
       background: #fff;
       border: 1px solid #bdae93;
       border-radius: 3px;
-      padding: 3px 6px;
+      padding: 3px 4px;
       font-size: 0.8rem;
       outline: none;
     }
@@ -433,21 +480,19 @@
       background: #fff;
       border: 1px solid #bdae93;
       border-radius: 3px;
-      padding: 3px 7px;
+      padding: 3px 6px;
       font-size: 0.85rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-width: 26px;
+      min-width: 24px;
+      flex-shrink: 0;
     }
     .btn-fmt:hover { background: #fdfaf2; }
     .btn-fmt:active { background: var(--gold-light); }
 
-    .palette-popover {
-      position: relative;
-      display: inline-block;
-    }
+    .palette-popover { position: relative; display: inline-block; }
     .palette-dropdown {
       display: none;
       position: absolute;
@@ -474,7 +519,7 @@
 
     .notes-container {
       flex: 1;
-      padding: 18px 24px;
+      padding: 16px 20px;
       outline: none;
       overflow-y: auto;
       font-size: 1.05rem;
@@ -485,7 +530,7 @@
       cursor: default;
     }
     .notes-container ul, .notes-container ol {
-      padding-left: 32px !important;
+      padding-left: 28px !important;
       margin: 8px 0;
     }
     .notes-container li { margin-bottom: 5px; }
@@ -517,6 +562,7 @@
       z-index: 20;
       background: rgba(5, 20, 14, 0.85);
       border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+      flex-shrink: 0;
     }
     .board-select-group { display: flex; gap: 6px; align-items: center; }
     .select-magic { background: #061911; border: 1.5px solid var(--gold-primary); color: var(--gold-light); padding: 6px 10px; border-radius: 4px; font-size: 0.9rem; outline: none; }
@@ -587,6 +633,8 @@
       cursor: pointer;
       font-size: 0.9rem;
       font-family: var(--font-serif);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .btn-danger-action:hover { background: #e74c3c; color: #fff; }
   </style>
@@ -596,7 +644,7 @@
   <!-- 通用頂部導航列 -->
   <header id="appHeader">
     <div class="brand-box">
-      <span>⚜️</span> 魔法教務魔導系統
+      <span>⚜️</span> <span class="brand-text">魔法教務魔導系統</span>
     </div>
     <div class="header-actions">
       <span class="sync-gem" id="cloudSyncIndicator" title="連線狀態燈號"></span>
@@ -652,7 +700,7 @@
       <div class="class-tabs-container" id="classTabBar"></div>
 
       <div class="workspace-split">
-        <!-- 備課筆記模組 (v1.5.0 全新富文字與日期管理) -->
+        <!-- 備課筆記模組 (已修復按鈕擠壓與折行問題) -->
         <div class="notes-column" id="notesColumn">
           <div class="notes-top-bar">
             <div class="notes-control-row">
@@ -699,7 +747,7 @@
             <button class="btn-fmt" style="background: #27ae60; color: #fff; font-weight: bold; margin-left: auto;" onclick="App.saveCurrentNotes()">💾 儲存</button>
           </div>
 
-          <!-- 筆記內文容器 (預設為閱讀模式 readonly) -->
+          <!-- 筆記內文容器 -->
           <div class="notes-container readonly" id="notesEditor" contenteditable="false"></div>
         </div>
 
@@ -797,7 +845,7 @@
     ====================================================================================================
     */
     const CONFIG = {
-      VERSION: "v1.5.0",
+      VERSION: "v1.5.1",
       
       // 👇👇👇 請將下面雙引號內的網址換成您 Google Apps Script 部署後的真實網址 (結尾必須是 /exec) 👇👇👇
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
@@ -813,7 +861,6 @@
     🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
     */
 
-    // 精心調配的 12 色文字盤與 12 色透光螢光盤
     const PALETTE_COLORS = [
       '#111111', '#c0392b', '#d35400', '#f39c12',
       '#27ae60', '#16a085', '#2980b9', '#8e44ad',
@@ -879,7 +926,7 @@
       data: {
         classes: ['101', '102', '103'],
         students: [],
-        notes: [], // 陣列物件: [{ classId, noteId, dateTitle, content }]
+        notes: [],
         adminPassword: '8888'
       },
 
@@ -1008,7 +1055,7 @@
         document.getElementById('gateSubTitle').innerText = "請驗證導師通行印記以解除結界";
         document.getElementById('portalDispatcher').style.display = 'none';
         document.getElementById('gatePasswordInput').value = "";
-        document.getElementById('btnTvModeStandby').innerText = "🖥️ 電腦投影大螢幕（接收手機廣播揭榜）";
+        document.getElementById('btnTvModeStandby').innerText = "🖥️️ 電腦投影大螢幕（接收手機廣播揭榜）";
         document.getElementById('btnTvModeStandby').disabled = false;
         document.getElementById('tvHeartbeatLog').style.display = 'none';
       },
@@ -1107,7 +1154,6 @@
         alert('🚪 已命令電腦大門向內閉合，進入待命狀態！');
       },
 
-      // 視圖切換 (含未儲存防呆)
       switchView(viewKey) {
         if (!this.sessionUnlocked && viewKey !== 'gate' && !this.isTvStandby) return;
 
@@ -1198,8 +1244,8 @@
           {
             classId: '101',
             noteId: '101_init',
-            dateTitle: '2026-10-01 (開學任務)',
-            content: '<div><b>📌 今日任務：</b></div><ul><li>認識魔杖使用規則</li><li>建立小組陣營</li></ul>'
+            dateTitle: '2026-10-01 (首堂課)',
+            content: '<div><b>📌 今日任務：</b></div><ul><li>新學期重點介紹</li></ul>'
           }
         ];
         this.saveStorageData();
@@ -1209,11 +1255,6 @@
         localStorage.setItem('magic_academy_store_' + CONFIG.VERSION, JSON.stringify(this.data));
       },
 
-      /*
-      ======================================================================
-      班級手動拖曳排序引擎 (HTML5 Drag & Drop + 手機 Touch 長按震動)
-      ======================================================================
-      */
       renderAllClassTabs() {
         const bars = [document.getElementById('classTabBar'), document.getElementById('rosterTabBar')];
         bars.forEach(bar => {
@@ -1226,7 +1267,6 @@
             pill.draggable = true;
             pill.dataset.classId = c;
 
-            // 桌面端拖曳事件
             pill.ondragstart = (e) => {
               this.draggedClassId = c;
               e.dataTransfer.setData('text/plain', c);
@@ -1247,7 +1287,6 @@
               }
             };
 
-            // 手機端長按震動拖曳模擬
             let pressTimer;
             pill.ontouchstart = (e) => {
               pressTimer = setTimeout(() => {
@@ -1287,7 +1326,6 @@
             bar.appendChild(pill);
           });
 
-          // 新增班級按鈕
           const addBtn = document.createElement('button');
           addBtn.className = "btn-add-class-pill";
           addBtn.innerText = "➕ 新增班級";
@@ -1311,7 +1349,6 @@
         this.renderAllClassTabs();
         this.populateLeaderboardSelect();
 
-        // 全面同步至 Google Sheets 實體分頁排列順序
         if (CONFIG.GAS_API_URL && !CONFIG.GAS_API_URL.includes("SAMPLE")) {
           fetch(CONFIG.GAS_API_URL, {
             method: 'POST',
@@ -1322,11 +1359,6 @@
         }
       },
 
-      /*
-      ======================================================================
-      備課筆記日期單元管理與富文字核心 (v1.5.0)
-      ======================================================================
-      */
       initNotesUnitSelector() {
         const sel = document.getElementById('notesUnitSelect');
         if (!sel) return;
@@ -1345,7 +1377,7 @@
           classNotes.push(defaultNote);
         }
 
-        classNotes.forEach((n, idx) => {
+        classNotes.forEach((n) => {
           const opt = document.createElement('option');
           opt.value = n.noteId;
           opt.innerText = n.dateTitle;
@@ -1388,14 +1420,13 @@
           content: '<div><b>📌 本單元重點：</b></div><ul><li>任務 1：</li></ul>'
         };
 
-        this.data.notes.unshift(newNote); // 最新日期置頂
+        this.data.notes.unshift(newNote);
         this.saveStorageData();
         this.initNotesUnitSelector();
         this.activeNoteId = newNote.noteId;
         document.getElementById('notesUnitSelect').value = newNote.noteId;
         this.renderActiveNoteContent();
 
-        // 觸發雲端儲存
         this.saveCurrentNotes();
       },
 
@@ -1455,7 +1486,7 @@
               this.saveCurrentNotes();
             } else {
               this.notesDirty = false;
-              this.renderActiveNoteContent(); // 放棄修改還原
+              this.renderActiveNoteContent();
             }
           }
           btn.innerText = "📖 閱讀中";
@@ -1498,7 +1529,6 @@
         alert('✨ 備課筆記已成功存檔！');
       },
 
-      // 構建 12 色字體色盤與 12 色螢光色盤
       buildColorPalettes() {
         const textGrid = document.getElementById('textColorDropdown');
         const bgGrid = document.getElementById('bgColorDropdown');
@@ -1548,7 +1578,6 @@
         }
       },
 
-      // 支援 Tab / Shift+Tab 巢狀編號清單縮排
       initTabKeyNesting() {
         const editor = document.getElementById('notesEditor');
         if (!editor) return;
@@ -1568,7 +1597,6 @@
           }
         });
 
-        // 點擊空白處自動關閉色盤
         document.addEventListener('click', (e) => {
           if (!e.target.closest('.palette-popover')) {
             document.querySelectorAll('.palette-dropdown').forEach(p => p.classList.remove('show'));
@@ -1576,11 +1604,6 @@
         });
       },
 
-      /*
-      ======================================================================
-      計分面板與名冊批次管理 (保持穩定無走樣)
-      ======================================================================
-      */
       populateLeaderboardSelect() {
         const sel = document.getElementById('leaderboardClassSelect');
         if (!sel) return;
