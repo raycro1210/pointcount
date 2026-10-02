@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 - v1.7.2</title>
+  <title>魔法學院教務魔導系統 - v1.8.0</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
@@ -37,6 +37,7 @@
       overflow: hidden;
     }
 
+    /* 頂部通用導航列：修正版本號絕對可視結構 */
     header {
       display: none;
       height: 52px;
@@ -51,28 +52,38 @@
     }
     header.authorized { display: flex; }
 
+    .header-brand-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
     .brand-box {
       font-family: var(--font-serif);
-      font-size: 1rem;
+      font-size: 0.95rem;
       color: var(--gold-primary);
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       letter-spacing: 0.5px;
       white-space: nowrap;
-      flex-shrink: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
-    .version-tag {
+
+    /* 永久獨立常駐金色版本徽章 (強制永不壓縮、永不隱藏) */
+    .version-badge-permanent {
       font-size: 0.75rem;
       font-family: monospace;
-      color: var(--gold-light);
-      background: rgba(212, 175, 55, 0.2);
-      border: 1px solid rgba(212, 175, 55, 0.4);
-      padding: 1px 5px;
+      font-weight: bold;
+      color: #ffd700;
+      background: rgba(212, 175, 55, 0.25);
+      border: 1px solid #ffd700;
+      padding: 2px 6px;
       border-radius: 4px;
-      letter-spacing: 0;
+      letter-spacing: 0.5px;
+      flex-shrink: 0 !important;
+      display: inline-block !important;
+      box-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
     }
 
     .header-actions {
@@ -128,11 +139,11 @@
 
     @media (max-width: 400px) {
       .brand-box span.brand-text { display: none; }
-      .brand-box::after { content: "魔導系統"; font-size: 0.85rem; }
       .btn-nav-magic { padding: 5px 6px; font-size: 0.75rem; }
       .btn-nav-logout { padding: 5px 6px; font-size: 0.75rem; }
     }
 
+    /* 視圖容器系統 */
     .app-viewport { width: 100%; height: calc(100% - 52px); position: relative; }
     .view-panel {
       position: absolute;
@@ -350,7 +361,6 @@
     .workspace-split { flex: 1; display: flex; overflow: hidden; position: relative; }
     .scoring-column { flex: 1; display: flex; flex-direction: column; height: 100%; background: var(--bg-dark); }
     
-    /* 常駐醒目操作說明列 (修復消失問題) */
     .scoring-guide-banner {
       background: linear-gradient(90deg, rgba(16, 54, 40, 0.95), rgba(7, 25, 18, 0.95));
       border-bottom: 1.5px solid var(--gold-primary);
@@ -397,7 +407,6 @@
     .student-touch-card:active { transform: scale(0.96); border-color: var(--gold-light); background: #184c39; }
     .card-seat-tag { position: absolute; top: 5px; left: 8px; font-size: 0.75rem; color: #9cb5ab; font-family: var(--font-serif); }
     
-    /* 幹部星號徽記 */
     .card-star-badge {
       position: absolute;
       top: 5px;
@@ -445,7 +454,7 @@
     .weight-chip.active { background: var(--gold-primary); color: var(--emerald-dark); box-shadow: 0 0 12px var(--gold-glow); }
 
     /* 備課筆記模組 */
-    .notes-column { flex: 1; display: none; flex-direction: column; background: var(--parchment); color: var(--text-dark); height: 100%; overflow: hidden; }
+    .notes-column { flex: 1; display: none; flex-direction: column; background: var(--parchment); color: var(--text-dark); height: 100%; overflow: hidden; position: relative; }
     .notes-column.phone-active { display: flex; }
 
     .notes-top-bar {
@@ -568,6 +577,28 @@
     }
     .color-swatch:hover { transform: scale(1.15); }
 
+    .btn-action-copy {
+      background: linear-gradient(180deg, #3498db, #2980b9);
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      border-radius: 3px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      margin-left: auto;
+    }
+    .btn-action-marker {
+      background: #f1c40f;
+      color: #2c3e50;
+      font-weight: bold;
+      border: 1px solid #d4ac0d;
+      border-radius: 3px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
     .notes-container {
       flex: 1;
       padding: 16px 20px;
@@ -575,10 +606,68 @@
       overflow-y: auto;
       font-size: 1.05rem;
       line-height: 1.7;
+      scroll-behavior: smooth;
     }
     .notes-container.readonly { background: var(--parchment); cursor: default; }
     .notes-container ul, .notes-container ol { padding-left: 28px !important; margin: 8px 0; }
     .notes-container li { margin-bottom: 5px; }
+
+    .magic-progress-marker {
+      display: inline-block;
+      background: rgba(241, 196, 15, 0.25);
+      border-left: 4px solid #f39c12;
+      padding: 2px 8px;
+      border-radius: 0 4px 4px 0;
+      position: relative;
+      animation: progressPulse 2s infinite alternate;
+    }
+    .magic-progress-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: #e67e22;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 1px 6px;
+      border-radius: 10px;
+      margin-right: 6px;
+      vertical-align: middle;
+      user-select: none;
+    }
+    @keyframes progressPulse {
+      from { box-shadow: 0 0 4px rgba(243, 156, 18, 0.2); }
+      to { box-shadow: 0 0 12px rgba(243, 156, 18, 0.6); }
+    }
+
+    /* 另存至他班互動彈窗 */
+    .copy-dialog-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 80;
+      justify-content: center;
+      align-items: center;
+    }
+    .copy-dialog-card {
+      background: var(--emerald-dark);
+      border: 2px solid var(--gold-primary);
+      border-radius: 10px;
+      padding: 18px 20px;
+      width: 90%;
+      max-width: 360px;
+      color: #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    .copy-dialog-title { font-family: var(--font-serif); font-size: 1.15rem; color: var(--gold-light); margin-bottom: 12px; }
+    .copy-input-text { width: 100%; padding: 8px; background: #04130d; border: 1px solid var(--gold-primary); color: #fff; border-radius: 4px; margin-bottom: 12px; outline: none; }
+    .copy-class-checkboxes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 140px; overflow-y: auto; margin-bottom: 14px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; }
+    .copy-class-item { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; cursor: pointer; }
+    .copy-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .btn-dialog { padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
+    .btn-dialog-cancel { background: transparent; border: 1px solid #7f8c8d; color: #bdc3c7; }
+    .btn-dialog-confirm { background: var(--gold-primary); border: none; color: #071912; }
 
     @media (min-width: 680px) {
       .phone-mode-switcher { display: none !important; }
@@ -810,11 +899,14 @@
 </head>
 <body>
 
-  <!-- 通用頂部導航列 (v1.7.2) -->
+  <!-- 通用頂部導航列 (v1.8.0 金色獨立徽章永久常駐) -->
   <header id="appHeader">
-    <div class="brand-box">
-      <span>⚜️</span> <span class="brand-text">魔法教務魔導系統</span>
-      <span class="version-tag">v1.7.2</span>
+    <div class="header-brand-group">
+      <div class="brand-box">
+        <span>⚜️</span> <span class="brand-text">魔法教務魔導系統</span>
+      </div>
+      <!-- 獨立 DOM 節點：強制在任何裝置與寬度下優先展示 -->
+      <span class="version-badge-permanent">v1.8.0</span>
     </div>
     <div class="header-actions">
       <span class="sync-gem" id="cloudSyncIndicator" title="連線狀態燈號"></span>
@@ -870,7 +962,7 @@
       <div class="class-tabs-container" id="classTabBar"></div>
 
       <div class="workspace-split">
-        <!-- 備課筆記模組 -->
+        <!-- 備課筆記模組 (含另存他班與進度導航) -->
         <div class="notes-column" id="notesColumn">
           <div class="notes-top-bar">
             <div class="notes-control-row">
@@ -884,7 +976,7 @@
             </div>
           </div>
 
-          <!-- 12 色富文字工具列 -->
+          <!-- 12 色富文字與進度插旗工具列 -->
           <div class="wysiwyg-toolbar" id="wysiwygToolbar">
             <select class="tool-select-fs" onchange="App.applyFontSize(this.value)">
               <option value="14px">14px (小)</option>
@@ -904,7 +996,7 @@
             </div>
 
             <div class="palette-popover">
-              <button class="btn-fmt" onclick="App.togglePalette('bgColorDropdown')">🖍️️ 螢光</button>
+              <button class="btn-fmt" onclick="App.togglePalette('bgColorDropdown')">🖍️ 螢光</button>
               <div class="palette-dropdown" id="bgColorDropdown"></div>
             </div>
 
@@ -912,15 +1004,38 @@
             <button class="btn-fmt" title="數字編號" onclick="document.execCommand('insertOrderedList')">1. 編號</button>
             <button class="btn-fmt" title="增加縮排" onclick="document.execCommand('indent')">⇥</button>
             <button class="btn-fmt" title="減少縮排" onclick="document.execCommand('outdent')">⇤</button>
-            <button class="btn-fmt" style="background: #27ae60; color: #fff; font-weight: bold; margin-left: auto;" onclick="App.saveCurrentNotes()">💾 儲存</button>
+            
+            <!-- 進度標記插旗鈕 -->
+            <button class="btn-action-marker" title="在游標位置標記教學進度" onclick="App.insertProgressBookmark()">📍 設進度標記</button>
+            <!-- 另存至他班鈕 -->
+            <button class="btn-action-copy" title="將此單元複製至其他班級" onclick="App.openCopyToClassModal()">📤 另存至他班</button>
+            <button class="btn-fmt" style="background: #27ae60; color: #fff; font-weight: bold;" onclick="App.saveCurrentNotes()">💾 儲存</button>
           </div>
 
           <div class="notes-container readonly" id="notesEditor" contenteditable="false"></div>
+
+          <!-- 另存至他班彈窗 -->
+          <div class="copy-dialog-overlay" id="copyDialogOverlay">
+            <div class="copy-dialog-card">
+              <h3 class="copy-dialog-title">📤 另存筆記至其他班級</h3>
+              <label style="font-size:0.8rem; color:#bdc3c7;">另存單元日期/標題（可微調）：</label>
+              <input type="text" id="copyTargetTitleInput" class="copy-input-text">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label style="font-size:0.8rem; color:#bdc3c7;">選擇目標班級：</label>
+                <button type="button" style="background:none; border:none; color:var(--gold-light); font-size:0.8rem; cursor:pointer;" onclick="App.toggleSelectAllCopyClasses()">全選/反選</button>
+              </div>
+              <div class="copy-class-checkboxes" id="copyClassCheckboxes"></div>
+              <div class="copy-dialog-actions">
+                <button class="btn-dialog btn-dialog-cancel" onclick="App.closeCopyToClassModal()">取消</button>
+                <button class="btn-dialog btn-dialog-confirm" onclick="App.executeCopyToClasses()">確認派發</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 計分面板區 -->
         <div class="scoring-column" id="scoringColumn">
-          <!-- 常駐醒目操作指引橫幅 (位置鎖定修復) -->
+          <!-- 常駐醒目操作指引橫幅 -->
           <div class="scoring-guide-banner">
             <span class="guide-text-highlight">
               <span>💡</span> <b>長按學生卡片可設定每週固定加分</b>（點擊為加減分）
@@ -1024,7 +1139,7 @@
     ====================================================================================================
     */
     const CONFIG = {
-      VERSION: "v1.7.2",
+      VERSION: "v1.8.0",
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
       MQTT_BROKER: "wss://broker.hivemq.com:8884/mqtt",
       MQTT_TOPIC: "magic_raycro_classroom_2026_stream",
@@ -1112,7 +1227,7 @@
       init() {
         this.restoreSession();
         this.loadStorageData();
-        this.sanitizeScores(); // 啟動自動淨化，徹底清除本機殘留的超負分
+        this.sanitizeScores();
         this.checkAndAdvanceCalendarWeek();
         this.renderAllClassTabs();
         this.populateLeaderboardSelect();
@@ -1127,7 +1242,6 @@
         this.startSilentResyncLoop();
       },
 
-      // 防禦型數據淨化：清除被 1900 年時間戳污染的負二十億分數
       sanitizeScores() {
         let changed = false;
         this.data.students.forEach(s => {
@@ -1193,7 +1307,7 @@
           this.mqttClient.subscribe(CONFIG.MQTT_TOPIC, (err) => {
             if (!err) {
               const logElem = document.getElementById('tvHeartbeatLog');
-              if (logElem) logElem.innerText = "🟢 遠端遙控通道已直連 (v1.7.2 就緒)";
+              if (logElem) logElem.innerText = "🟢 遠端遙控通道已直連 (v1.8.0 就緒)";
             }
           });
           this.startHeartbeatProbe();
@@ -1256,7 +1370,7 @@
       },
 
       restoreSession() {
-        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v172');
+        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v180');
         if (isAuth === 'true') {
           this.sessionUnlocked = true;
           document.getElementById('view-gate').classList.remove('active');
@@ -1281,7 +1395,7 @@
         const validPassword = this.data.adminPassword || "8888";
         if (pwd === validPassword || pwd === "8888") {
           this.sessionUnlocked = true;
-          sessionStorage.setItem('magic_auth_unlocked_v172', 'true');
+          sessionStorage.setItem('magic_auth_unlocked_v180', 'true');
           
           document.getElementById('gateLoginForm').style.display = 'none';
           document.getElementById('gateSubTitle').innerText = "導師通行印記確認，請選擇傳送陣方向：";
@@ -1307,7 +1421,7 @@
 
       logout() {
         this.sessionUnlocked = false;
-        sessionStorage.removeItem('magic_auth_unlocked_v172');
+        sessionStorage.removeItem('magic_auth_unlocked_v180');
         document.getElementById('appHeader').classList.remove('authorized');
         document.body.classList.remove('tv-theater-mode');
         
@@ -1327,7 +1441,7 @@
         document.getElementById('gateSubTitle').innerText = "請驗證導師通行印記以解除結界";
         document.getElementById('portalDispatcher').style.display = 'none';
         document.getElementById('gatePasswordInput').value = "";
-        document.getElementById('btnTvModeStandby').innerText = "🖥️️ 電腦投影大螢幕（接收手機廣播揭榜）";
+        document.getElementById('btnTvModeStandby').innerText = "🖥️ 電腦投影大螢幕（接收手機廣播揭榜）";
         document.getElementById('btnTvModeStandby').disabled = false;
         document.getElementById('tvHeartbeatLog').style.display = 'none';
       },
@@ -1344,7 +1458,7 @@
 
         const logElem = document.getElementById('tvHeartbeatLog');
         logElem.style.display = 'block';
-        logElem.innerText = "🟢 電腦大門待命中 | 歷程週次同步中 (v1.7.2)";
+        logElem.innerText = "🟢 電腦大門待命中 | 歷程週次同步中 (v1.8.0)";
       },
 
       executeRemoteReveal(targetClass, targetPeriod) {
@@ -1496,6 +1610,7 @@
           notesCol.classList.add('phone-active');
           btnNotes.classList.add('active');
           btnScore.classList.remove('active');
+          this.scrollToProgressMarker();
         }
       },
 
@@ -1533,7 +1648,7 @@
             classId: '101',
             noteId: '101_init',
             dateTitle: '2026-10-01 (首堂課)',
-            content: '<div><b>📌 今日任務：</b></div><ul><li>新學期重點介紹</li></ul>'
+            content: '<div><b>📌 今日任務：</b></div><ul><li>新學期重點介紹</li><li>魔杖持握實操</li></ul>'
           }
         ];
         this.data.currentWeekKey = "第1週";
@@ -1659,7 +1774,7 @@
 
       /*
       ======================================================================
-      備課筆記模組
+      備課筆記模組 (含進度標記與另存他班核心)
       ======================================================================
       */
       initNotesUnitSelector() {
@@ -1673,7 +1788,7 @@
             classId: this.currentClass,
             noteId: `${this.currentClass}_${Date.now()}`,
             dateTitle: `${new Date().toISOString().split('T')[0]} (首堂課)`,
-            content: '<div><b>📌 今日任務：</b></div><ul><li>新學期重點介紹</li></ul>'
+            content: '<div><b>📌 今日任務：</b></div><ul><li>新學期重點介紹</li><li>魔杖持握實操</li></ul>'
           };
           this.data.notes.push(defaultNote);
           this.saveStorageData();
@@ -1698,6 +1813,54 @@
         if (editor && note) {
           editor.innerHTML = note.content;
           this.notesDirty = false;
+          setTimeout(() => this.scrollToProgressMarker(), 250);
+        }
+      },
+
+      scrollToProgressMarker() {
+        const editor = document.getElementById('notesEditor');
+        if (!editor) return;
+        const marker = editor.querySelector('.magic-progress-marker');
+        if (marker) {
+          marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      },
+
+      insertProgressBookmark() {
+        const editor = document.getElementById('notesEditor');
+        if (!editor) return;
+
+        const oldMarkers = editor.querySelectorAll('.magic-progress-marker');
+        oldMarkers.forEach(el => {
+          const badge = el.querySelector('.magic-progress-badge');
+          if (badge) badge.remove();
+          const parent = el.parentNode;
+          while (el.firstChild) parent.insertBefore(el.firstChild, el);
+          el.remove();
+        });
+
+        const selection = window.getSelection();
+        if (!selection || !selection.rangeCount) {
+          alert('請先在筆記中點選您教到的段落位置！');
+          return;
+        }
+
+        const range = selection.getRangeAt(0);
+        const markerSpan = document.createElement('span');
+        markerSpan.className = 'magic-progress-marker';
+        markerSpan.innerHTML = `<span class="magic-progress-badge">📍 進度</span>`;
+
+        try {
+          if (!range.collapsed) {
+            markerSpan.appendChild(range.extractContents());
+          }
+          range.insertNode(markerSpan);
+          selection.removeAllRanges();
+          this.notesDirty = true;
+          this.saveCurrentNotes();
+          alert('✨ 已在此處插下「📍 教學進度標記」！下次進入系統將自動平滑定位於此。');
+        } catch (e) {
+          alert('標記插入失敗，請在段落文字內重新選取位置！');
         }
       },
 
@@ -1797,6 +1960,7 @@
           tb.classList.remove('active');
           editor.contentEditable = "false";
           editor.classList.add('readonly');
+          this.scrollToProgressMarker();
         }
       },
 
@@ -1830,6 +1994,116 @@
           }
         }
         alert('✨ 備課筆記已成功存檔！');
+      },
+
+      openCopyToClassModal() {
+        const note = this.data.notes.find(n => n.noteId === this.activeNoteId);
+        if (!note) return;
+
+        const overlay = document.getElementById('copyDialogOverlay');
+        const titleInput = document.getElementById('copyTargetTitleInput');
+        const cbContainer = document.getElementById('copyClassCheckboxes');
+
+        titleInput.value = note.dateTitle;
+        cbContainer.innerHTML = "";
+
+        const otherClasses = this.data.classes.filter(c => c !== this.currentClass);
+        if (otherClasses.length === 0) {
+          alert('目前系統僅有單一班級，無需另存至其他班級！');
+          return;
+        }
+
+        otherClasses.forEach(cid => {
+          const label = document.createElement('label');
+          label.className = 'copy-class-item';
+          label.innerHTML = `
+            <input type="checkbox" name="targetClass" value="${cid}" checked>
+            <span>【${cid} 班】</span>
+          `;
+          cbContainer.appendChild(label);
+        });
+
+        overlay.style.display = 'flex';
+      },
+
+      closeCopyToClassModal() {
+        document.getElementById('copyDialogOverlay').style.display = 'none';
+      },
+
+      toggleSelectAllCopyClasses() {
+        const cbs = document.querySelectorAll('input[name="targetClass"]');
+        const allChecked = Array.from(cbs).every(cb => cb.checked);
+        cbs.forEach(cb => cb.checked = !allChecked);
+      },
+
+      async executeCopyToClasses() {
+        const currentNote = this.data.notes.find(n => n.noteId === this.activeNoteId);
+        if (!currentNote) return;
+
+        const newTitle = document.getElementById('copyTargetTitleInput').value.trim();
+        if (!newTitle) {
+          alert('單元標題不可為空！');
+          return;
+        }
+
+        const selectedClasses = Array.from(document.querySelectorAll('input[name="targetClass"]:checked')).map(cb => cb.value);
+        if (selectedClasses.length === 0) {
+          alert('請至少勾選一個目標班級！');
+          return;
+        }
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = document.getElementById('notesEditor').innerHTML;
+        const markers = tempDiv.querySelectorAll('.magic-progress-marker');
+        markers.forEach(el => {
+          const badge = el.querySelector('.magic-progress-badge');
+          if (badge) badge.remove();
+          const parent = el.parentNode;
+          while (el.firstChild) parent.insertBefore(el.firstChild, el);
+          el.remove();
+        });
+        const cleanContent = tempDiv.innerHTML;
+
+        const notesToSaveCloud = [];
+        let successCount = 0;
+
+        for (const cid of selectedClasses) {
+          const existing = this.data.notes.find(n => n.classId === cid && n.dateTitle === newTitle);
+          if (existing) {
+            const overwrite = confirm(`⚠️ 【${cid} 班】已存在同名單元「${newTitle}」！\n是否確認覆蓋原筆記？\n（點選【取消】將跳過此班）`);
+            if (!overwrite) continue;
+            existing.content = cleanContent;
+            notesToSaveCloud.push(existing);
+            successCount++;
+          } else {
+            const newNoteObj = {
+              classId: cid,
+              noteId: `${cid}_${Date.now()}_${Math.random().toString(36).substring(2,6)}`,
+              dateTitle: newTitle,
+              content: cleanContent
+            };
+            this.data.notes.unshift(newNoteObj);
+            notesToSaveCloud.push(newNoteObj);
+            successCount++;
+          }
+        }
+
+        this.saveStorageData();
+        this.closeCopyToClassModal();
+
+        alert(`✨ 成功將筆記派發至 ${successCount} 個班級！已自動清除進度標記為純淨副本。`);
+
+        if (CONFIG.GAS_API_URL && !CONFIG.GAS_API_URL.includes("SAMPLE")) {
+          fetch(CONFIG.GAS_API_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+              action: 'batch_save_notes',
+              notesList: notesToSaveCloud
+            })
+          }).catch(e => console.warn('批次另存雲端同步延遲', e));
+        }
       },
 
       buildColorPalettes() {
@@ -1909,7 +2183,7 @@
 
       /*
       ======================================================================
-      排行榜邏輯 (v1.7.2 嚴格數值防護，杜絕超負分)
+      排行榜邏輯 (v1.8.0 嚴格防禦負分)
       ======================================================================
       */
       populateLeaderboardSelect() {
@@ -1963,7 +2237,6 @@
       computeRankedList(scoreKey) {
         const classStudents = this.data.students.filter(s => s.classId === this.currentClass);
         
-        // 嚴格過濾與型別校正，任何負二十億均強制歸零
         classStudents.forEach(st => {
           let score = Number(st[scoreKey]);
           if (isNaN(score) || score < -999) {
@@ -2443,7 +2716,7 @@
             if (json.notes && json.notes.length > 0) {
               this.data.notes = json.notes;
             }
-            this.sanitizeScores(); // 再次執行安全過濾
+            this.sanitizeScores();
             this.saveStorageData();
             
             this.renderAllClassTabs();
