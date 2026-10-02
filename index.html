@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 - v1.6.2</title>
+  <title>魔法學院教務魔導系統 - v1.7.0</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
@@ -134,7 +134,7 @@
       .btn-nav-logout { padding: 5px 6px; font-size: 0.75rem; }
     }
 
-    /* 視圖容器系統：嚴格隱藏與切換 */
+    /* 視圖容器系統：嚴格隱藏，杜絕圖層覆蓋穿透 */
     .app-viewport { width: 100%; height: calc(100% - 52px); position: relative; }
     .view-panel {
       position: absolute;
@@ -376,6 +376,16 @@
     }
     .student-touch-card:active { transform: scale(0.96); border-color: var(--gold-light); background: #184c39; }
     .card-seat-tag { position: absolute; top: 5px; left: 8px; font-size: 0.75rem; color: #9cb5ab; font-family: var(--font-serif); }
+    
+    /* 幹部星號標記樣式 */
+    .card-star-badge {
+      position: absolute;
+      top: 5px;
+      right: 8px;
+      font-size: 0.85rem;
+      filter: drop-shadow(0 0 3px var(--gold-primary));
+    }
+
     .card-student-name { font-size: 1.15rem; font-weight: bold; color: #ffffff; margin: 4px 0; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
     .card-score-value { font-size: 1.25rem; font-family: var(--font-serif); font-weight: bold; color: var(--gold-primary); }
 
@@ -640,7 +650,7 @@
     .badge-name { font-size: 1.15rem; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .badge-score { font-family: var(--font-serif); font-size: 0.95rem; color: var(--gold-light); }
 
-    /* 第 4～10 名：殿軍與優等英雄席 (總榜專用) */
+    /* 第 4～10 名：殿軍與優等英雄席 */
     .top10-tier-bar {
       width: 90%;
       max-width: 860px;
@@ -774,11 +784,11 @@
 </head>
 <body>
 
-  <!-- 通用頂部導航列 (v1.6.2) -->
+  <!-- 通用頂部導航列 (v1.7.0) -->
   <header id="appHeader">
     <div class="brand-box">
       <span>⚜️</span> <span class="brand-text">魔法教務魔導系統</span>
-      <span class="version-tag">v1.6.2</span>
+      <span class="version-tag">v1.7.0</span>
     </div>
     <div class="header-actions">
       <span class="sync-gem" id="cloudSyncIndicator" title="連線狀態燈號"></span>
@@ -805,7 +815,7 @@
         <div id="gateLoginForm">
           <input type="password" id="gatePasswordInput" class="gate-password-input" placeholder="••••" maxlength="8">
           <button class="btn-gold-action" onclick="App.handlePasswordVerify()">驗證導師印記</button>
-          <button class="btn-tv-mode" id="btnTvModeStandby" onclick="App.startTvStandbyMode()">🖥️️ 電腦投影大螢幕（接收手機廣播揭榜）</button>
+          <button class="btn-tv-mode" id="btnTvModeStandby" onclick="App.startTvStandbyMode()">🖥️ 電腦投影大螢幕（接收手機廣播揭榜）</button>
         </div>
 
         <div class="portal-dispatcher" id="portalDispatcher">
@@ -868,7 +878,7 @@
             </div>
 
             <div class="palette-popover">
-              <button class="btn-fmt" onclick="App.togglePalette('bgColorDropdown')">🖍️️ 螢光</button>
+              <button class="btn-fmt" onclick="App.togglePalette('bgColorDropdown')">🖍️ 螢光</button>
               <div class="palette-dropdown" id="bgColorDropdown"></div>
             </div>
 
@@ -904,10 +914,10 @@
       <div class="theater-action-header">
         <div class="board-select-group">
           <select id="leaderboardClassSelect" class="select-magic" onchange="App.onLeaderboardClassChange()"></select>
-          <button class="btn-nav-magic" id="btnToggleRankingType" onclick="App.toggleRankingPeriod()">目前為：【週排行榜】</button>
+          <button class="btn-nav-magic" id="btnToggleRankingType" onclick="App.toggleRankingPeriod()">目前為:【週排行榜】</button>
         </div>
         <div class="remote-actions-group">
-          <button class="btn-remote-broadcast" onclick="App.broadcastRevealSignal()">📢 廣播電腦大螢幕：開始揭榜</button>
+          <button class="btn-remote-broadcast" onclick="App.broadcastRevealSignal()">📢 廣播電腦大螢幕:開始揭榜</button>
           <button class="btn-remote-close" onclick="App.broadcastCloseSignal()">🚪 命令電腦關門・待命下一班</button>
         </div>
       </div>
@@ -980,7 +990,7 @@
     ====================================================================================================
     */
     const CONFIG = {
-      VERSION: "v1.6.2",
+      VERSION: "v1.7.0",
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
       MQTT_BROKER: "wss://broker.hivemq.com:8884/mqtt",
       MQTT_TOPIC: "magic_raycro_classroom_2026_stream",
@@ -1099,7 +1109,7 @@
           this.mqttClient.subscribe(CONFIG.MQTT_TOPIC, (err) => {
             if (!err) {
               const logElem = document.getElementById('tvHeartbeatLog');
-              if (logElem) logElem.innerText = "🟢 遠端遙控通道已直連 (v1.6.2 就緒)";
+              if (logElem) logElem.innerText = "🟢 遠端遙控通道已直連 (v1.7.0 就緒)";
             }
           });
           this.startHeartbeatProbe();
@@ -1111,18 +1121,16 @@
               const payload = JSON.parse(message.toString());
               if (payload.action === 'PING') return;
 
-              // 雙向切換榜別
               if (payload.action === 'SYNC_PERIOD') {
                 this.rankingPeriod = payload.period;
                 const btnToggle = document.getElementById('btnToggleRankingType');
                 if (btnToggle) {
-                  btnToggle.innerText = `目前為：【${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}】`;
+                  btnToggle.innerText = `目前為:【${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}】`;
                 }
                 this.loadLeaderboardData();
                 return;
               }
 
-              // 雙向切換班級
               if (payload.action === 'SYNC_CLASS') {
                 this.currentClass = payload.classId;
                 this.renderAllClassTabs();
@@ -1164,7 +1172,7 @@
       },
 
       restoreSession() {
-        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v162');
+        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v17');
         if (isAuth === 'true') {
           this.sessionUnlocked = true;
           document.getElementById('view-gate').classList.remove('active');
@@ -1189,7 +1197,7 @@
         const validPassword = this.data.adminPassword || "8888";
         if (pwd === validPassword || pwd === "8888") {
           this.sessionUnlocked = true;
-          sessionStorage.setItem('magic_auth_unlocked_v162', 'true');
+          sessionStorage.setItem('magic_auth_unlocked_v17', 'true');
           
           document.getElementById('gateLoginForm').style.display = 'none';
           document.getElementById('gateSubTitle').innerText = "導師通行印記確認，請選擇傳送陣方向：";
@@ -1215,7 +1223,7 @@
 
       logout() {
         this.sessionUnlocked = false;
-        sessionStorage.removeItem('magic_auth_unlocked_v162');
+        sessionStorage.removeItem('magic_auth_unlocked_v17');
         document.getElementById('appHeader').classList.remove('authorized');
         document.body.classList.remove('tv-theater-mode');
         
@@ -1252,7 +1260,7 @@
 
         const logElem = document.getElementById('tvHeartbeatLog');
         logElem.style.display = 'block';
-        logElem.innerText = "🟢 電腦大門待命中 | 心跳保活中 (v1.6.2)";
+        logElem.innerText = "🟢 電腦大門待命中 | 歷程週次同步中 (v1.7.0)";
       },
 
       executeRemoteReveal(targetClass, targetPeriod) {
@@ -1345,7 +1353,7 @@
 
       /*
       ======================================================================
-      視圖狀態機（徹底解決畫面重疊穿透 Bug）
+      視圖狀態機（絕對防禦：單一面板啟動機制）
       ======================================================================
       */
       switchView(viewKey) {
@@ -1359,7 +1367,6 @@
           }
         }
 
-        // 強制隱藏所有面板，清空殘留圖層
         document.querySelectorAll('.view-panel').forEach(p => {
           p.classList.remove('active');
           p.style.display = 'none';
@@ -1434,6 +1441,7 @@
               classId: cid,
               seatNo: i,
               name: `學員 ${i} 號`,
+              weeklyBonus: (i <= 2 ? 2 : 0), // 預設 1、2 號為幹部，每週固定加 2 分
               totalScore: 0,
               weeklyScore: 0
             });
@@ -1509,7 +1517,7 @@
 
             pill.onclick = () => {
               if (this.notesDirty) {
-                if (confirm('⚠️️ 備課筆記尚未儲存，是否立即儲存？')) {
+                if (confirm('⚠️ 備課筆記尚未儲存，是否立即儲存？')) {
                   this.saveCurrentNotes();
                 } else {
                   this.notesDirty = false;
@@ -1523,7 +1531,6 @@
               this.updateLeaderboardSelectValue();
               this.loadLeaderboardData();
 
-              // 廣播給電腦端切換班級
               if (this.mqttClient && this.mqttClient.connected) {
                 this.mqttClient.publish(CONFIG.MQTT_TOPIC, JSON.stringify({
                   action: 'SYNC_CLASS',
@@ -1569,6 +1576,11 @@
         }
       },
 
+      /*
+      ======================================================================
+      備課筆記模組
+      ======================================================================
+      */
       initNotesUnitSelector() {
         const sel = document.getElementById('notesUnitSelect');
         if (!sel) return;
@@ -1816,7 +1828,7 @@
 
       /*
       ======================================================================
-      排行榜邏輯 (v1.6.2 同分同名次、取前10名不限人數、榜別雙向即時連動)
+      排行榜與幹部星號加分邏輯 (v1.7.0)
       ======================================================================
       */
       populateLeaderboardSelect() {
@@ -1854,7 +1866,7 @@
       toggleRankingPeriod() {
         this.rankingPeriod = (this.rankingPeriod === 'weekly') ? 'total' : 'weekly';
         const btn = document.getElementById('btnToggleRankingType');
-        if (btn) btn.innerText = `目前為：【${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}】`;
+        if (btn) btn.innerText = `目前為:【${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}】`;
         
         if (this.mqttClient && this.mqttClient.connected) {
           this.mqttClient.publish(CONFIG.MQTT_TOPIC, JSON.stringify({
@@ -2028,7 +2040,7 @@
 
       /*
       ======================================================================
-      計分與名冊管理
+      計分面板與幹部設定 (支援點選學生設定每週固定加分與星號標記)
       ======================================================================
       */
       renderStudentCards() {
@@ -2041,14 +2053,55 @@
         currentList.forEach(s => {
           const card = document.createElement('div');
           card.className = "student-touch-card";
+          const hasBonus = (s.weeklyBonus && s.weeklyBonus > 0);
+
           card.innerHTML = `
             <span class="card-seat-tag">#${s.seatNo}</span>
+            ${hasBonus ? `<span class="card-star-badge" title="幹部固定加分 +${s.weeklyBonus}">⭐+${s.weeklyBonus}</span>` : ''}
             <div class="card-student-name">${s.name}</div>
             <div class="card-score-value">${s.totalScore}</div>
           `;
-          card.onclick = () => this.recordScore(s);
+
+          // 點擊卡片計分
+          card.onclick = (e) => {
+            this.recordScore(s);
+          };
+
+          // 長按卡片彈出設定視窗：指定為幹部並設定每週固定加分值
+          let longPressTimer;
+          card.ontouchstart = () => {
+            longPressTimer = setTimeout(() => {
+              this.promptConfigureCadre(s);
+            }, 600);
+          };
+          card.ontouchend = () => clearTimeout(longPressTimer);
+
+          card.onmousedown = () => {
+            longPressTimer = setTimeout(() => {
+              this.promptConfigureCadre(s);
+            }, 600);
+          };
+          card.onmouseup = () => clearTimeout(longPressTimer);
+
           grid.appendChild(card);
         });
+      },
+
+      promptConfigureCadre(student) {
+        const currentBonus = student.weeklyBonus || 0;
+        const input = prompt(
+          `【幹部每週自動加分設定】\n學員：#${student.seatNo} ${student.name}\n\n` +
+          `請輸入每週自動加分點數（例如：3 代表班長每週 +3 分；輸入 0 或空白代表取消幹部）：`,
+          currentBonus
+        );
+        if (input === null) return;
+
+        const bonusVal = parseInt(input.trim(), 10);
+        student.weeklyBonus = isNaN(bonusVal) ? 0 : Math.max(0, bonusVal);
+
+        this.saveStorageData();
+        this.renderStudentCards();
+        alert(`✨ 已更新【${student.name}】的幹部每週固定加分：+${student.weeklyBonus} 分`);
       },
 
       selectWeight(val) {
@@ -2127,6 +2180,7 @@
                 classId: this.currentClass,
                 seatNo: seat,
                 name: name,
+                weeklyBonus: 0,
                 totalScore: isNaN(total) ? 0 : total,
                 weeklyScore: isNaN(weekly) ? 0 : weekly
               });
@@ -2183,6 +2237,7 @@
             classId: cleanId,
             seatNo: i,
             name: `學員 ${i} 號`,
+            weeklyBonus: 0,
             totalScore: 0,
             weeklyScore: 0
           });
