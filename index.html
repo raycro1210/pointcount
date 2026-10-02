@@ -37,7 +37,6 @@
       overflow: hidden;
     }
 
-    /* 頂部通用導航列：移除版本標籤，預留完整按鈕空間避免擠壓 */
     header {
       display: none;
       height: 52px;
@@ -124,7 +123,6 @@
       .btn-nav-logout { padding: 5px 6px; font-size: 0.75rem; }
     }
 
-    /* 視圖容器系統 */
     .app-viewport { width: 100%; height: calc(100% - 52px); position: relative; }
     .view-panel {
       position: absolute;
@@ -194,7 +192,6 @@
 
     .gate-dialog-title { font-family: var(--font-serif); font-size: 1.55rem; color: var(--gold-light); margin-bottom: 4px; letter-spacing: 2px; }
     
-    /* 首頁正中央：樣式 1 經典典雅風格版本銘牌 */
     .gate-version-badge-classic {
       display: inline-block;
       font-family: var(--font-serif);
@@ -392,7 +389,7 @@
       background: linear-gradient(145deg, #103628 0%, #071e16 100%);
       border: 1.5px solid var(--emerald-border);
       border-radius: 8px;
-      padding: 12px 6px;
+      padding: 10px 6px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -419,8 +416,22 @@
       box-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
     }
 
-    .card-student-name { font-size: 1.15rem; font-weight: bold; color: #ffffff; margin: 4px 0; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
-    .card-score-value { font-size: 1.25rem; font-family: var(--font-serif); font-weight: bold; color: var(--gold-primary); }
+    .card-student-name { font-size: 1.15rem; font-weight: bold; color: #ffffff; margin: 2px 0; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+    
+    /* 雙數據並列展示：大字當日得分 + 小字累計總分 */
+    .card-score-value {
+      font-size: 1.35rem;
+      font-family: var(--font-serif);
+      font-weight: bold;
+      color: var(--gold-primary);
+      line-height: 1.2;
+    }
+    .card-total-tag {
+      font-size: 0.72rem;
+      color: #9cb5ab;
+      margin-top: 2px;
+      font-family: var(--font-sans);
+    }
 
     .scoring-bottom-toolbar {
       height: 58px;
@@ -638,7 +649,6 @@
       to { box-shadow: 0 0 12px rgba(243, 156, 18, 0.6); }
     }
 
-    /* 另存至他班互動彈窗 */
     .copy-dialog-overlay {
       display: none;
       position: absolute;
@@ -714,7 +724,6 @@
     .btn-remote-close { background: rgba(184, 75, 41, 0.25); border: 1.5px solid #e67e22; color: #f39c12; font-weight: bold; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
     .btn-remote-close:active { background: #e67e22; color: #fff; }
 
-    /* 前三名舞台 */
     .podium-stage {
       width: 90%;
       max-width: 640px;
@@ -763,7 +772,6 @@
     .badge-name { font-size: 1.15rem; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .badge-score { font-family: var(--font-serif); font-size: 0.95rem; color: var(--gold-light); }
 
-    /* 第 4～10 名：殿軍與優等英雄席 */
     .top10-tier-bar {
       width: 90%;
       max-width: 860px;
@@ -796,7 +804,6 @@
     .tier-name { font-size: 0.95rem; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .tier-score { font-size: 0.8rem; color: #a9cfbd; font-family: var(--font-serif); }
 
-    /* 全班名冊羊皮紙 */
     .roster-parchment-sheet {
       width: 90%;
       max-width: 860px;
@@ -897,7 +904,7 @@
 </head>
 <body>
 
-  <!-- 通用頂部導航列 (已移除多餘標籤，按鈕空間完整釋放) -->
+  <!-- 通用頂部導航列 -->
   <header id="appHeader">
     <div class="brand-box">
       <span>⚜️</span> <span class="brand-text">魔法教務魔導系統</span>
@@ -922,7 +929,7 @@
       
       <div class="gate-card" id="gateCard">
         <h1 class="gate-dialog-title">魔法學院門扉</h1>
-        <!-- 樣式 1：經典典雅風格版本銘牌 (待命與登入時永久保留) -->
+        <!-- 樣式 1：經典典雅風格版本銘牌 -->
         <div class="gate-version-badge-classic" id="gateVersionBadge">⚜️ 核心系統版本：加載中 ⚜️</div>
         
         <p class="gate-dialog-subtitle" id="gateSubTitle">請驗證導師通行印記以解除結界</p>
@@ -959,7 +966,7 @@
       <div class="class-tabs-container" id="classTabBar"></div>
 
       <div class="workspace-split">
-        <!-- 備課筆記模組 (含另存他班與進度導航) -->
+        <!-- 備課筆記模組 -->
         <div class="notes-column" id="notesColumn">
           <div class="notes-top-bar">
             <div class="notes-control-row">
@@ -973,7 +980,6 @@
             </div>
           </div>
 
-          <!-- 12 色富文字與進度插旗工具列 -->
           <div class="wysiwyg-toolbar" id="wysiwygToolbar">
             <select class="tool-select-fs" onchange="App.applyFontSize(this.value)">
               <option value="14px">14px (小)</option>
@@ -1032,7 +1038,7 @@
         <div class="scoring-column" id="scoringColumn">
           <div class="scoring-guide-banner">
             <span class="guide-text-highlight">
-              <span>💡</span> <b>長按學生卡片可設定每週固定加分</b>（點擊為加減分）
+              <span>💡</span> <b>長按學生卡片可設定每週固定加分</b>（點擊為當堂加減分）
             </span>
             <span id="currentWeekBannerTag" style="font-family: monospace; color: var(--gold-light); font-weight: bold;">【第1週】</span>
           </div>
@@ -1133,7 +1139,7 @@
     ====================================================================================================
     */
     const CONFIG = {
-      VERSION: "v1.8.0", // 🌟 單一真理來源：修改此處，全站自動連動
+      VERSION: "v1.9.0", // 🌟 單一真理來源：修改此處，全站自動連動
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
       MQTT_BROKER: "wss://broker.hivemq.com:8884/mqtt",
       MQTT_TOPIC: "magic_raycro_classroom_2026_stream",
@@ -1215,14 +1221,16 @@
         notes: [],
         currentWeekKey: "第1週",
         lastCheckedWeekNumber: null,
+        lastDailySessionDate: null, // 追蹤最後登入日期 YYYY-MM-DD
         adminPassword: '8888'
       },
 
       init() {
-        this.renderVersionToUI(); // 🌟 啟動瞬間強制將 CONFIG.VERSION 注入首頁銘牌
+        this.renderVersionToUI();
         this.restoreSession();
         this.loadStorageData();
         this.sanitizeScores();
+        this.checkAndAdvanceDailySession(); // 🌟 檢查跨日自動歸零當天得分
         this.checkAndAdvanceCalendarWeek();
         this.renderAllClassTabs();
         this.populateLeaderboardSelect();
@@ -1245,9 +1253,29 @@
         }
       },
 
+      // 🌟 跨日開課自動歸零核心機制 (選項 A)
+      checkAndAdvanceDailySession() {
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (this.data.lastDailySessionDate && this.data.lastDailySessionDate !== todayStr) {
+          // 偵測到新的一天！將每位學生的今日課堂得分歸零，總分與週分完整保留
+          this.data.students.forEach(st => {
+            st.todayScore = 0;
+          });
+          this.data.lastDailySessionDate = todayStr;
+          this.saveStorageData();
+        } else if (!this.data.lastDailySessionDate) {
+          this.data.lastDailySessionDate = todayStr;
+          this.saveStorageData();
+        }
+      },
+
       sanitizeScores() {
         let changed = false;
         this.data.students.forEach(s => {
+          if (typeof s.todayScore === 'undefined' || isNaN(s.todayScore)) {
+            s.todayScore = 0;
+            changed = true;
+          }
           if (s.weeklyScore < -999 || isNaN(s.weeklyScore)) {
             s.weeklyScore = 0;
             changed = true;
@@ -1373,7 +1401,7 @@
       },
 
       restoreSession() {
-        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v180');
+        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v190');
         if (isAuth === 'true') {
           this.sessionUnlocked = true;
           document.getElementById('view-gate').classList.remove('active');
@@ -1398,7 +1426,7 @@
         const validPassword = this.data.adminPassword || "8888";
         if (pwd === validPassword || pwd === "8888") {
           this.sessionUnlocked = true;
-          sessionStorage.setItem('magic_auth_unlocked_v180', 'true');
+          sessionStorage.setItem('magic_auth_unlocked_v190', 'true');
           
           document.getElementById('gateLoginForm').style.display = 'none';
           document.getElementById('gateSubTitle').innerText = "導師通行印記確認，請選擇傳送陣方向：";
@@ -1424,7 +1452,7 @@
 
       logout() {
         this.sessionUnlocked = false;
-        sessionStorage.removeItem('magic_auth_unlocked_v180');
+        sessionStorage.removeItem('magic_auth_unlocked_v190');
         document.getElementById('appHeader').classList.remove('authorized');
         document.body.classList.remove('tv-theater-mode');
         
@@ -1641,6 +1669,7 @@
               name: `學員 ${i} 號`,
               weeklyBonus: 0,
               baseScore: 0,
+              todayScore: 0, // 🌟 當日課堂得分（預設 0）
               totalScore: 0,
               weeklyScore: 0
             });
@@ -1656,6 +1685,7 @@
           }
         ];
         this.data.currentWeekKey = "第1週";
+        this.data.lastDailySessionDate = new Date().toISOString().split('T')[0];
         this.saveStorageData();
       },
 
@@ -1776,11 +1806,6 @@
         }
       },
 
-      /*
-      ======================================================================
-      備課筆記模組 (含進度標記與另存他班核心)
-      ======================================================================
-      */
       initNotesUnitSelector() {
         const sel = document.getElementById('notesUnitSelect');
         if (!sel) return;
@@ -2187,7 +2212,7 @@
 
       /*
       ======================================================================
-      排行榜邏輯 (v1.8.0 嚴格防禦負分)
+      排行榜邏輯 (v1.9.0 保持累計總分與週排行原樣)
       ======================================================================
       */
       populateLeaderboardSelect() {
@@ -2409,7 +2434,7 @@
 
       /*
       ======================================================================
-      計分與幹部設定 (長按學生設定固定加分)
+      計分卡片渲染 (雙數據展示：大字當日得分 + 小字累計總分)
       ======================================================================
       */
       renderStudentCards() {
@@ -2425,12 +2450,15 @@
           
           const bonusVal = Number(s.weeklyBonus) || 0;
           const hasBonus = bonusVal > 0;
+          const todayScore = Number(s.todayScore) || 0; // 當日得分 (從 0 起算)
+          const totalScore = Number(s.totalScore) || 0; // 學期總分
 
           card.innerHTML = `
             <span class="card-seat-tag">#${s.seatNo}</span>
             ${hasBonus ? `<span class="card-star-badge" title="幹部每週固定加分 +${bonusVal}">⭐+${bonusVal}</span>` : ''}
             <div class="card-student-name">${s.name}</div>
-            <div class="card-score-value">${s.totalScore}</div>
+            <div class="card-score-value">${todayScore >= 0 ? `+${todayScore}` : todayScore}</div>
+            <div class="card-total-tag">總分: ${totalScore}</div>
           `;
 
           card.onclick = () => {
@@ -2499,8 +2527,11 @@
       recordScore(student) {
         if (navigator.vibrate) navigator.vibrate(18);
 
-        student.totalScore += this.currentWeight;
-        student.weeklyScore += this.currentWeight;
+        // 🌟 當日得分累加 + 週得分累加 + 總分累加
+        student.todayScore = (Number(student.todayScore) || 0) + this.currentWeight;
+        student.totalScore = (Number(student.totalScore) || 0) + this.currentWeight;
+        student.weeklyScore = (Number(student.weeklyScore) || 0) + this.currentWeight;
+
         this.saveStorageData();
         this.renderStudentCards();
 
@@ -2571,6 +2602,7 @@
                 name: name,
                 weeklyBonus: 0,
                 baseScore: Math.max(0, total - weekly),
+                todayScore: 0,
                 totalScore: isNaN(total) ? 0 : total,
                 weeklyScore: isNaN(weekly) ? 0 : weekly
               });
@@ -2629,6 +2661,7 @@
             name: `學員 ${i} 號`,
             weeklyBonus: 0,
             baseScore: 0,
+            todayScore: 0,
             totalScore: 0,
             weeklyScore: 0
           });
@@ -2715,7 +2748,15 @@
             if (!this.data.classes.includes(this.currentClass)) {
               this.currentClass = this.data.classes[0];
             }
-            this.data.students = json.students || [];
+            
+            // 雲端同步時保留當日課堂得分
+            const cloudStudents = json.students || [];
+            cloudStudents.forEach(cs => {
+              const local = this.data.students.find(ls => ls.classId === cs.classId && ls.seatNo === cs.seatNo);
+              cs.todayScore = local ? (local.todayScore || 0) : 0;
+            });
+            this.data.students = cloudStudents;
+
             if (json.password) this.data.adminPassword = json.password;
             if (json.notes && json.notes.length > 0) {
               this.data.notes = json.notes;
