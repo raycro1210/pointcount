@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 - v1.8.0</title>
+  <title>魔法學院教務魔導系統</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
@@ -37,7 +37,7 @@
       overflow: hidden;
     }
 
-    /* 頂部通用導航列：修正版本號絕對可視結構 */
+    /* 頂部通用導航列：移除版本標籤，預留完整按鈕空間避免擠壓 */
     header {
       display: none;
       height: 52px;
@@ -52,13 +52,6 @@
     }
     header.authorized { display: flex; }
 
-    .header-brand-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-
     .brand-box {
       font-family: var(--font-serif);
       font-size: 0.95rem;
@@ -68,22 +61,9 @@
       gap: 4px;
       letter-spacing: 0.5px;
       white-space: nowrap;
-    }
-
-    /* 永久獨立常駐金色版本徽章 (強制永不壓縮、永不隱藏) */
-    .version-badge-permanent {
-      font-size: 0.75rem;
-      font-family: monospace;
-      font-weight: bold;
-      color: #ffd700;
-      background: rgba(212, 175, 55, 0.25);
-      border: 1px solid #ffd700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      letter-spacing: 0.5px;
-      flex-shrink: 0 !important;
-      display: inline-block !important;
-      box-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
+      flex-shrink: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .header-actions {
@@ -139,6 +119,7 @@
 
     @media (max-width: 400px) {
       .brand-box span.brand-text { display: none; }
+      .brand-box::after { content: "魔導系統"; font-size: 0.85rem; }
       .btn-nav-magic { padding: 5px 6px; font-size: 0.75rem; }
       .btn-nav-logout { padding: 5px 6px; font-size: 0.75rem; }
     }
@@ -158,7 +139,7 @@
       z-index: 20;
     }
 
-    /* 1. 學院大門頁面 (3D 雙開大門) */
+    /* 1. 學院大門頁面 (首頁正中央典雅版本銘牌) */
     #view-gate {
       position: absolute;
       inset: 0;
@@ -204,15 +185,32 @@
       background: rgba(11, 37, 28, 0.95);
       border: 2px solid var(--gold-primary);
       border-radius: 12px;
-      padding: 28px 22px;
+      padding: 24px 20px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px var(--gold-glow);
       text-align: center;
       transition: opacity 0.5s, transform 0.5s;
     }
     #view-gate.door-opening .gate-card { opacity: 0; transform: scale(0.9); pointer-events: none; }
 
-    .gate-dialog-title { font-family: var(--font-serif); font-size: 1.55rem; color: var(--gold-light); margin-bottom: 6px; letter-spacing: 2px; }
-    .gate-dialog-subtitle { color: #9cb5ab; font-size: 0.85rem; margin-bottom: 18px; }
+    .gate-dialog-title { font-family: var(--font-serif); font-size: 1.55rem; color: var(--gold-light); margin-bottom: 4px; letter-spacing: 2px; }
+    
+    /* 首頁正中央：樣式 1 經典典雅風格版本銘牌 */
+    .gate-version-badge-classic {
+      display: inline-block;
+      font-family: var(--font-serif);
+      font-size: 0.82rem;
+      font-weight: bold;
+      color: #ffd700;
+      background: rgba(4, 15, 11, 0.7);
+      border: 1px solid var(--gold-primary);
+      padding: 3px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+      letter-spacing: 1px;
+    }
+
+    .gate-dialog-subtitle { color: #9cb5ab; font-size: 0.85rem; margin-bottom: 16px; }
 
     .gate-password-input {
       width: 100%;
@@ -899,14 +897,10 @@
 </head>
 <body>
 
-  <!-- 通用頂部導航列 (v1.8.0 金色獨立徽章永久常駐) -->
+  <!-- 通用頂部導航列 (已移除多餘標籤，按鈕空間完整釋放) -->
   <header id="appHeader">
-    <div class="header-brand-group">
-      <div class="brand-box">
-        <span>⚜️</span> <span class="brand-text">魔法教務魔導系統</span>
-      </div>
-      <!-- 獨立 DOM 節點：強制在任何裝置與寬度下優先展示 -->
-      <span class="version-badge-permanent">v1.8.0</span>
+    <div class="brand-box">
+      <span>⚜️</span> <span class="brand-text">魔法教務魔導系統</span>
     </div>
     <div class="header-actions">
       <span class="sync-gem" id="cloudSyncIndicator" title="連線狀態燈號"></span>
@@ -919,7 +913,7 @@
 
   <main class="app-viewport" id="appViewport">
     
-    <!-- 1. 學院大門頁面 -->
+    <!-- 1. 學院大門頁面 (首頁正中央典雅版本銘牌) -->
     <section id="view-gate" class="view-panel active">
       <div class="gate-portal">
         <div class="gate-door left"><div class="door-relief"></div></div>
@@ -928,6 +922,9 @@
       
       <div class="gate-card" id="gateCard">
         <h1 class="gate-dialog-title">魔法學院門扉</h1>
+        <!-- 樣式 1：經典典雅風格版本銘牌 (待命與登入時永久保留) -->
+        <div class="gate-version-badge-classic" id="gateVersionBadge">⚜️ 核心系統版本：加載中 ⚜️</div>
+        
         <p class="gate-dialog-subtitle" id="gateSubTitle">請驗證導師通行印記以解除結界</p>
         
         <div id="gateLoginForm">
@@ -1005,9 +1002,7 @@
             <button class="btn-fmt" title="增加縮排" onclick="document.execCommand('indent')">⇥</button>
             <button class="btn-fmt" title="減少縮排" onclick="document.execCommand('outdent')">⇤</button>
             
-            <!-- 進度標記插旗鈕 -->
             <button class="btn-action-marker" title="在游標位置標記教學進度" onclick="App.insertProgressBookmark()">📍 設進度標記</button>
-            <!-- 另存至他班鈕 -->
             <button class="btn-action-copy" title="將此單元複製至其他班級" onclick="App.openCopyToClassModal()">📤 另存至他班</button>
             <button class="btn-fmt" style="background: #27ae60; color: #fff; font-weight: bold;" onclick="App.saveCurrentNotes()">💾 儲存</button>
           </div>
@@ -1035,7 +1030,6 @@
 
         <!-- 計分面板區 -->
         <div class="scoring-column" id="scoringColumn">
-          <!-- 常駐醒目操作指引橫幅 -->
           <div class="scoring-guide-banner">
             <span class="guide-text-highlight">
               <span>💡</span> <b>長按學生卡片可設定每週固定加分</b>（點擊為加減分）
@@ -1139,7 +1133,7 @@
     ====================================================================================================
     */
     const CONFIG = {
-      VERSION: "v1.8.0",
+      VERSION: "v1.8.0", // 🌟 單一真理來源：修改此處，全站自動連動
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
       MQTT_BROKER: "wss://broker.hivemq.com:8884/mqtt",
       MQTT_TOPIC: "magic_raycro_classroom_2026_stream",
@@ -1225,6 +1219,7 @@
       },
 
       init() {
+        this.renderVersionToUI(); // 🌟 啟動瞬間強制將 CONFIG.VERSION 注入首頁銘牌
         this.restoreSession();
         this.loadStorageData();
         this.sanitizeScores();
@@ -1240,6 +1235,14 @@
         this.initMqttChannel();
         this.fetchCloudData();
         this.startSilentResyncLoop();
+      },
+
+      renderVersionToUI() {
+        document.title = `魔法學院教務魔導系統 - ${CONFIG.VERSION}`;
+        const badge = document.getElementById('gateVersionBadge');
+        if (badge) {
+          badge.innerText = `⚜️ 核心系統版本：${CONFIG.VERSION} ⚜️`;
+        }
       },
 
       sanitizeScores() {
@@ -1307,7 +1310,7 @@
           this.mqttClient.subscribe(CONFIG.MQTT_TOPIC, (err) => {
             if (!err) {
               const logElem = document.getElementById('tvHeartbeatLog');
-              if (logElem) logElem.innerText = "🟢 遠端遙控通道已直連 (v1.8.0 就緒)";
+              if (logElem) logElem.innerText = `🟢 遠端遙控通道已直連 (${CONFIG.VERSION} 就緒)`;
             }
           });
           this.startHeartbeatProbe();
@@ -1444,6 +1447,7 @@
         document.getElementById('btnTvModeStandby').innerText = "🖥️ 電腦投影大螢幕（接收手機廣播揭榜）";
         document.getElementById('btnTvModeStandby').disabled = false;
         document.getElementById('tvHeartbeatLog').style.display = 'none';
+        this.renderVersionToUI();
       },
 
       startTvStandbyMode() {
@@ -1458,7 +1462,7 @@
 
         const logElem = document.getElementById('tvHeartbeatLog');
         logElem.style.display = 'block';
-        logElem.innerText = "🟢 電腦大門待命中 | 歷程週次同步中 (v1.8.0)";
+        logElem.innerText = `🟢 電腦大門待命中 | 版本：${CONFIG.VERSION}`;
       },
 
       executeRemoteReveal(targetClass, targetPeriod) {
