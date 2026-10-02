@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 - v1.7.1</title>
+  <title>魔法學院教務魔導系統 - v1.7.2</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
@@ -133,7 +133,6 @@
       .btn-nav-logout { padding: 5px 6px; font-size: 0.75rem; }
     }
 
-    /* 視圖容器系統 */
     .app-viewport { width: 100%; height: calc(100% - 52px); position: relative; }
     .view-panel {
       position: absolute;
@@ -351,19 +350,26 @@
     .workspace-split { flex: 1; display: flex; overflow: hidden; position: relative; }
     .scoring-column { flex: 1; display: flex; flex-direction: column; height: 100%; background: var(--bg-dark); }
     
-    /* 操作指引提示列 */
+    /* 常駐醒目操作說明列 (修復消失問題) */
     .scoring-guide-banner {
-      background: rgba(18, 62, 47, 0.7);
-      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-      padding: 6px 12px;
+      background: linear-gradient(90deg, rgba(16, 54, 40, 0.95), rgba(7, 25, 18, 0.95));
+      border-bottom: 1.5px solid var(--gold-primary);
+      padding: 7px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.8rem;
-      color: #c0d8cd;
+      font-size: 0.85rem;
+      color: #d1e7dc;
       flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
     }
-    .scoring-guide-banner span b { color: var(--gold-light); }
+    .guide-text-highlight {
+      color: #ffe680;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
 
     .students-scroll-area {
       flex: 1;
@@ -391,7 +397,7 @@
     .student-touch-card:active { transform: scale(0.96); border-color: var(--gold-light); background: #184c39; }
     .card-seat-tag { position: absolute; top: 5px; left: 8px; font-size: 0.75rem; color: #9cb5ab; font-family: var(--font-serif); }
     
-    /* 幹部星號標籤：唯有設定非零加分時才呈現 */
+    /* 幹部星號徽記 */
     .card-star-badge {
       position: absolute;
       top: 5px;
@@ -399,8 +405,8 @@
       font-size: 0.8rem;
       color: #ffd700;
       font-weight: bold;
-      background: rgba(0,0,0,0.5);
-      border: 1px solid rgba(255, 215, 0, 0.6);
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255, 215, 0, 0.7);
       padding: 1px 5px;
       border-radius: 10px;
       box-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
@@ -804,11 +810,11 @@
 </head>
 <body>
 
-  <!-- 通用頂部導航列 (v1.7.1) -->
+  <!-- 通用頂部導航列 (v1.7.2) -->
   <header id="appHeader">
     <div class="brand-box">
       <span>⚜️</span> <span class="brand-text">魔法教務魔導系統</span>
-      <span class="version-tag">v1.7.1</span>
+      <span class="version-tag">v1.7.2</span>
     </div>
     <div class="header-actions">
       <span class="sync-gem" id="cloudSyncIndicator" title="連線狀態燈號"></span>
@@ -898,7 +904,7 @@
             </div>
 
             <div class="palette-popover">
-              <button class="btn-fmt" onclick="App.togglePalette('bgColorDropdown')">🖍️ 螢光</button>
+              <button class="btn-fmt" onclick="App.togglePalette('bgColorDropdown')">🖍️️ 螢光</button>
               <div class="palette-dropdown" id="bgColorDropdown"></div>
             </div>
 
@@ -914,10 +920,12 @@
 
         <!-- 計分面板區 -->
         <div class="scoring-column" id="scoringColumn">
-          <!-- 操作指引提示列 -->
+          <!-- 常駐醒目操作指引橫幅 (位置鎖定修復) -->
           <div class="scoring-guide-banner">
-            <span>💡 提示：<b>點擊</b>加減分｜<b>長按卡片 0.6 秒</b>可設定/取消幹部每週固定加分</span>
-            <span id="currentWeekBannerTag" style="font-family: monospace; color: var(--gold-primary);">【第1週】</span>
+            <span class="guide-text-highlight">
+              <span>💡</span> <b>長按學生卡片可設定每週固定加分</b>（點擊為加減分）
+            </span>
+            <span id="currentWeekBannerTag" style="font-family: monospace; color: var(--gold-light); font-weight: bold;">【第1週】</span>
           </div>
 
           <div class="students-scroll-area" id="studentGrid"></div>
@@ -1016,7 +1024,7 @@
     ====================================================================================================
     */
     const CONFIG = {
-      VERSION: "v1.7.1",
+      VERSION: "v1.7.2",
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
       MQTT_BROKER: "wss://broker.hivemq.com:8884/mqtt",
       MQTT_TOPIC: "magic_raycro_classroom_2026_stream",
@@ -1104,7 +1112,8 @@
       init() {
         this.restoreSession();
         this.loadStorageData();
-        this.checkAndAdvanceCalendarWeek(); // 檢查跨週推進與幹部底分
+        this.sanitizeScores(); // 啟動自動淨化，徹底清除本機殘留的超負分
+        this.checkAndAdvanceCalendarWeek();
         this.renderAllClassTabs();
         this.populateLeaderboardSelect();
         this.renderStudentCards();
@@ -1118,10 +1127,24 @@
         this.startSilentResyncLoop();
       },
 
-      // 計算日曆週次並推進（每週一凌晨為界）
+      // 防禦型數據淨化：清除被 1900 年時間戳污染的負二十億分數
+      sanitizeScores() {
+        let changed = false;
+        this.data.students.forEach(s => {
+          if (s.weeklyScore < -999 || isNaN(s.weeklyScore)) {
+            s.weeklyScore = 0;
+            changed = true;
+          }
+          if (s.totalScore < -999 || isNaN(s.totalScore)) {
+            s.totalScore = Math.max(0, s.baseScore || 0);
+            changed = true;
+          }
+        });
+        if (changed) this.saveStorageData();
+      },
+
       checkAndAdvanceCalendarWeek() {
         const now = new Date();
-        // 取得當年的 ISO 週次編號
         const startOfYear = new Date(now.getFullYear(), 0, 1);
         const dayOfYear = ((now - startOfYear) / 86400000) + 1;
         const currentWeekNum = Math.ceil((dayOfYear + startOfYear.getDay()) / 7);
@@ -1130,22 +1153,20 @@
         if (bannerTag) bannerTag.innerText = `【${this.data.currentWeekKey || '第1週'}】`;
 
         if (this.data.lastCheckedWeekNumber !== null && this.data.lastCheckedWeekNumber !== currentWeekNum) {
-          // 偵測到跨週！自動推進至新一週
           const weekDigits = parseInt(this.data.currentWeekKey.replace(/[^0-9]/g, ''), 10) || 1;
           const newWeekKey = `第${weekDigits + 1}週`;
           this.data.currentWeekKey = newWeekKey;
           this.data.lastCheckedWeekNumber = currentWeekNum;
 
-          // 自動為所有幹部加上底分
           this.data.students.forEach(st => {
             const bonus = Number(st.weeklyBonus) || 0;
-            st.weeklyScore = bonus; // 當週以幹部底分起跳
+            st.weeklyScore = bonus;
             st.totalScore = (Number(st.totalScore) || 0) + bonus;
           });
 
           this.saveStorageData();
           this.pushScoresToCloud();
-          alert(`🔔 已邁入新的一週（${newWeekKey}）！系統已自動為全體班務幹部發放每週固定加分！`);
+          alert(`🔔 已邁入新的一週（${newWeekKey}）！已自動發放幹部每週固定加分！`);
         } else {
           this.data.lastCheckedWeekNumber = currentWeekNum;
           this.saveStorageData();
@@ -1172,7 +1193,7 @@
           this.mqttClient.subscribe(CONFIG.MQTT_TOPIC, (err) => {
             if (!err) {
               const logElem = document.getElementById('tvHeartbeatLog');
-              if (logElem) logElem.innerText = "🟢 遠端遙控通道已直連 (v1.7.1 就緒)";
+              if (logElem) logElem.innerText = "🟢 遠端遙控通道已直連 (v1.7.2 就緒)";
             }
           });
           this.startHeartbeatProbe();
@@ -1235,7 +1256,7 @@
       },
 
       restoreSession() {
-        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v171');
+        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v172');
         if (isAuth === 'true') {
           this.sessionUnlocked = true;
           document.getElementById('view-gate').classList.remove('active');
@@ -1260,7 +1281,7 @@
         const validPassword = this.data.adminPassword || "8888";
         if (pwd === validPassword || pwd === "8888") {
           this.sessionUnlocked = true;
-          sessionStorage.setItem('magic_auth_unlocked_v171', 'true');
+          sessionStorage.setItem('magic_auth_unlocked_v172', 'true');
           
           document.getElementById('gateLoginForm').style.display = 'none';
           document.getElementById('gateSubTitle').innerText = "導師通行印記確認，請選擇傳送陣方向：";
@@ -1286,7 +1307,7 @@
 
       logout() {
         this.sessionUnlocked = false;
-        sessionStorage.removeItem('magic_auth_unlocked_v171');
+        sessionStorage.removeItem('magic_auth_unlocked_v172');
         document.getElementById('appHeader').classList.remove('authorized');
         document.body.classList.remove('tv-theater-mode');
         
@@ -1306,7 +1327,7 @@
         document.getElementById('gateSubTitle').innerText = "請驗證導師通行印記以解除結界";
         document.getElementById('portalDispatcher').style.display = 'none';
         document.getElementById('gatePasswordInput').value = "";
-        document.getElementById('btnTvModeStandby').innerText = "🖥️ 電腦投影大螢幕（接收手機廣播揭榜）";
+        document.getElementById('btnTvModeStandby').innerText = "🖥️️ 電腦投影大螢幕（接收手機廣播揭榜）";
         document.getElementById('btnTvModeStandby').disabled = false;
         document.getElementById('tvHeartbeatLog').style.display = 'none';
       },
@@ -1323,7 +1344,7 @@
 
         const logElem = document.getElementById('tvHeartbeatLog');
         logElem.style.display = 'block';
-        logElem.innerText = "🟢 電腦大門待命中 | 歷程週次同步中 (v1.7.1)";
+        logElem.innerText = "🟢 電腦大門待命中 | 歷程週次同步中 (v1.7.2)";
       },
 
       executeRemoteReveal(targetClass, targetPeriod) {
@@ -1491,7 +1512,6 @@
         }
       },
 
-      // 嚴格將預設每位學生的 weeklyBonus 初始化為 0
       generateSeedData() {
         const list = [];
         this.data.classes.forEach(cid => {
@@ -1500,7 +1520,7 @@
               classId: cid,
               seatNo: i,
               name: `學員 ${i} 號`,
-              weeklyBonus: 0, // 預設非幹部，絕對不主動加上星號
+              weeklyBonus: 0,
               baseScore: 0,
               totalScore: 0,
               weeklyScore: 0
@@ -1889,7 +1909,7 @@
 
       /*
       ======================================================================
-      排行榜邏輯 (v1.7.1)
+      排行榜邏輯 (v1.7.2 嚴格數值防護，杜絕超負分)
       ======================================================================
       */
       populateLeaderboardSelect() {
@@ -1942,6 +1962,17 @@
 
       computeRankedList(scoreKey) {
         const classStudents = this.data.students.filter(s => s.classId === this.currentClass);
+        
+        // 嚴格過濾與型別校正，任何負二十億均強制歸零
+        classStudents.forEach(st => {
+          let score = Number(st[scoreKey]);
+          if (isNaN(score) || score < -999) {
+            st[scoreKey] = 0;
+          } else {
+            st[scoreKey] = Math.floor(score);
+          }
+        });
+
         const sorted = [...classStudents].sort((a, b) => (b[scoreKey] - a[scoreKey]) || (a.seatNo - b.seatNo));
 
         let currentRank = 1;
@@ -2101,7 +2132,7 @@
 
       /*
       ======================================================================
-      計分與幹部設定 (精準判定：唯有每週固定加分 > 0 才有星號標記)
+      計分與幹部設定 (長按學生設定固定加分)
       ======================================================================
       */
       renderStudentCards() {
@@ -2115,7 +2146,6 @@
           const card = document.createElement('div');
           card.className = "student-touch-card";
           
-          // 嚴格型別與數值檢驗：僅在每週固定加分大於 0 時顯示星號
           const bonusVal = Number(s.weeklyBonus) || 0;
           const hasBonus = bonusVal > 0;
 
@@ -2126,7 +2156,6 @@
             <div class="card-score-value">${s.totalScore}</div>
           `;
 
-          // 點擊卡片常規加分
           card.onclick = () => {
             if (this.longPressFired) {
               this.longPressFired = false;
@@ -2135,7 +2164,6 @@
             this.recordScore(s);
           };
 
-          // 長按卡片進入幹部固定加分設定（支援觸控與滑鼠）
           let pressTimer = null;
           const startPress = () => {
             this.longPressFired = false;
@@ -2143,7 +2171,7 @@
               this.longPressFired = true;
               if (navigator.vibrate) navigator.vibrate(35);
               this.promptConfigureCadre(s);
-            }, 600);
+            }, 550);
           };
           const cancelPress = () => {
             if (pressTimer) clearTimeout(pressTimer);
@@ -2163,8 +2191,8 @@
       promptConfigureCadre(student) {
         const currentBonus = Number(student.weeklyBonus) || 0;
         const input = prompt(
-          `【幹部每週固定加分設定】\n學員：#${student.seatNo} ${student.name}\n\n` +
-          `• 輸入點數（例如：3 代表班長每週一自動 +3 分）\n` +
+          `【設定幹部每週固定加分】\n學員：#${student.seatNo} ${student.name}\n\n` +
+          `• 輸入點數（例如：3 代表每週一自動加 3 分）\n` +
           `• 輸入 0 或留白：取消幹部身份並移除星號\n\n目前設定點數：`,
           currentBonus
         );
@@ -2178,9 +2206,9 @@
         this.pushScoresToCloud();
 
         if (student.weeklyBonus > 0) {
-          alert(`✨ 已成功設定【#${student.seatNo} ${student.name}】為班務幹部！\n卡片已標註 ⭐+${student.weeklyBonus}，每週一凌晨將自動發放底分！`);
+          alert(`✨ 已成功設定【#${student.seatNo} ${student.name}】每週固定加 +${student.weeklyBonus} 分！卡片已標註星號 ⭐`);
         } else {
-          alert(`已取消【#${student.seatNo} ${student.name}】的幹部設定，星號標記已移除。`);
+          alert(`已取消【#${student.seatNo} ${student.name}】的幹部設定，星號已移除。`);
         }
       },
 
@@ -2415,6 +2443,7 @@
             if (json.notes && json.notes.length > 0) {
               this.data.notes = json.notes;
             }
+            this.sanitizeScores(); // 再次執行安全過濾
             this.saveStorageData();
             
             this.renderAllClassTabs();
