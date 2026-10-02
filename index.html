@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 - v1.7.0</title>
+  <title>魔法學院教務魔導系統 - v1.7.1</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
@@ -37,7 +37,6 @@
       overflow: hidden;
     }
 
-    /* 頂部通用導航列 */
     header {
       display: none;
       height: 52px;
@@ -134,7 +133,7 @@
       .btn-nav-logout { padding: 5px 6px; font-size: 0.75rem; }
     }
 
-    /* 視圖容器系統：嚴格隱藏，杜絕圖層覆蓋穿透 */
+    /* 視圖容器系統 */
     .app-viewport { width: 100%; height: calc(100% - 52px); position: relative; }
     .view-panel {
       position: absolute;
@@ -351,6 +350,21 @@
 
     .workspace-split { flex: 1; display: flex; overflow: hidden; position: relative; }
     .scoring-column { flex: 1; display: flex; flex-direction: column; height: 100%; background: var(--bg-dark); }
+    
+    /* 操作指引提示列 */
+    .scoring-guide-banner {
+      background: rgba(18, 62, 47, 0.7);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+      padding: 6px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: #c0d8cd;
+      flex-shrink: 0;
+    }
+    .scoring-guide-banner span b { color: var(--gold-light); }
+
     .students-scroll-area {
       flex: 1;
       overflow-y: auto;
@@ -377,13 +391,19 @@
     .student-touch-card:active { transform: scale(0.96); border-color: var(--gold-light); background: #184c39; }
     .card-seat-tag { position: absolute; top: 5px; left: 8px; font-size: 0.75rem; color: #9cb5ab; font-family: var(--font-serif); }
     
-    /* 幹部星號標記樣式 */
+    /* 幹部星號標籤：唯有設定非零加分時才呈現 */
     .card-star-badge {
       position: absolute;
       top: 5px;
       right: 8px;
-      font-size: 0.85rem;
-      filter: drop-shadow(0 0 3px var(--gold-primary));
+      font-size: 0.8rem;
+      color: #ffd700;
+      font-weight: bold;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255, 215, 0, 0.6);
+      padding: 1px 5px;
+      border-radius: 10px;
+      box-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
     }
 
     .card-student-name { font-size: 1.15rem; font-weight: bold; color: #ffffff; margin: 4px 0; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
@@ -784,11 +804,11 @@
 </head>
 <body>
 
-  <!-- 通用頂部導航列 (v1.7.0) -->
+  <!-- 通用頂部導航列 (v1.7.1) -->
   <header id="appHeader">
     <div class="brand-box">
       <span>⚜️</span> <span class="brand-text">魔法教務魔導系統</span>
-      <span class="version-tag">v1.7.0</span>
+      <span class="version-tag">v1.7.1</span>
     </div>
     <div class="header-actions">
       <span class="sync-gem" id="cloudSyncIndicator" title="連線狀態燈號"></span>
@@ -894,6 +914,12 @@
 
         <!-- 計分面板區 -->
         <div class="scoring-column" id="scoringColumn">
+          <!-- 操作指引提示列 -->
+          <div class="scoring-guide-banner">
+            <span>💡 提示：<b>點擊</b>加減分｜<b>長按卡片 0.6 秒</b>可設定/取消幹部每週固定加分</span>
+            <span id="currentWeekBannerTag" style="font-family: monospace; color: var(--gold-primary);">【第1週】</span>
+          </div>
+
           <div class="students-scroll-area" id="studentGrid"></div>
           <div class="scoring-bottom-toolbar">
             <button class="weight-chip" onclick="App.selectWeight(-5)">-5</button>
@@ -990,7 +1016,7 @@
     ====================================================================================================
     */
     const CONFIG = {
-      VERSION: "v1.7.0",
+      VERSION: "v1.7.1",
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
       MQTT_BROKER: "wss://broker.hivemq.com:8884/mqtt",
       MQTT_TOPIC: "magic_raycro_classroom_2026_stream",
@@ -1070,12 +1096,15 @@
         classes: ['101', '102', '103'],
         students: [],
         notes: [],
+        currentWeekKey: "第1週",
+        lastCheckedWeekNumber: null,
         adminPassword: '8888'
       },
 
       init() {
         this.restoreSession();
         this.loadStorageData();
+        this.checkAndAdvanceCalendarWeek(); // 檢查跨週推進與幹部底分
         this.renderAllClassTabs();
         this.populateLeaderboardSelect();
         this.renderStudentCards();
@@ -1087,6 +1116,40 @@
         this.initMqttChannel();
         this.fetchCloudData();
         this.startSilentResyncLoop();
+      },
+
+      // 計算日曆週次並推進（每週一凌晨為界）
+      checkAndAdvanceCalendarWeek() {
+        const now = new Date();
+        // 取得當年的 ISO 週次編號
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        const dayOfYear = ((now - startOfYear) / 86400000) + 1;
+        const currentWeekNum = Math.ceil((dayOfYear + startOfYear.getDay()) / 7);
+
+        const bannerTag = document.getElementById('currentWeekBannerTag');
+        if (bannerTag) bannerTag.innerText = `【${this.data.currentWeekKey || '第1週'}】`;
+
+        if (this.data.lastCheckedWeekNumber !== null && this.data.lastCheckedWeekNumber !== currentWeekNum) {
+          // 偵測到跨週！自動推進至新一週
+          const weekDigits = parseInt(this.data.currentWeekKey.replace(/[^0-9]/g, ''), 10) || 1;
+          const newWeekKey = `第${weekDigits + 1}週`;
+          this.data.currentWeekKey = newWeekKey;
+          this.data.lastCheckedWeekNumber = currentWeekNum;
+
+          // 自動為所有幹部加上底分
+          this.data.students.forEach(st => {
+            const bonus = Number(st.weeklyBonus) || 0;
+            st.weeklyScore = bonus; // 當週以幹部底分起跳
+            st.totalScore = (Number(st.totalScore) || 0) + bonus;
+          });
+
+          this.saveStorageData();
+          this.pushScoresToCloud();
+          alert(`🔔 已邁入新的一週（${newWeekKey}）！系統已自動為全體班務幹部發放每週固定加分！`);
+        } else {
+          this.data.lastCheckedWeekNumber = currentWeekNum;
+          this.saveStorageData();
+        }
       },
 
       startSilentResyncLoop() {
@@ -1109,7 +1172,7 @@
           this.mqttClient.subscribe(CONFIG.MQTT_TOPIC, (err) => {
             if (!err) {
               const logElem = document.getElementById('tvHeartbeatLog');
-              if (logElem) logElem.innerText = "🟢 遠端遙控通道已直連 (v1.7.0 就緒)";
+              if (logElem) logElem.innerText = "🟢 遠端遙控通道已直連 (v1.7.1 就緒)";
             }
           });
           this.startHeartbeatProbe();
@@ -1172,7 +1235,7 @@
       },
 
       restoreSession() {
-        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v17');
+        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v171');
         if (isAuth === 'true') {
           this.sessionUnlocked = true;
           document.getElementById('view-gate').classList.remove('active');
@@ -1197,7 +1260,7 @@
         const validPassword = this.data.adminPassword || "8888";
         if (pwd === validPassword || pwd === "8888") {
           this.sessionUnlocked = true;
-          sessionStorage.setItem('magic_auth_unlocked_v17', 'true');
+          sessionStorage.setItem('magic_auth_unlocked_v171', 'true');
           
           document.getElementById('gateLoginForm').style.display = 'none';
           document.getElementById('gateSubTitle').innerText = "導師通行印記確認，請選擇傳送陣方向：";
@@ -1223,7 +1286,7 @@
 
       logout() {
         this.sessionUnlocked = false;
-        sessionStorage.removeItem('magic_auth_unlocked_v17');
+        sessionStorage.removeItem('magic_auth_unlocked_v171');
         document.getElementById('appHeader').classList.remove('authorized');
         document.body.classList.remove('tv-theater-mode');
         
@@ -1260,7 +1323,7 @@
 
         const logElem = document.getElementById('tvHeartbeatLog');
         logElem.style.display = 'block';
-        logElem.innerText = "🟢 電腦大門待命中 | 歷程週次同步中 (v1.7.0)";
+        logElem.innerText = "🟢 電腦大門待命中 | 歷程週次同步中 (v1.7.1)";
       },
 
       executeRemoteReveal(targetClass, targetPeriod) {
@@ -1351,11 +1414,6 @@
         alert('🚪 已命令電腦大門向內閉合，進入待命狀態！');
       },
 
-      /*
-      ======================================================================
-      視圖狀態機（絕對防禦：單一面板啟動機制）
-      ======================================================================
-      */
       switchView(viewKey) {
         if (!this.sessionUnlocked && viewKey !== 'gate' && !this.isTvStandby) return;
 
@@ -1433,6 +1491,7 @@
         }
       },
 
+      // 嚴格將預設每位學生的 weeklyBonus 初始化為 0
       generateSeedData() {
         const list = [];
         this.data.classes.forEach(cid => {
@@ -1441,7 +1500,8 @@
               classId: cid,
               seatNo: i,
               name: `學員 ${i} 號`,
-              weeklyBonus: (i <= 2 ? 2 : 0), // 預設 1、2 號為幹部，每週固定加 2 分
+              weeklyBonus: 0, // 預設非幹部，絕對不主動加上星號
+              baseScore: 0,
               totalScore: 0,
               weeklyScore: 0
             });
@@ -1456,6 +1516,7 @@
             content: '<div><b>📌 今日任務：</b></div><ul><li>新學期重點介紹</li></ul>'
           }
         ];
+        this.data.currentWeekKey = "第1週";
         this.saveStorageData();
       },
 
@@ -1828,7 +1889,7 @@
 
       /*
       ======================================================================
-      排行榜與幹部星號加分邏輯 (v1.7.0)
+      排行榜邏輯 (v1.7.1)
       ======================================================================
       */
       populateLeaderboardSelect() {
@@ -2040,7 +2101,7 @@
 
       /*
       ======================================================================
-      計分面板與幹部設定 (支援點選學生設定每週固定加分與星號標記)
+      計分與幹部設定 (精準判定：唯有每週固定加分 > 0 才有星號標記)
       ======================================================================
       */
       renderStudentCards() {
@@ -2053,45 +2114,58 @@
         currentList.forEach(s => {
           const card = document.createElement('div');
           card.className = "student-touch-card";
-          const hasBonus = (s.weeklyBonus && s.weeklyBonus > 0);
+          
+          // 嚴格型別與數值檢驗：僅在每週固定加分大於 0 時顯示星號
+          const bonusVal = Number(s.weeklyBonus) || 0;
+          const hasBonus = bonusVal > 0;
 
           card.innerHTML = `
             <span class="card-seat-tag">#${s.seatNo}</span>
-            ${hasBonus ? `<span class="card-star-badge" title="幹部固定加分 +${s.weeklyBonus}">⭐+${s.weeklyBonus}</span>` : ''}
+            ${hasBonus ? `<span class="card-star-badge" title="幹部每週固定加分 +${bonusVal}">⭐+${bonusVal}</span>` : ''}
             <div class="card-student-name">${s.name}</div>
             <div class="card-score-value">${s.totalScore}</div>
           `;
 
-          // 點擊卡片計分
-          card.onclick = (e) => {
+          // 點擊卡片常規加分
+          card.onclick = () => {
+            if (this.longPressFired) {
+              this.longPressFired = false;
+              return;
+            }
             this.recordScore(s);
           };
 
-          // 長按卡片彈出設定視窗：指定為幹部並設定每週固定加分值
-          let longPressTimer;
-          card.ontouchstart = () => {
-            longPressTimer = setTimeout(() => {
+          // 長按卡片進入幹部固定加分設定（支援觸控與滑鼠）
+          let pressTimer = null;
+          const startPress = () => {
+            this.longPressFired = false;
+            pressTimer = setTimeout(() => {
+              this.longPressFired = true;
+              if (navigator.vibrate) navigator.vibrate(35);
               this.promptConfigureCadre(s);
             }, 600);
           };
-          card.ontouchend = () => clearTimeout(longPressTimer);
+          const cancelPress = () => {
+            if (pressTimer) clearTimeout(pressTimer);
+          };
 
-          card.onmousedown = () => {
-            longPressTimer = setTimeout(() => {
-              this.promptConfigureCadre(s);
-            }, 600);
-          };
-          card.onmouseup = () => clearTimeout(longPressTimer);
+          card.ontouchstart = startPress;
+          card.ontouchend = cancelPress;
+          card.ontouchcancel = cancelPress;
+          card.onmousedown = startPress;
+          card.onmouseup = cancelPress;
+          card.onmouseleave = cancelPress;
 
           grid.appendChild(card);
         });
       },
 
       promptConfigureCadre(student) {
-        const currentBonus = student.weeklyBonus || 0;
+        const currentBonus = Number(student.weeklyBonus) || 0;
         const input = prompt(
-          `【幹部每週自動加分設定】\n學員：#${student.seatNo} ${student.name}\n\n` +
-          `請輸入每週自動加分點數（例如：3 代表班長每週 +3 分；輸入 0 或空白代表取消幹部）：`,
+          `【幹部每週固定加分設定】\n學員：#${student.seatNo} ${student.name}\n\n` +
+          `• 輸入點數（例如：3 代表班長每週一自動 +3 分）\n` +
+          `• 輸入 0 或留白：取消幹部身份並移除星號\n\n目前設定點數：`,
           currentBonus
         );
         if (input === null) return;
@@ -2101,7 +2175,13 @@
 
         this.saveStorageData();
         this.renderStudentCards();
-        alert(`✨ 已更新【${student.name}】的幹部每週固定加分：+${student.weeklyBonus} 分`);
+        this.pushScoresToCloud();
+
+        if (student.weeklyBonus > 0) {
+          alert(`✨ 已成功設定【#${student.seatNo} ${student.name}】為班務幹部！\n卡片已標註 ⭐+${student.weeklyBonus}，每週一凌晨將自動發放底分！`);
+        } else {
+          alert(`已取消【#${student.seatNo} ${student.name}】的幹部設定，星號標記已移除。`);
+        }
       },
 
       selectWeight(val) {
@@ -2133,7 +2213,11 @@
         }
 
         try {
-          const payload = { action: 'sync_scores', data: this.data.students };
+          const payload = {
+            action: 'sync_scores',
+            data: this.data.students,
+            weekKey: this.data.currentWeekKey || '第1週'
+          };
           const response = await fetch(CONFIG.GAS_API_URL, {
             method: 'POST',
             mode: 'cors',
@@ -2181,6 +2265,7 @@
                 seatNo: seat,
                 name: name,
                 weeklyBonus: 0,
+                baseScore: Math.max(0, total - weekly),
                 totalScore: isNaN(total) ? 0 : total,
                 weeklyScore: isNaN(weekly) ? 0 : weekly
               });
@@ -2238,6 +2323,7 @@
             seatNo: i,
             name: `學員 ${i} 號`,
             weeklyBonus: 0,
+            baseScore: 0,
             totalScore: 0,
             weeklyScore: 0
           });
