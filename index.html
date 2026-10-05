@@ -194,7 +194,7 @@
       justify-content: center;
       align-items: center;
     }
-    .door-relief::after { content: "⚜️"; font-size: 3rem; opacity: 0.3; }
+    .door-relief::after { content: "⚜️️"; font-size: 3rem; opacity: 0.3; }
 
     #view-gate.door-opening .gate-door.left { transform: rotateY(-105deg); }
     #view-gate.door-opening .gate-door.right { transform: rotateY(105deg); }
@@ -380,11 +380,11 @@
     .workspace-split { flex: 1; display: flex; overflow: hidden; position: relative; }
     .scoring-column { flex: 1; display: flex; flex-direction: column; height: 100%; background: var(--bg-dark); }
     
-    /* 操作指引橫幅 (單行防折行 + 樣式 1 緊湊上傳按鈕) */
+    /* 操作指引橫幅 (純粹俐落單行，全自動託管) */
     .scoring-guide-banner {
       background: linear-gradient(90deg, rgba(16, 54, 40, 0.95), rgba(7, 25, 18, 0.95));
       border-bottom: 1.5px solid var(--gold-primary);
-      padding: 6px 10px;
+      padding: 8px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -396,53 +396,23 @@
     }
     .guide-text-highlight {
       color: #ffe680;
-      font-size: clamp(0.68rem, 2.1vw, 0.8rem);
+      font-size: clamp(0.72rem, 2.2vw, 0.84rem);
       font-weight: bold;
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       flex-shrink: 1;
     }
-    .banner-right-group {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      flex-shrink: 0;
-    }
     .week-tag-compact {
       font-family: monospace;
-      font-size: clamp(0.7rem, 2.1vw, 0.82rem);
+      font-size: clamp(0.74rem, 2.2vw, 0.85rem);
       color: var(--gold-light);
       font-weight: bold;
       white-space: nowrap;
-    }
-
-    /* 樣式 1 緊湊圖示按鈕 + 回饋 A 狀態過渡 */
-    .btn-manual-sync {
-      background: linear-gradient(180deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.1) 100%);
-      border: 1px solid var(--gold-primary);
-      color: #fff;
-      font-size: 0.72rem;
-      font-family: var(--font-sans);
-      font-weight: bold;
-      padding: 3px 7px;
-      border-radius: 4px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 2px;
-      white-space: nowrap;
-      transition: all 0.25s ease;
-    }
-    .btn-manual-sync:active { transform: scale(0.95); background: var(--gold-primary); color: #071912; }
-    .btn-manual-sync.success-state {
-      background: #27ae60 !important;
-      border-color: #2ecc71 !important;
-      color: #fff !important;
-      box-shadow: 0 0 10px rgba(46, 204, 113, 0.6);
+      flex-shrink: 0;
     }
 
     .students-scroll-area {
@@ -1012,7 +982,7 @@
       
       <div class="gate-card" id="gateCard">
         <h1 class="gate-dialog-title">魔法學院門扉</h1>
-        <div class="gate-version-badge-classic" id="gateVersionBadge">⚜️ 核心系統版本：加載中 ⚜️</div>
+        <div class="gate-version-badge-classic" id="gateVersionBadge">⚜️️ 核心系統版本：加載中 ⚜️</div>
         
         <p class="gate-dialog-subtitle" id="gateSubTitle">請驗證導師通行印記以解除結界</p>
         
@@ -1115,18 +1085,12 @@
         </div>
 
         <div class="scoring-column" id="scoringColumn">
-          <!-- 自適應單行操作指引橫幅 (整合樣式 1 [☁️ 上傳] 按鈕) -->
+          <!-- 自適應單行操作指引橫幅 (全自動託管，純粹簡潔) -->
           <div class="scoring-guide-banner">
             <span class="guide-text-highlight">
               <span>💡</span> 長按設固定加分｜點擊加減分
             </span>
-            <div class="banner-right-group">
-              <span class="week-tag-compact" id="currentWeekBannerTag">【第1週】</span>
-              <!-- 樣式 1 緊湊上傳按鈕 -->
-              <button class="btn-manual-sync" id="btnManualUpload" onclick="App.executeManualForceSyncAll()" title="強制將所有班級成績覆蓋上傳至 Google 試算表">
-                ☁️ 上傳
-              </button>
-            </div>
+            <span class="week-tag-compact" id="currentWeekBannerTag">【第1週】</span>
           </div>
 
           <div class="students-scroll-area" id="studentGrid"></div>
@@ -1223,7 +1187,7 @@
     ====================================================================================================
     */
     const CONFIG = {
-      VERSION: "v2.1.0", // 🌟 現場操作極致流暢版
+      VERSION: "v2.2.0", // 🌟 無感全自動極致穩定版
       
       // 👇👇👇 請將下方雙引號內的網址，完整替換成您自己的 GAS 部署網址 👇👇👇
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
@@ -1231,12 +1195,13 @@
 
       MQTT_BROKER: "wss://broker.hivemq.com:8884/mqtt",
       MQTT_TOPIC: "magic_raycro_classroom_2026_stream",
-      DEBOUNCE_DELAY: 5000,
+      DEBOUNCE_DELAY: 2500, // 🌟 拍板：收斂至 2.5 秒防抖自動送出
       AUTO_RESYNC_INTERVAL: 30000,
       HEARTBEAT_INTERVAL: 15000,
       NOTE_AUTO_SAVE_DELAY: 3000,
       TV_POLL_INTERVAL: 2000,
-      LONG_PRESS_THRESHOLD: 1500 // 🌟 改為 1.5 秒防誤觸長按閾值
+      LONG_PRESS_THRESHOLD: 1500, // 🌟 1.5 秒防誤觸長按閾值
+      RETRY_SYNC_INTERVAL: 15000 // 🌟 方案 A：背景每 15 秒安靜重試同步
     };
     /*
     ====================================================================================================
@@ -1307,10 +1272,12 @@
       heartbeatTimer: null,
       syncTimer: null,
       resyncTimer: null,
+      retrySyncTimer: null,
       noteAutoSaveTimer: null,
       tvPollTimer: null,
       lastHandledTriggerTime: 0,
       longPressFired: false,
+      isSyncingNow: false,
       data: {
         classes: ['101', '102', '103'],
         students: [],
@@ -1318,7 +1285,8 @@
         currentWeekKey: "第1週",
         lastCheckedWeekNumber: null,
         lastDailySessionDate: null,
-        adminPassword: '8888'
+        adminPassword: '8888',
+        isDirty: false // 🌟 Dirty Flag 防護盾：記錄本機是否有未同步至雲端的真實加分
       },
 
       init() {
@@ -1336,10 +1304,14 @@
         this.initNotesPasteInterceptor();
         this.initTabKeyNesting();
         this.initCanvasConfetti();
-        this.setSyncStatus('synced');
+        
+        // 初始燈號：若上次有未同步數據則顯示橘燈，否則綠燈
+        this.setSyncStatus(this.data.isDirty ? 'pending' : 'synced');
+        
         this.initMqttChannel();
         this.fetchCloudData();
         this.startSilentResyncLoop();
+        this.startSilentRetryLoop();
       },
 
       renderVersionToUI() {
@@ -1404,6 +1376,7 @@
             st.totalScore = (Number(st.totalScore) || 0) + bonus;
           });
 
+          this.data.isDirty = true;
           this.saveStorageData();
           this.pushScoresToCloud();
           alert(`🔔 已邁入新的一週（${newWeekKey}）！已自動發放幹部每週固定加分！`);
@@ -1418,6 +1391,16 @@
         this.resyncTimer = setInterval(() => {
           this.fetchCloudData(true);
         }, CONFIG.AUTO_RESYNC_INTERVAL);
+      },
+
+      // 🌟 方案 A：背景每 15 秒檢查是否有未送出的髒資料，靜默嘗試補送
+      startSilentRetryLoop() {
+        clearInterval(this.retrySyncTimer);
+        this.retrySyncTimer = setInterval(() => {
+          if (this.data.isDirty && !this.isSyncingNow) {
+            this.pushScoresToCloud();
+          }
+        }, CONFIG.RETRY_SYNC_INTERVAL);
       },
 
       initMqttChannel() {
@@ -1553,7 +1536,7 @@
       },
 
       restoreSession() {
-        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v210');
+        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v220');
         if (isAuth === 'true') {
           this.sessionUnlocked = true;
           document.getElementById('view-gate').classList.remove('active');
@@ -1578,7 +1561,7 @@
         const validPassword = this.data.adminPassword || "8888";
         if (pwd === validPassword || pwd === "8888") {
           this.sessionUnlocked = true;
-          sessionStorage.setItem('magic_auth_unlocked_v210', 'true');
+          sessionStorage.setItem('magic_auth_unlocked_v220', 'true');
           
           document.getElementById('gateLoginForm').style.display = 'none';
           document.getElementById('gateSubTitle').innerText = "導師通行印記確認，請選擇傳送陣方向：";
@@ -1604,7 +1587,7 @@
 
       logout() {
         this.sessionUnlocked = false;
-        sessionStorage.removeItem('magic_auth_unlocked_v210');
+        sessionStorage.removeItem('magic_auth_unlocked_v220');
         document.getElementById('appHeader').classList.remove('authorized');
         document.body.classList.remove('tv-theater-mode');
         
@@ -1865,6 +1848,7 @@
         ];
         this.data.currentWeekKey = "第1週";
         this.data.lastDailySessionDate = new Date().toISOString().split('T')[0];
+        this.data.isDirty = false;
         this.saveStorageData();
       },
 
@@ -2699,7 +2683,7 @@
           let pressTimer = null;
           const startPress = () => {
             this.longPressFired = false;
-            // 🌟 核心防誤觸：正式延長為 1.5 秒 (CONFIG.LONG_PRESS_THRESHOLD)
+            // 🌟 1.5 秒防誤觸長按閾值
             pressTimer = setTimeout(() => {
               this.longPressFired = true;
               if (navigator.vibrate) navigator.vibrate(45);
@@ -2734,8 +2718,10 @@
         const bonusVal = parseInt(input.trim(), 10);
         student.weeklyBonus = isNaN(bonusVal) ? 0 : Math.max(0, bonusVal);
 
+        this.data.isDirty = true;
         this.saveStorageData();
         this.renderStudentCards();
+        this.setSyncStatus('pending');
         this.pushScoresToCloud();
 
         if (student.weeklyBonus > 0) {
@@ -2759,97 +2745,66 @@
         student.totalScore = (Number(student.totalScore) || 0) + this.currentWeight;
         student.weeklyScore = (Number(student.weeklyScore) || 0) + this.currentWeight;
 
+        // 🌟 核心：本機即時標記 Dirty，橘燈常駐鎖定，保證重新整理不被雲端覆蓋
+        this.data.isDirty = true;
         this.saveStorageData();
         this.renderStudentCards();
-
         this.setSyncStatus('pending');
+
+        // 🌟 拍板：2.5 秒防抖自動無感背景推送
         clearTimeout(this.syncTimer);
         this.syncTimer = setTimeout(() => {
           this.pushScoresToCloud();
         }, CONFIG.DEBOUNCE_DELAY);
       },
 
-      // 🌟 背景自動防抖同步 (保持運作)
+      // 🌟 無感背景全自動靜默同步引擎 (方案 A 靜默排程重試)
       async pushScoresToCloud() {
-        if (!CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("SAMPLE")) {
-          this.setSyncStatus('synced');
+        if (!CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("SAMPLE") || this.isSyncingNow) {
           return;
         }
 
+        this.isSyncingNow = true;
+
         try {
+          // 精簡傳輸欄位，消除網路過載與死鎖
+          const cleanStudentPayload = this.data.students.map(s => ({
+            classId: s.classId,
+            seatNo: s.seatNo,
+            name: s.name,
+            weeklyBonus: s.weeklyBonus || 0,
+            weeklyScore: s.weeklyScore || 0,
+            totalScore: s.totalScore || 0
+          }));
+
           const payload = {
             action: 'sync_scores',
-            data: this.data.students,
+            data: cleanStudentPayload,
             weekKey: this.data.currentWeekKey || '第1週'
           };
+
           const response = await fetch(CONFIG.GAS_API_URL, {
             method: 'POST',
             mode: 'cors',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify(payload)
           });
+
           const res = await response.json();
           if (res.status === 'success') {
+            // 成功落盤：解除 Dirty 鎖定，轉回安心綠燈
+            this.data.isDirty = false;
+            this.saveStorageData();
             this.setSyncStatus('synced');
           } else {
-            this.setSyncStatus('error');
+            // 失敗：保持 Dirty 鎖定與橘燈，靜默等待 15 秒定時重試
+            this.setSyncStatus('pending');
           }
         } catch (err) {
-          this.setSyncStatus('error');
-        }
-      },
-
-      // 🌟 樣式 1 緊湊圖示按鈕 ＋ 範圍 2 全班級打包強制覆蓋 ＋ 回饋 A 無阻礙微光
-      async executeManualForceSyncAll() {
-        const btn = document.getElementById('btnManualUpload');
-        if (!btn || !CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("SAMPLE")) {
-          alert("請先於代碼頂端 CONFIG 設定真實的 GAS 網址！");
-          return;
-        }
-
-        btn.innerText = "⏳ 上傳中...";
-        btn.disabled = true;
-        this.setSyncStatus('pending');
-
-        try {
-          // 打包本機所有班級的最新真實學生分數
-          const payload = {
-            action: 'force_sync_all_classes',
-            data: this.data.students,
-            weekKey: this.data.currentWeekKey || '第1週'
-          };
-
-          const response = await fetch(CONFIG.GAS_API_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify(payload)
-          });
-
-          const res = await response.json();
-          if (res.status === 'success') {
-            this.setSyncStatus('synced');
-            if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
-
-            // 回饋 A：按鈕短暫呈現微光打勾 3 秒，不彈出擾人的確認視窗
-            btn.classList.add('success-state');
-            btn.innerText = "✔ 已同步";
-            setTimeout(() => {
-              btn.classList.remove('success-state');
-              btn.innerText = "☁️ 上傳";
-              btn.disabled = false;
-            }, 3000);
-          } else {
-            throw new Error(res.message || "雲端同步異常");
-          }
-        } catch (e) {
-          this.setSyncStatus('error');
-          btn.innerText = "⚠️ 失敗";
-          setTimeout(() => {
-            btn.innerText = "☁️ 上傳";
-            btn.disabled = false;
-          }, 3000);
-          alert("上傳失敗，請檢查網路連線或 GAS 部署！");
+          // 網路短暫中斷：安靜保持橘燈，不跳出任何彈窗干擾教學，等待背景重試
+          this.setSyncStatus('pending');
+        } finally {
+          this.isSyncingNow = false;
         }
       },
 
@@ -2898,8 +2853,10 @@
         }
 
         this.data.students = this.data.students.filter(s => s.classId !== this.currentClass).concat(parsed);
+        this.data.isDirty = true;
         this.saveStorageData();
         this.renderStudentCards();
+        this.setSyncStatus('pending');
         alert(`✨ ${this.currentClass} 班名冊更新成功，共 ${parsed.length} 位學員！正在同步至 Google 試算表...`);
 
         if (CONFIG.GAS_API_URL && !CONFIG.GAS_API_URL.includes("SAMPLE")) {
@@ -2916,10 +2873,13 @@
             });
             const json = await res.json();
             if (json.status === 'success') {
+              this.data.isDirty = false;
+              this.saveStorageData();
+              this.setSyncStatus('synced');
               alert(`🟢 Google 試算表【${this.currentClass}】分頁已同步完成！`);
             }
           } catch (e) {
-            console.warn("名冊雲端同步暫緩", e);
+            console.warn("名冊雲端同步暫緩，背景排程將自動補送", e);
           }
         }
       },
@@ -2949,12 +2909,14 @@
           });
         }
 
+        this.data.isDirty = true;
         this.saveStorageData();
         this.renderAllClassTabs();
         this.populateLeaderboardSelect();
         this.initNotesUnitSelector();
         this.loadRosterManagerText();
         this.renderStudentCards();
+        this.setSyncStatus('pending');
 
         alert(`✨ 班級【${cleanId}】已於本機建立！正在於 Google 試算表建立新分頁...`);
 
@@ -3020,6 +2982,7 @@
         }
       },
 
+      // 🌟 核心防護盾：從雲端拉取資料時，若本機為 Dirty，絕對禁止覆蓋本機計分！
       async fetchCloudData(isSilent = false) {
         if (!CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("SAMPLE")) return;
         try {
@@ -3030,25 +2993,33 @@
             if (!this.data.classes.includes(this.currentClass)) {
               this.currentClass = this.data.classes[0];
             }
-            
-            const cloudStudents = json.students || [];
-            cloudStudents.forEach(cs => {
-              const local = this.data.students.find(ls => ls.classId === cs.classId && ls.seatNo === cs.seatNo);
-              cs.todayScore = local ? (local.todayScore || 0) : 0;
-            });
-            this.data.students = cloudStudents;
 
             if (json.password) this.data.adminPassword = json.password;
-            
+
+            // 🛡️ 防覆蓋防護盾：若本機有未同步資料（isDirty === true），強制鎖死本機成績，絕不接受舊資料沖刷！
+            if (this.data.isDirty) {
+              if (!isSilent) console.log("🛡️ 本機有未同步之最新成績，防護盾生效：拒絕雲端舊資料覆寫！");
+              this.setSyncStatus('pending');
+            } else {
+              // 僅在乾淨狀態（已完全同步）才安全採用雲端資料
+              const cloudStudents = json.students || [];
+              cloudStudents.forEach(cs => {
+                const local = this.data.students.find(ls => ls.classId === cs.classId && ls.seatNo === cs.seatNo);
+                cs.todayScore = local ? (local.todayScore || 0) : 0;
+              });
+              this.data.students = cloudStudents;
+              this.sanitizeScores();
+              this.setSyncStatus('synced');
+            }
+
+            // 備課筆記防踩踏鎖
             if (!this.isNotesEditMode && !this.notesDirty) {
               if (json.notes && json.notes.length > 0) {
                 this.data.notes = json.notes;
               }
             }
 
-            this.sanitizeScores();
             this.saveStorageData();
-            
             this.renderAllClassTabs();
             this.populateLeaderboardSelect();
             if (document.getElementById('view-workspace').classList.contains('active')) {
