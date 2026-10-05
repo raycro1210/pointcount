@@ -72,7 +72,6 @@
       flex-shrink: 0;
     }
 
-    /* 大螢幕連線感應圖示 (樣式 A) */
     .tv-status-badge {
       display: inline-flex;
       align-items: center;
@@ -162,7 +161,7 @@
       z-index: 20;
     }
 
-    /* 1. 學院大門頁面 (首頁正中央典雅版本銘牌) */
+    /* 1. 學院大門頁面 */
     #view-gate {
       position: absolute;
       inset: 0;
@@ -182,7 +181,7 @@
       border-bottom: 4px solid var(--gold-primary);
       box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
       position: relative;
-      transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 1.2s cubic-bezier(0.4, 0.2, 0.2, 1);
     }
     .gate-door.left { border-right: 2px solid var(--gold-primary); transform-origin: left center; }
     .gate-door.right { border-left: 2px solid var(--gold-primary); transform-origin: right center; }
@@ -381,6 +380,7 @@
     .workspace-split { flex: 1; display: flex; overflow: hidden; position: relative; }
     .scoring-column { flex: 1; display: flex; flex-direction: column; height: 100%; background: var(--bg-dark); }
     
+    /* 操作指引橫幅 (單行防折行 + 樣式 1 緊湊上傳按鈕) */
     .scoring-guide-banner {
       background: linear-gradient(90deg, rgba(16, 54, 40, 0.95), rgba(7, 25, 18, 0.95));
       border-bottom: 1.5px solid var(--gold-primary);
@@ -396,7 +396,7 @@
     }
     .guide-text-highlight {
       color: #ffe680;
-      font-size: clamp(0.72rem, 2.2vw, 0.82rem);
+      font-size: clamp(0.68rem, 2.1vw, 0.8rem);
       font-weight: bold;
       display: inline-flex;
       align-items: center;
@@ -404,14 +404,45 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      flex-shrink: 1;
+    }
+    .banner-right-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
     }
     .week-tag-compact {
       font-family: monospace;
-      font-size: clamp(0.72rem, 2.2vw, 0.82rem);
+      font-size: clamp(0.7rem, 2.1vw, 0.82rem);
       color: var(--gold-light);
       font-weight: bold;
       white-space: nowrap;
-      flex-shrink: 0;
+    }
+
+    /* 樣式 1 緊湊圖示按鈕 + 回饋 A 狀態過渡 */
+    .btn-manual-sync {
+      background: linear-gradient(180deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.1) 100%);
+      border: 1px solid var(--gold-primary);
+      color: #fff;
+      font-size: 0.72rem;
+      font-family: var(--font-sans);
+      font-weight: bold;
+      padding: 3px 7px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    .btn-manual-sync:active { transform: scale(0.95); background: var(--gold-primary); color: #071912; }
+    .btn-manual-sync.success-state {
+      background: #27ae60 !important;
+      border-color: #2ecc71 !important;
+      color: #fff !important;
+      box-shadow: 0 0 10px rgba(46, 204, 113, 0.6);
     }
 
     .students-scroll-area {
@@ -962,8 +993,7 @@
       <span>⚜️</span> <span class="brand-text">魔法教務魔導系統</span>
     </div>
     <div class="header-actions">
-      <!-- 大螢幕連線感應圖示 (樣式 A) -->
-      <span class="tv-status-badge" id="tvScreenIndicator" title="投影大螢幕狀態">🖥️️ 離線</span>
+      <span class="tv-status-badge" id="tvScreenIndicator" title="投影大螢幕狀態">🖥 離線</span>
       <span class="sync-gem" id="cloudSyncIndicator" title="連線狀態燈號"></span>
       <button class="btn-nav-magic active" id="navBtnWorkspace" onclick="App.switchView('workspace')">課堂後台</button>
       <button class="btn-nav-magic" id="navBtnLeaderboard" onclick="App.switchView('leaderboard')">榮譽榜單</button>
@@ -1085,11 +1115,18 @@
         </div>
 
         <div class="scoring-column" id="scoringColumn">
+          <!-- 自適應單行操作指引橫幅 (整合樣式 1 [☁️ 上傳] 按鈕) -->
           <div class="scoring-guide-banner">
             <span class="guide-text-highlight">
               <span>💡</span> 長按設固定加分｜點擊加減分
             </span>
-            <span class="week-tag-compact" id="currentWeekBannerTag">【第1週】</span>
+            <div class="banner-right-group">
+              <span class="week-tag-compact" id="currentWeekBannerTag">【第1週】</span>
+              <!-- 樣式 1 緊湊上傳按鈕 -->
+              <button class="btn-manual-sync" id="btnManualUpload" onclick="App.executeManualForceSyncAll()" title="強制將所有班級成績覆蓋上傳至 Google 試算表">
+                ☁️ 上傳
+              </button>
+            </div>
           </div>
 
           <div class="students-scroll-area" id="studentGrid"></div>
@@ -1186,7 +1223,7 @@
     ====================================================================================================
     */
     const CONFIG = {
-      VERSION: "v2.0.0", // 🌟 雙軌通訊旗艦版
+      VERSION: "v2.1.0", // 🌟 現場操作極致流暢版
       
       // 👇👇👇 請將下方雙引號內的網址，完整替換成您自己的 GAS 部署網址 👇👇👇
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
@@ -1198,7 +1235,8 @@
       AUTO_RESYNC_INTERVAL: 30000,
       HEARTBEAT_INTERVAL: 15000,
       NOTE_AUTO_SAVE_DELAY: 3000,
-      TV_POLL_INTERVAL: 2000 // 🌟 方案 B：電腦投影端長輪詢間隔 (2 秒一次)
+      TV_POLL_INTERVAL: 2000,
+      LONG_PRESS_THRESHOLD: 1500 // 🌟 改為 1.5 秒防誤觸長按閾值
     };
     /*
     ====================================================================================================
@@ -1272,6 +1310,7 @@
       noteAutoSaveTimer: null,
       tvPollTimer: null,
       lastHandledTriggerTime: 0,
+      longPressFired: false,
       data: {
         classes: ['101', '102', '103'],
         students: [],
@@ -1381,7 +1420,6 @@
         }, CONFIG.AUTO_RESYNC_INTERVAL);
       },
 
-      // 🌟 通訊核心：MQTT 毫秒級通訊 ＋ 設備在線心跳感知
       initMqttChannel() {
         const uniqueSuffix = Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
         const clientId = 'magic_cl_' + uniqueSuffix;
@@ -1408,7 +1446,6 @@
             try {
               const payload = JSON.parse(message.toString());
               
-              // 接收投影端在線心跳 (更新手機端樣式 A 圖示)
               if (payload.action === 'TV_HEARTBEAT') {
                 this.updateTvStatusUI(true);
                 return;
@@ -1440,7 +1477,6 @@
                 return;
               }
 
-              // 投影待命端接收開門揭榜
               if (this.isTvStandby) {
                 if (payload.action === 'REVEAL') {
                   if (payload.timestamp > this.lastHandledTriggerTime) {
@@ -1472,7 +1508,6 @@
         this.heartbeatTimer = setInterval(() => {
           if (this.mqttClient && this.mqttClient.connected) {
             if (this.isTvStandby) {
-              // 電腦待命端主動發射在線心跳
               this.mqttClient.publish(CONFIG.MQTT_TOPIC, JSON.stringify({ action: 'TV_HEARTBEAT', t: Date.now() }), { qos: 0 });
             } else {
               this.mqttClient.publish(CONFIG.MQTT_TOPIC, JSON.stringify({ action: 'PING', t: Date.now() }), { qos: 0 });
@@ -1481,7 +1516,6 @@
         }, CONFIG.HEARTBEAT_INTERVAL);
       },
 
-      // 更新手機端大螢幕在線燈號 (樣式 A)
       updateTvStatusUI(isOnline) {
         const badge = document.getElementById('tvScreenIndicator');
         if (!badge) return;
@@ -1496,7 +1530,6 @@
         }
       },
 
-      // 🌟 方案 B：電腦待命端啟動 Google 試算表長輪詢 (每 2 秒一次，防禦防火牆)
       startTvPollingLoop() {
         clearInterval(this.tvPollTimer);
         this.tvPollTimer = setInterval(async () => {
@@ -1515,14 +1548,12 @@
                 }
               }
             }
-          } catch (e) {
-            // 靜默備援重試
-          }
+          } catch (e) {}
         }, CONFIG.TV_POLL_INTERVAL);
       },
 
       restoreSession() {
-        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v200');
+        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v210');
         if (isAuth === 'true') {
           this.sessionUnlocked = true;
           document.getElementById('view-gate').classList.remove('active');
@@ -1547,7 +1578,7 @@
         const validPassword = this.data.adminPassword || "8888";
         if (pwd === validPassword || pwd === "8888") {
           this.sessionUnlocked = true;
-          sessionStorage.setItem('magic_auth_unlocked_v200', 'true');
+          sessionStorage.setItem('magic_auth_unlocked_v210', 'true');
           
           document.getElementById('gateLoginForm').style.display = 'none';
           document.getElementById('gateSubTitle').innerText = "導師通行印記確認，請選擇傳送陣方向：";
@@ -1573,7 +1604,7 @@
 
       logout() {
         this.sessionUnlocked = false;
-        sessionStorage.removeItem('magic_auth_unlocked_v200');
+        sessionStorage.removeItem('magic_auth_unlocked_v210');
         document.getElementById('appHeader').classList.remove('authorized');
         document.body.classList.remove('tv-theater-mode');
         
@@ -1615,7 +1646,6 @@
         logElem.style.display = 'block';
         logElem.innerText = `🟢 電腦大門待命中 | 雙軌備援就緒 (${CONFIG.VERSION})`;
 
-        // 立即發送在線心跳，並啟動 HTTPS 2 秒輪詢備援 (方案 B)
         if (this.mqttClient && this.mqttClient.connected) {
           this.mqttClient.publish(CONFIG.MQTT_TOPIC, JSON.stringify({ action: 'TV_HEARTBEAT', t: Date.now() }), { qos: 1 });
         }
@@ -1671,7 +1701,6 @@
         }, 50);
       },
 
-      // 🌟 方案 B 廣播：MQTT 毫秒發布 ＋ Google 試算表 HTTPS 雙發
       broadcastRevealSignal() {
         const now = Date.now();
         const triggerPayload = {
@@ -1682,12 +1711,10 @@
           timestamp: now
         };
 
-        // 1. MQTT 毫秒級主通道發送
         if (this.mqttClient && this.mqttClient.connected) {
           this.mqttClient.publish(CONFIG.MQTT_TOPIC, JSON.stringify(triggerPayload), { qos: 1 });
         }
 
-        // 2. Google 試算表 Config 工作表雙軌備援寫入 (穿透防火牆)
         if (CONFIG.GAS_API_URL && !CONFIG.GAS_API_URL.includes("SAMPLE")) {
           fetch(CONFIG.GAS_API_URL, {
             method: 'POST',
@@ -1715,12 +1742,10 @@
         const now = Date.now();
         const triggerPayload = { action: 'CLOSE', t: now, timestamp: now };
 
-        // 1. MQTT 通道發送
         if (this.mqttClient && this.mqttClient.connected) {
           this.mqttClient.publish(CONFIG.MQTT_TOPIC, JSON.stringify(triggerPayload), { qos: 1 });
         }
 
-        // 2. 試算表備援寫入
         if (CONFIG.GAS_API_URL && !CONFIG.GAS_API_URL.includes("SAMPLE")) {
           fetch(CONFIG.GAS_API_URL, {
             method: 'POST',
@@ -2636,7 +2661,7 @@
 
       /*
       ======================================================================
-      計分卡片渲染
+      計分卡片渲染 (1.5秒長按防誤觸 + 雙數據顯示)
       ======================================================================
       */
       renderStudentCards() {
@@ -2674,11 +2699,12 @@
           let pressTimer = null;
           const startPress = () => {
             this.longPressFired = false;
+            // 🌟 核心防誤觸：正式延長為 1.5 秒 (CONFIG.LONG_PRESS_THRESHOLD)
             pressTimer = setTimeout(() => {
               this.longPressFired = true;
-              if (navigator.vibrate) navigator.vibrate(35);
+              if (navigator.vibrate) navigator.vibrate(45);
               this.promptConfigureCadre(s);
-            }, 550);
+            }, CONFIG.LONG_PRESS_THRESHOLD);
           };
           const cancelPress = () => {
             if (pressTimer) clearTimeout(pressTimer);
@@ -2743,6 +2769,7 @@
         }, CONFIG.DEBOUNCE_DELAY);
       },
 
+      // 🌟 背景自動防抖同步 (保持運作)
       async pushScoresToCloud() {
         if (!CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("SAMPLE")) {
           this.setSyncStatus('synced');
@@ -2769,6 +2796,60 @@
           }
         } catch (err) {
           this.setSyncStatus('error');
+        }
+      },
+
+      // 🌟 樣式 1 緊湊圖示按鈕 ＋ 範圍 2 全班級打包強制覆蓋 ＋ 回饋 A 無阻礙微光
+      async executeManualForceSyncAll() {
+        const btn = document.getElementById('btnManualUpload');
+        if (!btn || !CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("SAMPLE")) {
+          alert("請先於代碼頂端 CONFIG 設定真實的 GAS 網址！");
+          return;
+        }
+
+        btn.innerText = "⏳ 上傳中...";
+        btn.disabled = true;
+        this.setSyncStatus('pending');
+
+        try {
+          // 打包本機所有班級的最新真實學生分數
+          const payload = {
+            action: 'force_sync_all_classes',
+            data: this.data.students,
+            weekKey: this.data.currentWeekKey || '第1週'
+          };
+
+          const response = await fetch(CONFIG.GAS_API_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(payload)
+          });
+
+          const res = await response.json();
+          if (res.status === 'success') {
+            this.setSyncStatus('synced');
+            if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+
+            // 回饋 A：按鈕短暫呈現微光打勾 3 秒，不彈出擾人的確認視窗
+            btn.classList.add('success-state');
+            btn.innerText = "✔ 已同步";
+            setTimeout(() => {
+              btn.classList.remove('success-state');
+              btn.innerText = "☁️ 上傳";
+              btn.disabled = false;
+            }, 3000);
+          } else {
+            throw new Error(res.message || "雲端同步異常");
+          }
+        } catch (e) {
+          this.setSyncStatus('error');
+          btn.innerText = "⚠️ 失敗";
+          setTimeout(() => {
+            btn.innerText = "☁️ 上傳";
+            btn.disabled = false;
+          }, 3000);
+          alert("上傳失敗，請檢查網路連線或 GAS 部署！");
         }
       },
 
