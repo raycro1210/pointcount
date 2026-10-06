@@ -380,7 +380,7 @@
     .workspace-split { flex: 1; display: flex; overflow: hidden; position: relative; }
     .scoring-column { flex: 1; display: flex; flex-direction: column; height: 100%; background: var(--bg-dark); }
     
-    /* 操作指引橫幅 (單行防折行 + 獨立手動結算按鈕) */
+    /* 操作指引橫幅 (單行防折行 + 可點擊編輯週次標籤 + 樣式 A 語意化結算按鈕) */
     .scoring-guide-banner {
       background: linear-gradient(90deg, rgba(16, 54, 40, 0.95), rgba(7, 25, 18, 0.95));
       border-bottom: 1.5px solid var(--gold-primary);
@@ -412,20 +412,30 @@
       gap: 6px;
       flex-shrink: 0;
     }
-    .week-tag-compact {
+    .week-tag-interactive {
       font-family: monospace;
       font-size: clamp(0.72rem, 2.1vw, 0.82rem);
       color: var(--gold-light);
       font-weight: bold;
       white-space: nowrap;
+      background: rgba(0,0,0,0.4);
+      border: 1px dashed var(--gold-primary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      transition: all 0.2s;
     }
+    .week-tag-interactive:active { transform: scale(0.96); background: rgba(212, 175, 55, 0.25); }
 
-    /* 🌟 手動【成績上傳結算】按鈕樣式 */
+    /* 🌟 樣式 A 語意化結算按鈕 [☁️ 結算第X週] */
     .btn-manual-sync {
       background: linear-gradient(180deg, rgba(212, 175, 55, 0.28) 0%, rgba(212, 175, 55, 0.12) 100%);
       border: 1px solid var(--gold-primary);
       color: var(--gold-light);
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       font-family: var(--font-sans);
       font-weight: bold;
       padding: 3px 8px;
@@ -439,7 +449,7 @@
     }
     .btn-manual-sync:active { transform: scale(0.95); background: var(--gold-primary); color: #071912; }
     .btn-manual-sync.dirty-pulse {
-      background: rgba(243, 156, 18, 0.3) !important;
+      background: rgba(243, 156, 18, 0.35) !important;
       border-color: #f39c12 !important;
       color: #ffd280 !important;
       box-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
@@ -773,7 +783,7 @@
       .scoring-column { flex: 0 0 50% !important; display: flex !important; order: 2; }
     }
 
-    /* 3. 榮譽揭榜視圖 */
+    /* 3. 榮譽揭榜視圖 (支援班級與週次歷史下拉選單) */
     #view-leaderboard {
       background: radial-gradient(circle at center, #0e3527 0%, #030c08 100%);
       overflow-y: auto;
@@ -784,34 +794,34 @@
     
     .theater-action-header {
       width: 100%;
-      padding: 12px 16px;
+      padding: 10px 14px;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       z-index: 20;
       background: rgba(5, 20, 14, 0.85);
       border-bottom: 1px solid rgba(212, 175, 55, 0.3);
       flex-shrink: 0;
     }
-    .board-select-group { display: flex; gap: 6px; align-items: center; }
-    .select-magic { background: #061911; border: 1.5px solid var(--gold-primary); color: var(--gold-light); padding: 6px 10px; border-radius: 4px; font-size: 0.9rem; outline: none; }
-    .remote-actions-group { display: flex; gap: 8px; align-items: center; }
+    .board-select-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .select-magic { background: #061911; border: 1.5px solid var(--gold-primary); color: var(--gold-light); padding: 5px 8px; border-radius: 4px; font-size: 0.85rem; outline: none; }
+    .remote-actions-group { display: flex; gap: 6px; align-items: center; }
     .btn-remote-broadcast {
       background: linear-gradient(180deg, #f1c40f 0%, #d4af37 100%);
       color: #071912;
       font-weight: bold;
-      padding: 8px 16px;
+      padding: 7px 14px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);
       animation: broadcastGlow 1.8s infinite alternate;
     }
     @keyframes broadcastGlow { from { transform: scale(1); } to { transform: scale(1.03); } }
-    .btn-remote-close { background: rgba(184, 75, 41, 0.25); border: 1.5px solid #e67e22; color: #f39c12; font-weight: bold; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+    .btn-remote-close { background: rgba(184, 75, 41, 0.25); border: 1.5px solid #e67e22; color: #f39c12; font-weight: bold; padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
     .btn-remote-close:active { background: #e67e22; color: #fff; }
 
     .podium-stage {
@@ -1030,7 +1040,7 @@
 
         <div class="portal-dispatcher" id="portalDispatcher">
           <button class="btn-portal-item" onclick="App.selectDestination('workspace')">
-            <span>⚔️️ 課堂計分與備課後台</span> <span>➔</span>
+            <span>⚔️ 課堂計分與備課後台</span> <span>➔</span>
           </button>
           <button class="btn-portal-item" onclick="App.selectDestination('leaderboard')">
             <span>🏆 榮譽揭榜投影大典</span> <span>➔</span>
@@ -1060,7 +1070,7 @@
               <div class="notes-unit-actions">
                 <button class="btn-unit-tool" title="新增課程單元" onclick="App.promptAddUnit()">➕</button>
                 <button class="btn-unit-tool" title="重新命名單元" onclick="App.promptRenameUnit()">✏️</button>
-                <button class="btn-unit-tool" title="隱藏封存單元" onclick="App.promptArchiveUnit()">🗑️️</button>
+                <button class="btn-unit-tool" title="隱藏封存單元" onclick="App.promptArchiveUnit()">🗑️</button>
               </div>
               <button class="btn-mode-toggle" id="btnNotesMode" onclick="App.toggleNotesMode()">📖 閱讀中</button>
             </div>
@@ -1121,16 +1131,18 @@
         </div>
 
         <div class="scoring-column" id="scoringColumn">
-          <!-- 自適應單行操作指引橫幅 (整合【☁️ 上傳結算】專屬班級結算按鈕) -->
+          <!-- 自適應操作指引橫幅 (點擊週次標籤可編輯 + 樣式 A 語意化按鈕) -->
           <div class="scoring-guide-banner">
             <span class="guide-text-highlight">
               <span>💡</span> 長按設固定加分｜點擊加減分
             </span>
             <div class="banner-right-group">
-              <span class="week-tag-compact" id="currentWeekBannerTag">【第1週】</span>
-              <!-- 🌟 方案 1：手動結算上傳按鈕 (未上傳橘光微動，上傳成功該班歸零) -->
-              <button class="btn-manual-sync" id="btnManualUpload" onclick="App.executeCurrentClassSettlement()" title="將本科堂成績累加至 Google 試算表並結算歸零">
-                ☁️ 上傳結算
+              <span class="week-tag-interactive" id="currentWeekBannerTag" onclick="App.promptSelectOrEditWeek()" title="點擊編輯或切換教學週次">
+                【第1週】 ✏️
+              </span>
+              <!-- 🌟 樣式 A：動態呈現目標週次的結算按鈕 -->
+              <button class="btn-manual-sync" id="btnManualUpload" onclick="App.executeCurrentClassSettlement()" title="將本科堂成績累加至 Google 試算表該週欄位">
+                ☁️ 結算第1週
               </button>
             </div>
           </div>
@@ -1155,6 +1167,8 @@
         <div class="board-select-group">
           <select id="leaderboardClassSelect" class="select-magic" onchange="App.onLeaderboardClassChange()"></select>
           <button class="btn-nav-magic" id="btnToggleRankingType" onclick="App.toggleRankingPeriod()">目前為:【週排行榜】</button>
+          <!-- 🌟 週次歷史切換下拉選單 (預設展示前一週) -->
+          <select id="leaderboardWeekSelect" class="select-magic" onchange="App.onLeaderboardWeekChange()" title="選擇投影排行榜的週次"></select>
         </div>
         <div class="remote-actions-group">
           <button class="btn-remote-broadcast" onclick="App.broadcastRevealSignal()">📢 廣播電腦大螢幕:開始揭榜</button>
@@ -1210,7 +1224,7 @@
         
         <div class="manager-btn-row">
           <button class="btn-gold-action" style="flex: 2;" onclick="App.applyBatchRoster()">💾 儲存並同步至 Google 試算表</button>
-          <button class="btn-danger-action" style="flex: 1;" onclick="App.promptDeleteCurrentClass()">🗑️ 刪除此班</button>
+          <button class="btn-danger-action" style="flex: 1;" onclick="App.promptDeleteCurrentClass()">🗑️️ 刪除此班</button>
         </div>
       </div>
     </section>
@@ -1229,7 +1243,7 @@
     ====================================================================================================
     */
     const CONFIG = {
-      VERSION: "v2.5.0", // 🌟 精準增量結算與公式保護旗艦版
+      VERSION: "v2.6.0", // 🌟 跨週多維度暫存・行事曆自訂週次旗艦版
       
       // 👇👇👇 請將下方雙引號內的網址，完整替換成您自己的 GAS 部署網址 👇👇👇
       GAS_API_URL: "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec",
@@ -1241,7 +1255,7 @@
       HEARTBEAT_INTERVAL: 15000,
       NOTE_AUTO_SAVE_DELAY: 3000,
       TV_POLL_INTERVAL: 2000,
-      LONG_PRESS_THRESHOLD: 1500 // 🌟 1.5 秒防誤觸長按閾值
+      LONG_PRESS_THRESHOLD: 1500
     };
     /*
     ====================================================================================================
@@ -1301,7 +1315,8 @@
     const App = {
       currentClass: "",
       currentWeight: 1,
-      rankingPeriod: "weekly",
+      rankingPeriod: "weekly", // 'weekly' 或 'total'
+      selectedLeaderboardWeek: "第1週", // 榮譽榜單檢視的目標週次
       sessionUnlocked: false,
       isTvStandby: false,
       isNotesEditMode: false,
@@ -1321,7 +1336,10 @@
         students: [],
         notes: [],
         currentWeekKey: "第1週",
-        adminPassword: '8888'
+        allWeekKeys: ["第1週"],
+        adminPassword: '8888',
+        // 🌟 核心：按 [classId_weekKey_seatNo] 複合鍵分區隔離的課堂得分緩衝區
+        partitionedScores: {}
       },
 
       init() {
@@ -1331,6 +1349,7 @@
         this.sanitizeScores();
         this.renderAllClassTabs();
         this.populateLeaderboardSelect();
+        this.initLeaderboardWeekSelector();
         this.renderStudentCards();
         this.buildColorPalettes();
         this.initNotesUnitSelector();
@@ -1350,22 +1369,34 @@
         if (badge) {
           badge.innerText = `⚜️ 核心系統版本：${CONFIG.VERSION} ⚜️`;
         }
+        this.updateBannerWeekTagUI();
+      },
+
+      updateBannerWeekTagUI() {
         const bannerTag = document.getElementById('currentWeekBannerTag');
-        if (bannerTag) bannerTag.innerText = `【${this.data.currentWeekKey || '第1週'}】`;
+        if (bannerTag) bannerTag.innerText = `【${this.data.currentWeekKey || '第1週'}】 ✏️️`;
+        
+        // 🌟 樣式 A 語意化按鈕文案更新：[☁️ 結算第X週]
+        const btn = document.getElementById('btnManualUpload');
+        if (btn) {
+          const hasUnsettled = this.hasUnsettledInCurrent();
+          btn.innerText = `☁️️ 結算${this.data.currentWeekKey}${hasUnsettled ? '*' : ''}`;
+        }
       },
 
       sanitizeScores() {
         let changed = false;
+        if (!this.data.allWeekKeys || this.data.allWeekKeys.length === 0) {
+          this.data.allWeekKeys = [this.data.currentWeekKey || "第1週"];
+          changed = true;
+        }
+        if (!this.data.partitionedScores) {
+          this.data.partitionedScores = {};
+          changed = true;
+        }
         this.data.students.forEach(s => {
-          if (typeof s.todayScore === 'undefined' || isNaN(s.todayScore)) {
-            s.todayScore = 0;
-            changed = true;
-          }
-          if (s.weeklyScore < -999 || isNaN(s.weeklyScore)) {
-            s.weeklyScore = 0;
-            changed = true;
-          }
-          if (s.totalScore < -999 || isNaN(s.totalScore)) {
+          if (!s.weekScores) s.weekScores = {};
+          if (typeof s.totalScore === 'undefined' || isNaN(s.totalScore)) {
             s.totalScore = Math.max(0, s.baseScore || 0);
             changed = true;
           }
@@ -1380,6 +1411,7 @@
         }, CONFIG.AUTO_RESYNC_INTERVAL);
       },
 
+      // 🌟 通訊核心：廣播揭榜攜帶目標週次指令 (電視端完全同調)
       initMqttChannel() {
         const uniqueSuffix = Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
         const clientId = 'magic_cl_' + uniqueSuffix;
@@ -1415,10 +1447,13 @@
 
               if (payload.action === 'SYNC_PERIOD') {
                 this.rankingPeriod = payload.period;
+                if (payload.weekKey) this.selectedLeaderboardWeek = payload.weekKey;
                 const btnToggle = document.getElementById('btnToggleRankingType');
                 if (btnToggle) {
                   btnToggle.innerText = `目前為:【${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}】`;
                 }
+                const weekSel = document.getElementById('leaderboardWeekSelect');
+                if (weekSel && payload.weekKey) weekSel.value = payload.weekKey;
                 this.loadLeaderboardData();
                 return;
               }
@@ -1437,11 +1472,12 @@
                 return;
               }
 
+              // 🌟 電腦待命端接收開門揭榜 (精確解析目標週次)
               if (this.isTvStandby) {
                 if (payload.action === 'REVEAL') {
                   if (payload.timestamp > this.lastHandledTriggerTime) {
                     this.lastHandledTriggerTime = payload.timestamp;
-                    this.executeRemoteReveal(payload.classId, payload.period);
+                    this.executeRemoteReveal(payload.classId, payload.period, payload.weekKey);
                   }
                 } else if (payload.action === 'CLOSE') {
                   if (payload.timestamp > this.lastHandledTriggerTime) {
@@ -1502,7 +1538,7 @@
               if (trigger.t > this.lastHandledTriggerTime) {
                 this.lastHandledTriggerTime = trigger.t;
                 if (trigger.action === 'REVEAL') {
-                  this.executeRemoteReveal(trigger.classId, trigger.period);
+                  this.executeRemoteReveal(trigger.classId, trigger.period, trigger.weekKey);
                 } else if (trigger.action === 'CLOSE') {
                   this.executeRemoteClose();
                 }
@@ -1513,7 +1549,7 @@
       },
 
       restoreSession() {
-        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v250');
+        const isAuth = sessionStorage.getItem('magic_auth_unlocked_v260');
         if (isAuth === 'true') {
           this.sessionUnlocked = true;
           document.getElementById('view-gate').classList.remove('active');
@@ -1538,7 +1574,7 @@
         const validPassword = this.data.adminPassword || "8888";
         if (pwd === validPassword || pwd === "8888") {
           this.sessionUnlocked = true;
-          sessionStorage.setItem('magic_auth_unlocked_v250', 'true');
+          sessionStorage.setItem('magic_auth_unlocked_v260', 'true');
           
           document.getElementById('gateLoginForm').style.display = 'none';
           document.getElementById('gateSubTitle').innerText = "導師通行印記確認，請選擇傳送陣方向：";
@@ -1564,7 +1600,7 @@
 
       logout() {
         this.sessionUnlocked = false;
-        sessionStorage.removeItem('magic_auth_unlocked_v250');
+        sessionStorage.removeItem('magic_auth_unlocked_v260');
         document.getElementById('appHeader').classList.remove('authorized');
         document.body.classList.remove('tv-theater-mode');
         
@@ -1612,11 +1648,17 @@
         this.startTvPollingLoop();
       },
 
-      executeRemoteReveal(targetClass, targetPeriod) {
+      // 🌟 廣播投影執行：支援特定週次同步揭榜
+      executeRemoteReveal(targetClass, targetPeriod, targetWeek) {
         if (targetClass) this.currentClass = targetClass;
         if (targetPeriod) this.rankingPeriod = targetPeriod;
+        if (targetWeek) this.selectedLeaderboardWeek = targetWeek;
 
         this.renderAllClassTabs();
+        this.updateLeaderboardSelectValue();
+        const weekSel = document.getElementById('leaderboardWeekSelect');
+        if (weekSel) weekSel.value = this.selectedLeaderboardWeek;
+
         this.loadLeaderboardData();
 
         document.body.classList.add('tv-theater-mode');
@@ -1667,6 +1709,7 @@
           action: 'REVEAL',
           classId: this.currentClass,
           period: this.rankingPeriod,
+          weekKey: this.selectedLeaderboardWeek,
           t: now,
           timestamp: now
         };
@@ -1695,7 +1738,7 @@
         document.querySelectorAll('.tier-card').forEach(c => c.classList.add('reveal'));
         document.getElementById('rosterParchmentSheet').classList.add('active-show');
 
-        alert(`📢 雙軌廣播送出！電腦大螢幕即刻拉開！\n班級：${this.currentClass}\n榜別：${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}`);
+        alert(`📢 雙軌廣播送出！電腦大螢幕即刻開門揭榜！\n班級：${this.currentClass}\n榜別：${this.rankingPeriod === 'weekly' ? `【${this.selectedLeaderboardWeek}排行榜】` : '【總排行榜】'}`);
       },
 
       broadcastCloseSignal() {
@@ -1740,12 +1783,14 @@
           target = document.getElementById('view-workspace');
           document.getElementById('navBtnWorkspace').classList.add('active');
           this.renderStudentCards();
+          this.updateSyncUI();
           if (!this.isNotesEditMode && !this.notesDirty) {
             this.initNotesUnitSelector();
           }
         } else if (viewKey === 'leaderboard') {
           target = document.getElementById('view-leaderboard');
           document.getElementById('navBtnLeaderboard').classList.add('active');
+          this.initLeaderboardWeekSelector();
           this.loadLeaderboardData();
           document.getElementById('podiumCol1').classList.add('reveal');
           document.getElementById('podiumCol2').classList.add('reveal');
@@ -1786,7 +1831,7 @@
       },
 
       loadStorageData() {
-        const raw = localStorage.getItem('magic_academy_store_v250') || localStorage.getItem('magic_academy_store_v240');
+        const raw = localStorage.getItem('magic_academy_store_v260') || localStorage.getItem('magic_academy_store_v250');
         if (raw) {
           try {
             const parsed = JSON.parse(raw);
@@ -1803,7 +1848,53 @@
       },
 
       saveStorageData() {
-        localStorage.setItem('magic_academy_store_v250', JSON.stringify(this.data));
+        localStorage.setItem('magic_academy_store_v260', JSON.stringify(this.data));
+      },
+
+      // 🌟 方案 A：點擊橫幅週次標籤，彈出選單切換或新增自訂週次
+      promptSelectOrEditWeek() {
+        const current = this.data.currentWeekKey || "第1週";
+        const all = this.data.allWeekKeys || ["第1週"];
+
+        let menuText = `【切換或編輯教學週次】\n目前為：${current}\n\n現有週次選項：\n`;
+        all.forEach((w, idx) => {
+          menuText += `${idx + 1}. ${w}\n`;
+        });
+        menuText += `\n• 輸入序號直接切換 (例如輸入 1)\n• 或直接輸入全新週次名稱 (例如: 第3週 或 期中考週)：`;
+
+        const input = prompt(menuText, current);
+        if (!input) return;
+
+        const trimmed = input.trim();
+        const numChoice = parseInt(trimmed, 10);
+        let selectedWeek = trimmed;
+
+        if (!isNaN(numChoice) && numChoice >= 1 && numChoice <= all.length) {
+          selectedWeek = all[numChoice - 1];
+        } else {
+          selectedWeek = trimmed.replace('周', '週');
+        }
+
+        if (!all.includes(selectedWeek)) {
+          all.push(selectedWeek);
+        }
+
+        this.data.currentWeekKey = selectedWeek;
+        this.saveStorageData();
+        this.updateBannerWeekTagUI();
+        this.renderStudentCards();
+        this.updateSyncUI();
+        this.initLeaderboardWeekSelector();
+
+        // 同步記住當前週次至試算表 Config
+        if (CONFIG.GAS_API_URL && !CONFIG.GAS_API_URL.includes("SAMPLE")) {
+          fetch(CONFIG.GAS_API_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'save_current_week', weekKey: selectedWeek })
+          }).catch(e => console.warn('週次設定雲端記住暫緩', e));
+        }
       },
 
       renderAllClassTabs() {
@@ -1830,9 +1921,8 @@
             const pill = document.createElement('button');
             pill.className = `class-tab-pill ${c === this.currentClass ? 'active' : ''}`;
             
-            // 若該班有未結算的課堂分數，標記小橘點提示
-            const hasUnsettledInClass = this.data.students.some(s => s.classId === c && (s.todayScore || 0) !== 0);
-            pill.innerText = `${c} 班${hasUnsettledInClass ? ' •' : ''}`;
+            const hasUnsettled = this.hasUnsettledInClass(c);
+            pill.innerText = `${c} 班${hasUnsettled ? ' •' : ''}`;
             pill.draggable = true;
             pill.dataset.classId = c;
 
@@ -1916,7 +2006,7 @@
 
       /*
       ======================================================================
-      備課筆記模組 (Word 純文字清洗、防踩踏鎖、3秒自動存檔)
+      備課筆記模組
       ======================================================================
       */
       initNotesUnitSelector() {
@@ -2372,7 +2462,7 @@
 
       /*
       ======================================================================
-      排行榜邏輯
+      排行榜邏輯 (週榜預設前一週 + 嚴格公式：當週得分 + WeeklyBonus)
       ======================================================================
       */
       populateLeaderboardSelect() {
@@ -2393,6 +2483,33 @@
         if (sel) sel.value = this.currentClass;
       },
 
+      initLeaderboardWeekSelector() {
+        const sel = document.getElementById('leaderboardWeekSelect');
+        if (!sel) return;
+        sel.innerHTML = "";
+
+        const allWeeks = this.data.allWeekKeys || ["第1週"];
+        
+        // 🌟 預設顯示【前一週】榜單 (若為第1週則顯示第1週)
+        const currentIdx = allWeeks.indexOf(this.data.currentWeekKey || "第1週");
+        let defaultWeek = this.data.currentWeekKey || "第1週";
+        if (currentIdx > 0) {
+          defaultWeek = allWeeks[currentIdx - 1]; // 前一週
+        } else if (allWeeks.length > 1) {
+          defaultWeek = allWeeks[0];
+        }
+        this.selectedLeaderboardWeek = defaultWeek;
+
+        allWeeks.forEach(w => {
+          const opt = document.createElement('option');
+          opt.value = w;
+          opt.innerText = (w === this.data.currentWeekKey) ? `${w} (當週進行中)` : `${w} (結算榜)`;
+          sel.appendChild(opt);
+        });
+
+        sel.value = this.selectedLeaderboardWeek;
+      },
+
       onLeaderboardClassChange() {
         this.currentClass = document.getElementById('leaderboardClassSelect').value;
         this.renderAllClassTabs();
@@ -2407,15 +2524,37 @@
         }
       },
 
-      toggleRankingPeriod() {
-        this.rankingPeriod = (this.rankingPeriod === 'weekly') ? 'total' : 'weekly';
-        const btn = document.getElementById('btnToggleRankingType');
-        if (btn) btn.innerText = `目前為:【${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}】`;
-        
+      onLeaderboardWeekChange() {
+        this.selectedLeaderboardWeek = document.getElementById('leaderboardWeekSelect').value;
+        this.loadLeaderboardData();
+
         if (this.mqttClient && this.mqttClient.connected) {
           this.mqttClient.publish(CONFIG.MQTT_TOPIC, JSON.stringify({
             action: 'SYNC_PERIOD',
             period: this.rankingPeriod,
+            weekKey: this.selectedLeaderboardWeek,
+            t: Date.now()
+          }), { qos: 1 });
+        }
+      },
+
+      toggleRankingPeriod() {
+        this.rankingPeriod = (this.rankingPeriod === 'weekly') ? 'total' : 'weekly';
+        const btn = document.getElementById('btnToggleRankingType');
+        const weekSel = document.getElementById('leaderboardWeekSelect');
+        
+        if (btn) {
+          btn.innerText = `目前為:【${this.rankingPeriod === 'weekly' ? '週排行榜' : '總排行榜'}】`;
+        }
+        if (weekSel) {
+          weekSel.style.display = (this.rankingPeriod === 'weekly') ? 'inline-block' : 'none';
+        }
+
+        if (this.mqttClient && this.mqttClient.connected) {
+          this.mqttClient.publish(CONFIG.MQTT_TOPIC, JSON.stringify({
+            action: 'SYNC_PERIOD',
+            period: this.rankingPeriod,
+            weekKey: this.selectedLeaderboardWeek,
             t: Date.now()
           }), { qos: 1 });
         }
@@ -2423,29 +2562,42 @@
         this.loadLeaderboardData();
       },
 
-      computeRankedList(scoreKey) {
+      // 🌟 計算排名：週榜 = 該週課堂得分 + 幹部加分 (WeeklyBonus)
+      computeRankedList() {
         const classStudents = this.data.students.filter(s => s.classId === this.currentClass);
-        
-        classStudents.forEach(st => {
-          let score = Number(st[scoreKey]);
-          if (isNaN(score) || score < -999) {
-            st[scoreKey] = 0;
+        const isWeekly = (this.rankingPeriod === 'weekly');
+        const targetWeek = this.selectedLeaderboardWeek || this.data.currentWeekKey || "第1週";
+
+        const mapped = classStudents.map(st => {
+          let score = 0;
+          if (isWeekly) {
+            const rawWeek = (st.weekScores && typeof st.weekScores[targetWeek] !== 'undefined') ? st.weekScores[targetWeek] : 0;
+            const bonus = Number(st.weeklyBonus) || 0;
+            // 若為當前正在進行的週次，也累加尚未結算的暫存分
+            const localDelta = (targetWeek === this.data.currentWeekKey) ? this.getPartitionedScore(st.classId, targetWeek, st.seatNo) : 0;
+            score = rawWeek + bonus + localDelta;
           } else {
-            st[scoreKey] = Math.floor(score);
+            // 總分榜：試算表總分 + 當前週尚未結算的暫存分
+            const localDelta = this.getPartitionedScore(st.classId, this.data.currentWeekKey, st.seatNo);
+            score = (Number(st.totalScore) || 0) + localDelta;
           }
+
+          return {
+            ...st,
+            computedScore: Math.floor(score)
+          };
         });
 
-        const sorted = [...classStudents].sort((a, b) => (b[scoreKey] - a[scoreKey]) || (a.seatNo - b.seatNo));
+        mapped.sort((a, b) => (b.computedScore - a.computedScore) || (a.seatNo - b.seatNo));
 
         let currentRank = 1;
         const rankedList = [];
-
-        for (let i = 0; i < sorted.length; i++) {
-          if (i > 0 && sorted[i][scoreKey] < sorted[i - 1][scoreKey]) {
+        for (let i = 0; i < mapped.length; i++) {
+          if (i > 0 && mapped[i].computedScore < mapped[i - 1].computedScore) {
             currentRank = i + 1;
           }
           rankedList.push({
-            ...sorted[i],
+            ...mapped[i],
             rank: currentRank
           });
         }
@@ -2453,19 +2605,17 @@
       },
 
       loadLeaderboardData() {
-        const scoreKey = (this.rankingPeriod === 'weekly') ? 'weeklyScore' : 'totalScore';
-        const rankedList = this.computeRankedList(scoreKey);
-
+        const rankedList = this.computeRankedList();
         const top1List = rankedList.filter(s => s.rank === 1);
         const top2List = rankedList.filter(s => s.rank === 2);
         const top3List = rankedList.filter(s => s.rank === 3);
 
         const s1Name = top1List.map(s => s.name).join('、') || '無';
-        const s1Score = top1List[0] ? `${top1List[0][scoreKey]} 分` : '-- 分';
+        const s1Score = top1List[0] ? `${top1List[0].computedScore} 分` : '-- 分';
         const s2Name = top2List.map(s => s.name).join('、') || '無';
-        const s2Score = top2List[0] ? `${top2List[0][scoreKey]} 分` : '-- 分';
+        const s2Score = top2List[0] ? `${top2List[0].computedScore} 分` : '-- 分';
         const s3Name = top3List.map(s => s.name).join('、') || '無';
-        const s3Score = top3List[0] ? `${top3List[0][scoreKey]} 分` : '-- 分';
+        const s3Score = top3List[0] ? `${top3List[0].computedScore} 分` : '-- 分';
 
         document.getElementById('podiumName1').innerText = s1Name;
         document.getElementById('podiumScore1').innerText = s1Score;
@@ -2489,7 +2639,7 @@
             card.innerHTML = `
               <div class="tier-rank">第 ${st.rank} 名</div>
               <div class="tier-name">${st.name}</div>
-              <div class="tier-score">${st[scoreKey]} 分</div>
+              <div class="tier-score">${st.computedScore} 分</div>
             `;
             tierBar.appendChild(card);
           });
@@ -2505,6 +2655,8 @@
         const seatSorted = [...this.data.students.filter(s => s.classId === this.currentClass)].sort((a, b) => a.seatNo - b.seatNo);
 
         seatSorted.forEach(st => {
+          const matchedRanked = rankedList.find(r => r.seatNo === st.seatNo);
+          const displayScore = matchedRanked ? matchedRanked.computedScore : 0;
           const card = document.createElement('div');
           card.className = "roster-sheet-card";
           card.innerHTML = `
@@ -2513,12 +2665,19 @@
               <span class="card-name-text">${st.name}</span>
             </div>
             <div class="card-row-bottom">
-              <span class="card-score-text">${st[scoreKey]} 分</span>
+              <span class="card-score-text">${displayScore} 分</span>
               <span class="card-rank-text">第 ${rankMap.get(st.seatNo) || '--'} 名</span>
             </div>
           `;
           rosterGrid.appendChild(card);
         });
+
+        const sheetTitle = document.getElementById('rosterSheetTitle');
+        if (sheetTitle) {
+          sheetTitle.innerText = (this.rankingPeriod === 'weekly') 
+            ? `【${this.selectedLeaderboardWeek}】全班成績名冊 (週得分+幹部加分)` 
+            : `全班學員總成績名冊 (總分累積)`;
+        }
       },
 
       startRevealTheater() {
@@ -2594,9 +2753,40 @@
 
       /*
       ======================================================================
-      計分卡片渲染 (1.5秒防誤觸長按 + 支援40人跳號)
+      計分卡片渲染 (分區隔離緩衝區・切換週次原記錄不受影響)
       ======================================================================
       */
+      getPartitionKey(classId, weekKey, seatNo) {
+        return `${classId}_${weekKey}_${seatNo}`;
+      },
+
+      getPartitionedScore(classId, weekKey, seatNo) {
+        const k = this.getPartitionKey(classId, weekKey, seatNo);
+        return Number(this.data.partitionedScores[k]) || 0;
+      },
+
+      setPartitionedScore(classId, weekKey, seatNo, val) {
+        const k = this.getPartitionKey(classId, weekKey, seatNo);
+        this.data.partitionedScores[k] = val;
+      },
+
+      hasUnsettledInClass(classId) {
+        const prefix = `${classId}_`;
+        for (const k in this.data.partitionedScores) {
+          if (k.startsWith(prefix) && this.data.partitionedScores[k] !== 0) return true;
+        }
+        return false;
+      },
+
+      hasUnsettledInCurrent() {
+        if (!this.currentClass) return false;
+        const prefix = `${this.currentClass}_${this.data.currentWeekKey}_`;
+        for (const k in this.data.partitionedScores) {
+          if (k.startsWith(prefix) && this.data.partitionedScores[k] !== 0) return true;
+        }
+        return false;
+      },
+
       renderStudentCards() {
         const grid = document.getElementById('studentGrid');
         if (!grid) return;
@@ -2607,21 +2797,26 @@
         const currentList = this.data.students.filter(s => s.classId === this.currentClass);
         currentList.sort((a, b) => a.seatNo - b.seatNo);
 
+        const currentWeek = this.data.currentWeekKey || "第1週";
+
         currentList.forEach(s => {
           const card = document.createElement('div');
           card.className = "student-touch-card";
           
           const bonusVal = Number(s.weeklyBonus) || 0;
           const hasBonus = bonusVal > 0;
-          const todayScore = Number(s.todayScore) || 0;
-          const totalScore = Number(s.totalScore) || 0;
+          
+          // 🌟 核心：精確取出目前班級、目前週次、該學生的隔離暫存得分
+          const deltaScore = this.getPartitionedScore(s.classId, currentWeek, s.seatNo);
+          const rawTotal = Number(s.totalScore) || 0;
+          const displayTotal = rawTotal + deltaScore;
 
           card.innerHTML = `
             <span class="card-seat-tag">#${s.seatNo}</span>
             ${hasBonus ? `<span class="card-star-badge" title="幹部每週固定加分 +${bonusVal}">⭐+${bonusVal}</span>` : ''}
             <div class="card-student-name">${s.name}</div>
-            <div class="card-score-value">${todayScore >= 0 ? `+${todayScore}` : todayScore}</div>
-            <div class="card-total-tag">總分: ${totalScore}</div>
+            <div class="card-score-value">${deltaScore >= 0 ? `+${deltaScore}` : deltaScore}</div>
+            <div class="card-total-tag">總分: ${displayTotal}</div>
           `;
 
           card.onclick = () => {
@@ -2656,7 +2851,6 @@
         });
       },
 
-      // 🌟 方案 1 核心：幹部設定獨立更新 WeeklyBonus 欄位
       async promptConfigureCadre(student) {
         const currentBonus = Number(student.weeklyBonus) || 0;
         const input = prompt(
@@ -2672,12 +2866,11 @@
         const deltaBonus = newBonus - currentBonus;
 
         student.weeklyBonus = newBonus;
-        student.totalScore = (Number(student.totalScore) || 0) + deltaBonus; // 視覺即時反應
+        student.totalScore = (Number(student.totalScore) || 0) + deltaBonus;
 
         this.saveStorageData();
         this.renderStudentCards();
 
-        // 獨立背景同步 WeeklyBonus 至試算表
         if (CONFIG.GAS_API_URL && !CONFIG.GAS_API_URL.includes("SAMPLE")) {
           fetch(CONFIG.GAS_API_URL, {
             method: 'POST',
@@ -2693,7 +2886,7 @@
         }
 
         if (student.weeklyBonus > 0) {
-          alert(`✨ 已成功設定【#${student.seatNo} ${student.name}】每週固定加 +${student.weeklyBonus} 分！卡片已標註星號 ⭐\n試算表將由公式自動納入總分計算！`);
+          alert(`✨ 已成功設定【#${student.seatNo} ${student.name}】每週固定加 +${student.weeklyBonus} 分！卡片已標註星號 ⭐\n試算表公式與週排行榜將自動納入計算！`);
         } else {
           alert(`已取消【#${student.seatNo} ${student.name}】的幹部設定，星號已移除。`);
         }
@@ -2706,46 +2899,59 @@
         });
       },
 
-      // 🌟 給分邏輯：純本機累計今日得分（增量），絕不背景自動發送，重新整理絕不洗掉
+      // 🌟 給分操作：精準寫入當前班級與當前週次的分區緩衝區
       recordScore(student) {
         if (navigator.vibrate) navigator.vibrate(18);
 
-        student.todayScore = (Number(student.todayScore) || 0) + this.currentWeight;
-        student.weeklyScore = (Number(student.weeklyScore) || 0) + this.currentWeight;
-        student.totalScore = (Number(student.totalScore) || 0) + this.currentWeight;
+        const currentWeek = this.data.currentWeekKey || "第1週";
+        const currentDelta = this.getPartitionedScore(student.classId, currentWeek, student.seatNo);
+        const newDelta = currentDelta + this.currentWeight;
+
+        this.setPartitionedScore(student.classId, currentWeek, student.seatNo, newDelta);
 
         this.saveStorageData();
         this.renderStudentCards();
         this.updateSyncUI();
-        this.renderAllClassTabs(); // 更新頁籤的小圓點提示
+        this.renderAllClassTabs();
       },
 
       updateSyncUI() {
         const btn = document.getElementById('btnManualUpload');
-        const hasUnsettledInCurrent = this.data.students.some(s => s.classId === this.currentClass && (s.todayScore || 0) !== 0);
-        const hasUnsettledAnywhere = this.data.students.some(s => (s.todayScore || 0) !== 0);
+        const hasUnsettledInCur = this.hasUnsettledInCurrent();
+        const hasUnsettledGlobal = Object.values(this.data.partitionedScores).some(v => v !== 0);
 
         if (btn) {
-          if (hasUnsettledInCurrent) {
+          btn.innerText = `☁️ 結算${this.data.currentWeekKey}${hasUnsettledInCur ? '*' : ''}`;
+          if (hasUnsettledInCur) {
             btn.classList.add('dirty-pulse');
-            btn.innerText = "☁️ 上傳結算*";
           } else {
             btn.classList.remove('dirty-pulse');
-            btn.innerText = "☁️ 上傳結算";
           }
         }
-        this.setSyncStatus(hasUnsettledAnywhere ? 'pending' : 'synced');
+        this.setSyncStatus(hasUnsettledGlobal ? 'pending' : 'synced');
       },
 
-      // 🌟 方案 1 核心：純增量累加結算 (模式 A)・僅該班今日得分歸零！
+      // 🌟 方案 A 結算：只結算當前班級、當前目標週次的增量！成功後僅該週該班歸零
       async executeCurrentClassSettlement() {
         if (this.isSyncingNow || !this.currentClass) return;
 
+        const currentWeek = this.data.currentWeekKey || "第1週";
         const currentClassStudents = this.data.students.filter(s => s.classId === this.currentClass);
-        const modifiedStudents = currentClassStudents.filter(s => (s.todayScore || 0) !== 0);
+        
+        const modifiedList = [];
+        currentClassStudents.forEach(st => {
+          const delta = this.getPartitionedScore(st.classId, currentWeek, st.seatNo);
+          if (delta !== 0) {
+            modifiedList.push({
+              seatNo: st.seatNo,
+              name: st.name,
+              deltaScore: delta
+            });
+          }
+        });
 
-        if (modifiedStudents.length === 0) {
-          alert(`【${this.currentClass} 班】目前沒有未結算的課堂分數！`);
+        if (modifiedList.length === 0) {
+          alert(`【${this.currentClass} 班】在【${currentWeek}】沒有未結算的加分紀錄！`);
           return;
         }
 
@@ -2763,18 +2969,11 @@
         this.setSyncStatus('pending');
 
         try {
-          // 只封裝「今日得分 != 0」的學生增量清單
-          const incrementalPayload = modifiedStudents.map(s => ({
-            seatNo: s.seatNo,
-            name: s.name,
-            deltaScore: s.todayScore
-          }));
-
           const payload = {
             action: 'settle_incremental_scores',
             classId: this.currentClass,
-            incrementalList: incrementalPayload,
-            weekKey: this.data.currentWeekKey || '第1週'
+            incrementalList: modifiedList,
+            weekKey: currentWeek
           };
 
           const response = await fetch(CONFIG.GAS_API_URL, {
@@ -2786,17 +2985,17 @@
 
           const res = await response.json();
           if (res.status === 'success') {
-            // 🌟 核心成果：僅該班學生今日得分歸零！迎接下一堂課！
-            modifiedStudents.forEach(s => {
-              s.todayScore = 0; // 歸零
+            // 🌟 結算成功：僅將該班該週次的分區緩衝區歸零！其他週次與班級毫髮無傷！
+            modifiedList.forEach(item => {
+              this.setPartitionedScore(this.currentClass, currentWeek, item.seatNo, 0);
             });
 
-            // 以試算表重新計算後的精準數值同步本機
             if (res.updatedStudents && res.updatedStudents.length > 0) {
               res.updatedStudents.forEach(us => {
                 const target = currentClassStudents.find(cs => cs.seatNo === us.seatNo);
                 if (target) {
-                  target.weeklyScore = us.weeklyScore;
+                  if (!target.weekScores) target.weekScores = {};
+                  target.weekScores[currentWeek] = us.weeklyScore;
                   if (us.totalScore) target.totalScore = us.totalScore;
                 }
               });
@@ -2812,10 +3011,10 @@
             if (btn) {
               btn.classList.remove('dirty-pulse');
               btn.classList.add('success-state');
-              btn.innerText = "✔ 已結算";
+              btn.innerText = `✔ ${currentWeek}已結算`;
               setTimeout(() => {
                 btn.classList.remove('success-state');
-                btn.innerText = "☁️ 上傳結算";
+                this.updateBannerWeekTagUI();
                 btn.disabled = false;
               }, 3000);
             }
@@ -2827,11 +3026,11 @@
           if (btn) {
             btn.innerText = "⚠️ 結算失敗";
             setTimeout(() => {
-              this.updateSyncUI();
+              this.updateBannerWeekTagUI();
               btn.disabled = false;
             }, 3000);
           }
-          alert(`上傳結算未完成，請檢查網路連線！\n（請放心，【${this.currentClass} 班】的分數依然完整保留在本機，絕不遺失）`);
+          alert(`上傳結算未完成，請檢查網路連線！\n（請放心，【${this.currentClass} 班】在【${currentWeek}】的加分紀錄完整保留在本機，絕不遺失）`);
         } finally {
           this.isSyncingNow = false;
         }
@@ -2841,7 +3040,10 @@
         if (!this.currentClass) return;
         const list = this.data.students.filter(s => s.classId === this.currentClass);
         list.sort((a, b) => a.seatNo - b.seatNo);
-        const lines = list.map(s => `${s.seatNo} ${s.name} ${s.totalScore} ${s.weeklyScore}`);
+        const lines = list.map(s => {
+          const wScore = (s.weekScores && s.weekScores[this.data.currentWeekKey]) ? s.weekScores[this.data.currentWeekKey] : 0;
+          return `${s.seatNo} ${s.name} ${s.totalScore} ${wScore}`;
+        });
         const inputElem = document.getElementById('rosterBatchInput');
         if (inputElem) {
           inputElem.value = lines.join('\n');
@@ -2863,15 +3065,16 @@
             const total = parts.length >= 3 ? parseInt(parts[2], 10) : 0;
             const weekly = parts.length >= 4 ? parseInt(parts[3], 10) : 0;
             if (!isNaN(seat) && name) {
+              const weekObj = {};
+              weekObj[this.data.currentWeekKey || "第1週"] = isNaN(weekly) ? 0 : weekly;
               parsed.push({
                 classId: this.currentClass,
                 seatNo: seat,
                 name: name,
                 weeklyBonus: 0,
                 baseScore: Math.max(0, total - weekly),
-                todayScore: 0,
                 totalScore: isNaN(total) ? 0 : total,
-                weeklyScore: isNaN(weekly) ? 0 : weekly
+                weekScores: weekObj
               });
             }
           }
@@ -2993,7 +3196,7 @@
         }
       },
 
-      // 🛡️ 鐵壁防護拉取：保留未結算的 todayScore，安全拉取雲端試算表手動修改的最新總分！
+      // 🛡️ 鐵壁防護：安全拉取雲端各週數據，精確保留本機分區暫存
       async fetchCloudData(isSilent = false) {
         if (!CONFIG.GAS_API_URL || CONFIG.GAS_API_URL.includes("SAMPLE")) return;
         try {
@@ -3009,6 +3212,13 @@
               });
             }
 
+            if (json.allWeekKeys && json.allWeekKeys.length > 0) {
+              this.data.allWeekKeys = json.allWeekKeys;
+            }
+            if (json.currentWeekKey && !this.data.currentWeekKey) {
+              this.data.currentWeekKey = json.currentWeekKey;
+            }
+
             if (json.password) this.data.adminPassword = json.password;
 
             const cloudStudents = json.students || [];
@@ -3019,13 +3229,10 @@
               cloudStudents.forEach(cs => {
                 const local = this.data.students.find(ls => ls.classId === cs.classId && ls.seatNo === cs.seatNo);
                 if (local) {
-                  // 🛡️ 守門員：保留 local 尚未上傳結算的 todayScore！
-                  var preservedTodayScore = local.todayScore || 0;
                   local.weeklyBonus = cs.weeklyBonus || 0;
                   local.baseScore = cs.baseScore || 0;
-                  local.weeklyScore = cs.weeklyScore + preservedTodayScore;
-                  local.totalScore = cs.totalScore + preservedTodayScore;
-                  local.todayScore = preservedTodayScore; // 絕對保留！
+                  local.totalScore = cs.totalScore || 0;
+                  local.weekScores = cs.weekScores || {};
                 } else {
                   this.data.students.push(cs);
                 }
@@ -3043,6 +3250,9 @@
             this.saveStorageData();
             this.renderAllClassTabs();
             this.populateLeaderboardSelect();
+            this.initLeaderboardWeekSelector();
+            this.updateBannerWeekTagUI();
+
             if (document.getElementById('view-workspace').classList.contains('active')) {
               this.renderStudentCards();
               if (!this.isNotesEditMode && !this.notesDirty) {
