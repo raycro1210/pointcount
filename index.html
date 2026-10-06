@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 V3.1.0</title>
+  <title>魔法學院教務魔導系統 V3.2.0</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <!-- 導入安全極速 MQTT WebSocket 函式庫，實現真正 0.1秒零延遲跨裝置廣播 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
@@ -41,7 +41,7 @@
     .panel { position: absolute; inset: 0; display: none; flex-direction: column; background: var(--bg); z-index: 10; overflow: hidden; }
     .panel.active { display: flex !important; z-index: 20; }
     
-    /* 大門畫面 */
+    /* 學院大門視圖 */
     #view-gate { position: absolute; inset: 0; height: 100dvh; background: radial-gradient(circle, #103326 0%, #030a07 100%); justify-content: center; align-items: center; z-index: 100; display: flex; }
     .gate-portal { position: absolute; inset: 0; display: flex; pointer-events: none; z-index: 10; perspective: 1000px; }
     .gate-door { width: 50%; height: 100%; background: #081c14; border-bottom: 4px solid var(--gold); transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -72,7 +72,7 @@
     .btn-settle { background: rgba(212,175,55,0.18); border: 1px solid var(--gold); color: var(--gold-l); font-size: 0.74rem; font-weight: bold; padding: 4px 9px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
     .btn-settle.dirty { background: rgba(243,156,18,0.4) !important; border-color: #f39c12 !important; color: #ffd280 !important; font-weight: bold; }
     
-    /* 學生名冊雙列大卡片 (特別針對單手與大螢幕優化) */
+    /* 學生名冊雙列大卡片 */
     .grid { flex: 1; overflow-y: auto; padding: 8px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; align-content: start; -webkit-overflow-scrolling: touch; }
     .card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; position: relative; cursor: pointer; transition: transform 0.1s, border-color 0.2s; }
     .card:active { transform: scale(0.96); background: var(--card-act); border-color: var(--gold); }
@@ -86,7 +86,7 @@
     .chip { flex: 1; height: 38px; border: 1px solid rgba(212,175,55,0.4); border-radius: 5px; background: rgba(212,175,55,0.08); color: var(--gold-l); font-size: 0.95rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
     .chip.active { background: var(--gold) !important; color: #071912 !important; box-shadow: 0 0 6px rgba(212,175,55,0.6); }
     
-    /* 備課筆記卷軸 */
+    /* 備課筆記卷軸 (🌟 修正邊界：增加左側內距安全緩衝，解決項目號剩半個的問題) */
     .col-notes { flex: 1; display: none; flex-direction: column; background: var(--parch); color: #201e19; height: 100%; overflow: hidden; min-width: 0; }
     .col-notes.phone-on { display: flex; }
     .notes-bar { padding: 6px 8px; background: #ebdcc0; border-bottom: 1px solid var(--parch-b); display: flex; justify-content: space-between; align-items: center; gap: 4px; flex-shrink: 0; }
@@ -94,7 +94,11 @@
     .notes-tools.on { display: flex; }
     .btn-tool { background: #fff; border: 1px solid #bdae93; border-radius: 3px; padding: 3px 6px; font-size: 0.78rem; cursor: pointer; }
     .tool-color { width: 22px; height: 22px; padding: 0; border: 1px solid #bdae93; border-radius: 3px; cursor: pointer; vertical-align: middle; }
-    .notes-box { flex: 1; padding: 12px 16px; outline: none; overflow-y: auto; font-size: 1.02rem; line-height: 1.6; -webkit-overflow-scrolling: touch; }
+    
+    /* 嚴格重設清單與邊界：左內距安全調升至 22px，清單縮進調校 */
+    .notes-box { flex: 1; padding: 12px 16px 12px 22px; outline: none; overflow-y: auto; font-size: 1.02rem; line-height: 1.6; -webkit-overflow-scrolling: touch; box-sizing: border-box; }
+    .notes-box ul, .notes-box ol { padding-left: 28px !important; margin: 6px 0 !important; }
+    .notes-box li { margin: 2px 0; }
     .marker { background: rgba(241,196,15,0.35); border-left: 4px solid #f39c12; padding: 2px 6px; border-radius: 0 4px 4px 0; }
     .marker-badge { background: #e67e22; color: #fff; font-size: 0.7rem; font-weight: bold; padding: 1px 4px; border-radius: 6px; margin-right: 4px; }
     
@@ -105,10 +109,10 @@
       .col-score { flex: 0 0 50% !important; display: flex !important; order: 2; }
     }
     
-    /* 榮譽揭榜視圖 */
+    /* 榮譽揭榜視圖 (🌟 擴充至第 10 名梯隊與骨牌倒序動畫) */
     #view-leaderboard { background: radial-gradient(circle, #0e3527 0%, #030c08 100%); overflow-y: auto; align-items: center; position: relative; }
     .confetti-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
-    .podium { width: 92%; max-width: 760px; display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin: 16px 0; min-height: 230px; position: relative; z-index: 20; }
+    .podium { width: 92%; max-width: 760px; display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin: 16px 0 10px 0; min-height: 230px; position: relative; z-index: 20; }
     .podium-col { flex: 1; display: flex; flex-direction: column; align-items: center; opacity: 1; transform: translateY(0); transition: all 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
     .podium-col.anim-hide { opacity: 0 !important; transform: translateY(50px) !important; }
     .podium-col.reveal { opacity: 1 !important; transform: translateY(0) !important; }
@@ -121,6 +125,17 @@
     .p2 .podium-box { height: 95px; background: linear-gradient(180deg, #e6e6e6, #8c8c8c); font-size: 1.7rem; }
     .p3 .podium-box { height: 75px; background: linear-gradient(180deg, #cd7f32, #7c471d); font-size: 1.5rem; }
     
+    /* 🌟 第 4～10 名梯隊榮譽階梯殿堂 */
+    .tier-hall { width: 92%; max-width: 760px; margin: 6px 0 16px 0; display: none; flex-direction: column; gap: 6px; position: relative; z-index: 20; }
+    .tier-hall.active-hall { display: flex; }
+    .tier-item { background: rgba(11,37,28,0.92); border: 1px solid rgba(212,175,55,0.4); border-radius: 6px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center; opacity: 1; transform: translateY(0); transition: all 0.4s ease-out; }
+    .tier-item.anim-hide { opacity: 0 !important; transform: translateY(20px) !important; }
+    .tier-item.reveal { opacity: 1 !important; transform: translateY(0) !important; }
+    .tier-rank { font-family: var(--font-serif); font-weight: bold; font-size: 0.95rem; color: var(--gold-l); min-width: 48px; }
+    .tier-names { font-size: 0.92rem; font-weight: bold; color: #fff; flex: 1; margin: 0 10px; word-break: break-word; }
+    .tier-score { font-family: var(--font-serif); font-weight: bold; font-size: 0.92rem; color: var(--gold); }
+    
+    /* 全班名冊總表 */
     .roster-sheet { width: 92%; max-width: 820px; background: rgba(9,29,22,0.95); border: 2px solid var(--gold); border-radius: 8px; padding: 12px; margin-bottom: 30px; position: relative; z-index: 20; opacity: 1; transform: translateY(0); transition: all 0.8s ease-out; }
     .roster-sheet.anim-hide { opacity: 0 !important; transform: translateY(30px) !important; }
     .roster-sheet.active-show { opacity: 1 !important; transform: translateY(0) !important; }
@@ -242,7 +257,7 @@
       </div>
     </section>
 
-    <!-- 榮譽榜視圖 (具備開門、戰鼓、號角、金色彩帶) -->
+    <!-- 榮譽榜視圖 (🌟 包含 1-3 名立柱與 4-10 名梯隊殿堂) -->
     <section id="view-leaderboard" class="panel">
       <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
       <div style="padding:8px 10px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; background:#05140e; border-bottom:1px solid rgba(212,175,55,0.3); z-index:20; position:relative; width:100%;">
@@ -273,6 +288,9 @@
           <div class="podium-box">3</div>
         </div>
       </div>
+
+      <!-- 🌟 第 4～10 名梯隊殿堂 (總榜專屬展開，週榜自動隱藏) -->
+      <div class="tier-hall" id="tierHall"></div>
       
       <!-- 全班名冊總表 -->
       <div class="roster-sheet" id="rosterSheet">
@@ -327,9 +345,9 @@
     /*
     ================================================================================
     */
-    const VERSION = "v3.1.0";
+    const VERSION = "v3.2.0";
     
-    // 🌟 全新升級：強效高穿透 Web Audio 原生音效合成器 (雙重重低音戰鼓 + 宏偉號角 Fanfare)
+    // 🌟 全新升級音效合成器：加入 4~10名倒序短音（Marimba/Chime）+ 雙重重低音戰鼓 + 宏偉號角 Fanfare
     const SoundFx = {
       ctx: null,
       init() {
@@ -339,7 +357,22 @@
         }
         if (this.ctx.state === 'suspended') this.ctx.resume();
       },
-      // 複合重低音戰鼓 (Dual Kick Boom + 低通濾波器衝擊)
+      // 4~10名 倒序滑入時的清脆戰階短音
+      playStepNote(freq = 440) {
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.19);
+      },
+      // 複合重低音戰鼓
       playDrum() {
         this.init();
         const now = this.ctx.currentTime;
@@ -355,7 +388,6 @@
         osc.start(now);
         osc.stop(now + 0.36);
 
-        // 伴隨軍鼓噪聲衝擊
         const osc2 = this.ctx.createOscillator();
         const gain2 = this.ctx.createGain();
         osc2.type = 'square';
@@ -368,11 +400,10 @@
         osc2.start(now);
         osc2.stop(now + 0.16);
       },
-      // 宏偉勝利號角 Fanfare (Majestic Brass Fanfare)
+      // 宏偉勝利號角 Fanfare
       playFanfare() {
         this.init();
         const now = this.ctx.currentTime;
-        // 激勵人心的和弦音列 (C4 -> G4 -> C5 -> E5 -> G5)
         const notes = [
           { f: 261.63, start: 0, dur: 0.15 },
           { f: 392.00, start: 0.14, dur: 0.15 },
@@ -415,11 +446,11 @@
         this.initNotePaste();
         this.initCanvasConfetti();
         this.initMqttBroker();
-        this.fetchCloud(); // SWR 優先立即載入，背景靜默同步
+        this.fetchCloud();
       },
 
       migrateAndLoadStorage() {
-        const currentRaw = localStorage.getItem('magic_v310');
+        const currentRaw = localStorage.getItem('magic_v320');
         if (currentRaw) {
           try {
             const p = JSON.parse(currentRaw);
@@ -432,7 +463,7 @@
           } catch(e) {}
         }
 
-        const legacyKeys = ['magic_v300', 'magic_v290', 'magic_academy_store_v270'];
+        const legacyKeys = ['magic_v310', 'magic_v300', 'magic_v290', 'magic_academy_store_v270'];
         for (let i = 0; i < legacyKeys.length; i++) {
           const raw = localStorage.getItem(legacyKeys[i]);
           if (raw) {
@@ -465,7 +496,7 @@
           }
         });
       },
-      saveStorage() { localStorage.setItem('magic_v310', JSON.stringify(this.data)); },
+      saveStorage() { localStorage.setItem('magic_v320', JSON.stringify(this.data)); },
 
       auth() {
         const p = document.getElementById('pwdIpt').value.trim();
@@ -495,7 +526,6 @@
         location.reload();
       },
 
-      // 🌟 嚴謹修復：導航按鈕 active 樣式與視圖完全同步
       switchView(v) {
         if (this.noteDirty && v !== 'workspace') this.saveNote(true);
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -681,7 +711,7 @@
 
       /*
       ======================================================================
-      備課筆記模組 (每班獨立、純週次排序、進度書籤)
+      備課筆記模組 (每班獨立、純週次排序、進度書籤、左側無被切角)
       ======================================================================
       */
       initNotes() {
@@ -940,7 +970,7 @@
 
       /*
       ======================================================================
-      榮譽榜單模組 (嚴謹修復：防空白保護、分數梯隊、滿血動畫重啟)
+      榮譽榜單模組 (🌟 支援第 4～10名梯隊殿堂、週榜維持1-3名、方案A倒序動畫)
       ======================================================================
       */
       initLbWeeks() {
@@ -971,7 +1001,7 @@
         this.loadLeaderboard();
       },
 
-      // 嚴謹防禦：保證不出現 NaN 與空白
+      // 載入榜單與梯隊計算
       loadLeaderboard() {
         const selC = document.getElementById('selLbClass');
         if (selC) {
@@ -996,11 +1026,13 @@
           return { ...s, sc: Math.floor(isNaN(sc) ? 0 : sc) };
         }).sort((a,b) => b.sc - a.sc || a.seatNo - b.seatNo);
 
+        // 分數梯隊 (由高至低)
         const tiers = Array.from(new Set(list.map(s => s.sc))).sort((a,b) => b - a);
         const t1 = tiers[0] !== undefined ? list.filter(s => s.sc === tiers[0]) : [];
         const t2 = tiers[1] !== undefined ? list.filter(s => s.sc === tiers[1]) : [];
         const t3 = tiers[2] !== undefined ? list.filter(s => s.sc === tiers[2]) : [];
 
+        // 渲染前 3 名領獎台
         document.getElementById('pn1').innerText = t1.map(s => s.name).join('、') || '無';
         document.getElementById('ps1').innerText = t1.length ? `${tiers[0]} 分` : '-- 分';
         document.getElementById('pn2').innerText = t2.map(s => s.name).join('、') || '無';
@@ -1008,6 +1040,33 @@
         document.getElementById('pn3').innerText = t3.map(s => s.name).join('、') || '無';
         document.getElementById('ps3').innerText = t3.length ? `${tiers[2]} 分` : '-- 分';
 
+        // 🌟 處理第 4～10 名梯隊 (僅總排行榜開啟，週排行榜隱藏)
+        const hall = document.getElementById('tierHall');
+        if (hall) {
+          hall.innerHTML = "";
+          if (!isW) {
+            hall.classList.add('active-hall');
+            // 取第 4 到 第 10 名梯隊 (索引 3 ~ 9)，若梯隊不存在自動忽略不顯示
+            for (let idx = 3; idx < 10; idx++) {
+              if (tiers[idx] !== undefined) {
+                const subStudents = list.filter(s => s.sc === tiers[idx]);
+                const item = document.createElement('div');
+                item.className = 'tier-item';
+                item.id = `tier_item_${idx + 1}`;
+                item.innerHTML = `
+                  <div class="tier-rank">第 ${idx + 1} 名</div>
+                  <div class="tier-names">${subStudents.map(s => `#${s.seatNo} ${s.name}`).join('、 ')}</div>
+                  <div class="tier-score">${tiers[idx]} 分</div>
+                `;
+                hall.appendChild(item);
+              }
+            }
+          } else {
+            hall.classList.remove('active-hall');
+          }
+        }
+
+        // 渲染全班名冊
         const rg = document.getElementById('rosterGrid');
         rg.innerHTML = "";
         list.slice().sort((a,b) => a.seatNo - b.seatNo).forEach(s => {
@@ -1024,40 +1083,74 @@
         }
       },
 
-      // 🌟 滿血揭榜動畫 (先隱藏再重升起，解決揭榜動畫消失問題)
+      /*
+      ======================================================================
+      🌟 滿血揭榜動畫 (方案 A：最強懸念倒序機制)
+      總排行榜：10 ➔ 4名 快速倒序滑入 ➔ 3 ➔ 2 ➔ 1名 震撼升起 + 號角彩帶
+      週排行榜：3 ➔ 2 ➔ 1名 經典震撼升起 + 號角彩帶
+      ======================================================================
+      */
       startRevealTheater() {
         SoundFx.init();
         const p1 = document.getElementById('pCol1');
         const p2 = document.getElementById('pCol2');
         const p3 = document.getElementById('pCol3');
         const sheet = document.getElementById('rosterSheet');
+        const isTotal = (this.rankType === 'total');
 
+        // 先重置並隱藏所有動畫元素
         [p1, p2, p3].forEach(p => { p.classList.remove('reveal'); p.classList.add('anim-hide'); });
         sheet.classList.remove('active-show');
         sheet.classList.add('anim-hide');
 
+        const tierItems = Array.from(document.querySelectorAll('.tier-item'));
+        tierItems.forEach(t => { t.classList.remove('reveal'); t.classList.add('anim-hide'); });
+
+        let currentDelay = 300;
+
+        if (isTotal && tierItems.length > 0) {
+          // 🌟 方案 A 倒序：從最後一個梯隊（例如第 10 名）往回揭曉至 第 4 名
+          const reversedTiers = tierItems.slice().reverse();
+          reversedTiers.forEach((item, i) => {
+            setTimeout(() => {
+              // 伴隨戰階音階 (頻率微幅隨名次上升)
+              SoundFx.playStepNote(380 + (i * 35));
+              item.classList.remove('anim-hide');
+              item.classList.add('reveal');
+            }, currentDelay);
+            currentDelay += 220; // 每 0.22 秒揭曉一位
+          });
+          currentDelay += 400; // 稍微停頓蓄力，準備進入前三名高潮
+        }
+
+        // 進入前三名高潮立柱
         setTimeout(() => {
           SoundFx.playDrum();
           p3.classList.remove('anim-hide');
           p3.classList.add('reveal');
-        }, 500);
+        }, currentDelay);
+        currentDelay += 1000;
 
         setTimeout(() => {
           SoundFx.playDrum();
           p2.classList.remove('anim-hide');
           p2.classList.add('reveal');
-        }, 1500);
+        }, currentDelay);
+        currentDelay += 1100;
 
+        // 冠軍誕生：爆發勝利號角與金色彩帶
         setTimeout(() => {
           SoundFx.playFanfare();
           p1.classList.remove('anim-hide');
           p1.classList.add('reveal');
           this.shootConfetti();
+
+          // 最後平滑展開全班名冊總表
           setTimeout(() => {
             sheet.classList.remove('anim-hide');
             sheet.classList.add('active-show');
-          }, 1800);
-        }, 2600);
+          }, 1500);
+        }, currentDelay);
       },
 
       /*
@@ -1067,7 +1160,7 @@
       */
       initMqttBroker() {
         const brokerHost = "broker.hivemq.com";
-        const brokerPort = 8884; // 安全 WSS 通道
+        const brokerPort = 8884;
         const clientId = "magic_client_" + Math.random().toString(16).substr(2, 8);
         const topic = "magic_academy/broadcast/channel_2026";
 
@@ -1129,7 +1222,6 @@
         document.getElementById('btnStandby').disabled = true;
         this.updateTvStatusUI(this.mqttConnected);
 
-        // GAS 雙保險輪詢
         setInterval(async () => {
           if (!this.isTv) return;
           try {
@@ -1162,20 +1254,18 @@
           triggerId: triggerId
         };
 
-        // 1. MQTT 極速廣播
         if (this.mqttClient && this.mqttConnected) {
           const msg = new Paho.MQTT.Message(JSON.stringify(payload));
           msg.destinationName = "magic_academy/broadcast/channel_2026";
           this.mqttClient.send(msg);
         }
 
-        // 2. Google 試算表備援寫入
         fetch(GAS_API_URL, {
           method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
           body: JSON.stringify({ action: 'set_remote_trigger', triggerData: { ...payload, t: triggerId } })
         });
 
-        alert(`📢 已向大螢幕極速發送揭榜指令！【${this.curClass}班 / ${this.lbWeek}】`);
+        alert(`📢 已向大螢幕極速發送揭榜指令！【${this.curClass}班 / ${this.rankType === 'weekly' ? this.lbWeek : '總排行榜'}】`);
       },
 
       broadcastClose() {
