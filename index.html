@@ -14,6 +14,7 @@
       --gold: #d4af37;
       --gold-l: #f7e49a;
       --parch: #f6f1e3;
+      --parch-b: #ded3b8;
       --text: #f0f7f4;
       --font-serif: "Cinzel", "Noto Serif TC", serif;
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", sans-serif;
@@ -65,23 +66,33 @@
     .bottom-bar { height: 50px; background: #05140e; border-top: 1.5px solid var(--gold); padding: 0 8px; display: flex; justify-content: space-around; align-items: center; gap: 4px; flex-shrink: 0; }
     .chip { flex: 1; height: 36px; border: 1px solid rgba(212,175,55,0.4); border-radius: 4px; background: rgba(212,175,55,0.08); color: var(--gold-l); font-size: 0.95rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .chip.active { background: var(--gold); color: #071912; }
+    
+    /* 備課筆記樣式 */
     .col-notes { flex: 1; display: none; flex-direction: column; background: var(--parch); color: #201e19; height: 100%; overflow: hidden; }
     .col-notes.phone-on { display: flex; }
-    .notes-bar { padding: 6px 8px; background: #ebdcc0; border-bottom: 1px solid #ded3b8; display: flex; justify-content: space-between; align-items: center; gap: 4px; flex-shrink: 0; }
-    .notes-tools { display: none; flex-wrap: wrap; align-items: center; gap: 4px; padding: 4px 8px; background: #dfcfaf; border-bottom: 1px solid #c9b896; flex-shrink: 0; }
+    .notes-bar { padding: 6px 8px; background: #ebdcc0; border-bottom: 1px solid var(--parch-b); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px; flex-shrink: 0; }
+    .notes-bar-row { display: flex; width: 100%; gap: 4px; align-items: center; }
+    .notes-tools { display: none; flex-wrap: wrap; align-items: center; gap: 3px; padding: 4px 6px; background: #dfcfaf; border-bottom: 1px solid #c9b896; flex-shrink: 0; }
     .notes-tools.on { display: flex; }
-    .notes-box { flex: 1; padding: 12px 16px; outline: none; overflow-y: auto; font-size: 0.95rem; line-height: 1.6; }
-    .marker { background: rgba(241,196,15,0.3); border-left: 3px solid #f39c12; padding: 2px 6px; }
+    .btn-tool { background: #fff; border: 1px solid #bdae93; border-radius: 3px; padding: 2px 6px; font-size: 0.78rem; cursor: pointer; }
+    .btn-tool:hover { background: #fdfaf2; }
+    .tool-color { width: 22px; height: 22px; padding: 0; border: 1px solid #bdae93; border-radius: 3px; cursor: pointer; vertical-align: middle; }
+    .notes-box { flex: 1; padding: 12px 16px; outline: none; overflow-y: auto; font-size: 1rem; line-height: 1.6; }
+    .notes-box ul, .notes-box ol { padding-left: 24px; margin: 4px 0; }
+    .marker { background: rgba(241,196,15,0.3); border-left: 4px solid #f39c12; padding: 2px 6px; border-radius: 0 4px 4px 0; }
+    .marker-badge { background: #e67e22; color: #fff; font-size: 0.7rem; font-weight: bold; padding: 1px 4px; border-radius: 6px; margin-right: 4px; }
+    
     @media (min-width: 680px) {
       .phone-bar { display: none !important; }
       .col-notes { flex: 0 0 50% !important; display: flex !important; order: 1; border-right: 2px solid var(--gold); }
       .col-score { flex: 0 0 50% !important; display: flex !important; order: 2; }
     }
+    
     #view-leaderboard { background: radial-gradient(circle, #0e3527 0%, #030c08 100%); overflow-y: auto; align-items: center; }
     .podium { width: 92%; max-width: 760px; display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin: 16px 0; min-height: 230px; }
     .podium-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
     .podium-badge { background: rgba(11,37,28,0.95); border: 1.5px solid var(--gold); border-radius: 6px; padding: 6px; text-align: center; margin-bottom: 6px; width: 100%; min-height: 60px; display: flex; flex-direction: column; justify-content: center; }
-    .p-name { font-size: clamp(0.8rem, 2vw, 1.05rem); font-weight: bold; color: #fff; line-height: 1.3; }
+    .p-name { font-size: clamp(0.8rem, 2vw, 1.05rem); font-weight: bold; color: #fff; line-height: 1.3; word-break: break-word; white-space: normal; }
     .p-score { font-family: var(--font-serif); font-size: 0.85rem; color: var(--gold-l); margin-top: 2px; }
     .podium-box { width: 100%; display: flex; justify-content: center; align-items: center; font-family: var(--font-serif); font-weight: bold; color: #05140e; border-radius: 6px 6px 0 0; }
     .p1 .podium-box { height: 125px; background: linear-gradient(180deg, #ffd700, #b8860b); font-size: 2rem; }
@@ -92,6 +103,11 @@
     .roster-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(212,175,55,0.25); border-radius: 4px; padding: 6px 8px; display: flex; flex-direction: column; gap: 2px; font-size: 0.82rem; }
     .mgr-box { max-width: 600px; margin: 16px auto; background: #0b251c; border: 1.5px solid var(--gold); border-radius: 8px; padding: 16px; width: 92%; }
     .mgr-txt { width: 100%; height: 200px; background: #04130d; border: 1px solid var(--border); border-radius: 4px; color: #fff; padding: 10px; font-family: monospace; font-size: 0.88rem; outline: none; margin: 10px 0; }
+    
+    /* 複製筆記對話框 */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-card { background: #0b251c; border: 2px solid var(--gold); border-radius: 8px; padding: 16px; width: 90%; max-width: 360px; color: #fff; }
+    .modal-card input[type="text"] { width: 100%; padding: 6px; background: #04130d; border: 1px solid var(--border); color: #fff; margin: 8px 0; border-radius: 4px; }
   </style>
 </head>
 <body>
@@ -106,6 +122,7 @@
       <button class="btn-nav" style="border-color:#e74c3c; color:#ff9999;" onclick="App.logout()">登出</button>
     </div>
   </header>
+  
   <main class="viewport">
     <section id="view-gate">
       <div class="gate-portal"><div class="gate-door l"></div><div class="gate-door r"></div></div>
@@ -124,6 +141,7 @@
         </div>
       </div>
     </section>
+
     <section id="view-workspace" class="panel">
       <div class="phone-bar">
         <button class="phone-btn active" id="btnPScore" onclick="App.togglePhone('score')">⚔️ 計分面板</button>
@@ -131,28 +149,56 @@
       </div>
       <div class="tabs-bar" id="wsTabs"></div>
       <div class="split">
+        <!-- 備課筆記卷軸 (支援週次篩選連動 + 日期降序 + 完整富文本) -->
         <div class="col-notes" id="colNotes">
           <div class="notes-bar">
-            <select id="selUnit" style="flex:1; padding:4px;" onchange="App.onUnitChange()"></select>
-            <button class="btn-nav" onclick="App.addUnit()">➕</button>
-            <button class="btn-nav" id="btnEditNote" onclick="App.toggleNoteMode()">📖 閱讀</button>
+            <div class="notes-bar-row">
+              <select id="selNoteWeek" style="flex:0 0 85px; padding:3px; font-size:0.8rem;" onchange="App.onNoteWeekFilterChange()"></select>
+              <select id="selUnit" style="flex:1; min-width:0; padding:3px; font-size:0.8rem;" onchange="App.onUnitChange()"></select>
+              <button class="btn-tool" onclick="App.addUnit()" title="新增教學單元">➕</button>
+              <button class="btn-tool" onclick="App.renameUnit()" title="更名">✏️</button>
+              <button class="btn-tool" onclick="App.delUnit()" title="刪除單元">🗑️</button>
+              <button class="btn-tool" id="btnEditNote" style="background:#27ae60; color:#fff; font-weight:bold;" onclick="App.toggleNoteMode()">📖 閱讀</button>
+            </div>
           </div>
+          <!-- 富文本編輯工具列 (px字級選單 + 粗斜底清單 + 原生調色盤 + 螢光筆 + 進度標記 + 跨班派發) -->
           <div class="notes-tools" id="noteTools">
-            <button class="btn-nav" onclick="document.execCommand('bold')"><b>B</b></button>
-            <button class="btn-nav" onclick="document.execCommand('italic')"><i>I</i></button>
-            <button class="btn-nav" onclick="document.execCommand('hiliteColor', false, '#f1c40f')">🖍️</button>
-            <button class="btn-nav" onclick="App.addBookmark()">📍 進度</button>
-            <button class="btn-nav" onclick="App.copyNoteModal()">📤 複製</button>
-            <button class="btn-nav" style="background:#27ae60; color:#fff;" onclick="App.saveNote()">💾</button>
+            <select class="btn-tool" style="padding:1px 2px;" onchange="App.applyFontSize(this.value)">
+              <option value="14px">14px</option>
+              <option value="16px" selected>16px</option>
+              <option value="18px">18px</option>
+              <option value="22px">22px</option>
+              <option value="26px">26px</option>
+              <option value="32px">32px</option>
+            </select>
+            <button class="btn-tool" onclick="document.execCommand('bold')"><b>B</b></button>
+            <button class="btn-tool" onclick="document.execCommand('italic')"><i>I</i></button>
+            <button class="btn-tool" onclick="document.execCommand('underline')"><u>U</u></button>
+            <label class="btn-tool" style="display:inline-flex; align-items:center; gap:2px;" title="文字顏色">
+              🎨<input type="color" class="tool-color" value="#111111" onchange="document.execCommand('foreColor', false, this.value); App.triggerNoteAutoSave();">
+            </label>
+            <label class="btn-tool" style="display:inline-flex; align-items:center; gap:2px;" title="螢光底色">
+              🖍️<input type="color" class="tool-color" value="#f1c40f" onchange="document.execCommand('hiliteColor', false, this.value); App.triggerNoteAutoSave();">
+            </label>
+            <button class="btn-tool" onclick="document.execCommand('insertUnorderedList')">• 項目</button>
+            <button class="btn-tool" onclick="document.execCommand('insertOrderedList')">1. 編號</button>
+            <button class="btn-tool" onclick="document.execCommand('indent')">⇥</button>
+            <button class="btn-tool" onclick="document.execCommand('outdent')">⇤</button>
+            <button class="btn-tool" style="background:#f1c40f; font-weight:bold;" onclick="App.addBookmark()">📍 設進度</button>
+            <button class="btn-tool" style="background:#3498db; color:#fff;" onclick="App.openCopyModal()">📤 另存他班</button>
+            <span id="noteSaveTag" style="font-size:0.7rem; color:#27ae60; display:none;">✔ 已存</span>
+            <button class="btn-tool" style="background:#27ae60; color:#fff; font-weight:bold;" onclick="App.saveNote(false)">💾 存檔</button>
           </div>
           <div class="notes-box" id="noteEditor" contenteditable="false"></div>
         </div>
+
+        <!-- 計分面板 -->
         <div class="col-score" id="colScore">
           <div class="guide-banner">
             <span style="color:#ffe680; font-size:0.75rem;">💡 長按設幹部｜點擊計分</span>
             <div style="display:flex; gap:6px; align-items:center;">
               <span id="bannerWeek" style="font-size:0.75rem; color:var(--gold-l); cursor:pointer;" onclick="App.promptEditWeek()">【第1週】 ✏️</span>
-              <button class="btn-settle" id="btnSettle" onclick="App.settleScores()">☁️️ 結算</button>
+              <button class="btn-settle" id="btnSettle" onclick="App.settleScores()">☁️ 結算</button>
             </div>
           </div>
           <div class="grid" id="stGrid"></div>
@@ -167,6 +213,8 @@
         </div>
       </div>
     </section>
+
+    <!-- 榮譽榜單 -->
     <section id="view-leaderboard" class="panel">
       <div style="padding:8px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; background:#05140e; border-bottom:1px solid rgba(212,175,55,0.3);">
         <div style="display:flex; gap:6px; align-items:center;">
@@ -175,7 +223,7 @@
           <select id="selLbWeek" style="padding:4px; background:#081c14; border:1px solid var(--gold); color:#fff;" onchange="App.onLbWeekChange()"></select>
         </div>
         <div style="display:flex; gap:6px;">
-          <button class="btn-nav" style="background:var(--gold); color:#071912; font-weight:bold;" onclick="App.broadcastReveal()">📢 廣播電腦大螢幕</button>
+          <button class="btn-nav" style="background:var(--gold); color:#071912; font-weight:bold;" onclick="App.broadcastReveal()">📢 廣播大螢幕揭榜</button>
           <button class="btn-nav" style="border-color:#e67e22; color:#f39c12;" onclick="App.broadcastClose()">🚪 關閉大門</button>
         </div>
       </div>
@@ -189,6 +237,8 @@
         <div class="roster-grid" id="rosterGrid"></div>
       </div>
     </section>
+
+    <!-- 名冊管理 -->
     <section id="view-roster" class="panel">
       <div class="tabs-bar" id="rosterTabs"></div>
       <div class="mgr-box">
@@ -201,7 +251,26 @@
         </div>
       </div>
     </section>
+
+    <!-- 跨班另存視窗 -->
+    <div class="modal-overlay" id="copyModal">
+      <div class="modal-card">
+        <h4 style="color:var(--gold-l); margin-bottom:8px;">📤 另存筆記至其他班級</h4>
+        <label style="font-size:0.75rem; color:#bdc3c7;">單元標題：</label>
+        <input type="text" id="copyTitleIpt">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin:4px 0;">
+          <span style="font-size:0.75rem; color:#bdc3c7;">勾選目標班級：</span>
+          <button type="button" style="background:none; border:none; color:var(--gold-l); font-size:0.75rem; cursor:pointer;" onclick="App.toggleCopyAll()">全選/反選</button>
+        </div>
+        <div id="copyClassBoxes" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:6px; max-height:120px; overflow-y:auto; padding:6px; background:rgba(0,0,0,0.3); border-radius:4px;"></div>
+        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:10px;">
+          <button class="btn-tool" onclick="App.closeCopyModal()">取消</button>
+          <button class="btn-gold" style="width:auto; padding:4px 12px;" onclick="App.execCopy()">確認派發</button>
+        </div>
+      </div>
+    </div>
   </main>
+
   <script>
     /*
     ================================================================================
@@ -212,37 +281,64 @@
     /*
     ================================================================================
     */
-    const VERSION = "v2.8.0";
+    const VERSION = "v2.9.0";
     const App = {
       curClass: "", weight: 1, rankType: "weekly", lbWeek: "第1週",
-      isTv: false, isNoteEdit: false, activeNoteId: null, longFired: false,
+      filterNoteWeek: "ALL", isTv: false, isNoteEdit: false, activeNoteId: null,
+      noteDirty: false, noteTimer: null, longFired: false,
       data: { classes: [], students: [], notes: [], curWeek: "第1週", weeks: ["第1週"], pwd: "8888", buf: {} },
 
       init() {
         document.getElementById('gateVer').innerText = `⚜️ 核心版本：${VERSION} ⚜️`;
-        this.loadStorage();
+        this.migrateAndLoadStorage();
         if (sessionStorage.getItem('magic_auth') === 'true') {
           this.authSuccess();
         }
         this.renderTabs();
         this.renderCards();
         this.initLbWeeks();
+        this.initNotePaste();
         this.fetchCloud();
       },
 
-      loadStorage() {
-        const raw = localStorage.getItem('magic_v280');
-        if (raw) {
+      // 🌟 舊版儲存庫無縫自動遷移器 (救援舊筆記與計分)
+      migrateAndLoadStorage() {
+        const currentRaw = localStorage.getItem('magic_v290');
+        if (currentRaw) {
           try {
-            const p = JSON.parse(raw);
+            const p = JSON.parse(currentRaw);
             if (p && p.classes && p.classes.length > 0) {
               this.data = p;
               this.curClass = this.data.classes[0];
+              return;
             }
           } catch(e) {}
         }
+
+        // 自動從歷史版本救援筆記與名冊
+        const legacyKeys = ['magic_academy_store_v270', 'magic_academy_store_v260', 'magic_academy_store_v250', 'magic_academy_store_v240', 'magic_v280'];
+        for (let i = 0; i < legacyKeys.length; i++) {
+          const raw = localStorage.getItem(legacyKeys[i]);
+          if (raw) {
+            try {
+              const legacy = JSON.parse(raw);
+              if (legacy && (legacy.notes || legacy.students)) {
+                this.data.classes = legacy.classes || [];
+                this.data.students = legacy.students || [];
+                this.data.notes = legacy.notes || [];
+                this.data.curWeek = legacy.currentWeekKey || legacy.curWeek || "第1週";
+                this.data.weeks = legacy.allWeekKeys || legacy.weeks || ["第1週"];
+                this.data.pwd = legacy.adminPassword || legacy.pwd || "8888";
+                if (legacy.classes && legacy.classes.length > 0) this.curClass = legacy.classes[0];
+                this.saveStorage();
+                console.log(`✨ 成功從 ${legacyKeys[i]} 遷移復原歷史筆記與班級！`);
+                return;
+              }
+            } catch(e) {}
+          }
+        }
       },
-      saveStorage() { localStorage.setItem('magic_v280', JSON.stringify(this.data)); },
+      saveStorage() { localStorage.setItem('magic_v290', JSON.stringify(this.data)); },
 
       auth() {
         const p = document.getElementById('pwdIpt').value.trim();
@@ -272,6 +368,7 @@
       },
 
       switchView(v) {
+        if (this.noteDirty && v !== 'workspace') this.saveNote(true);
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
         const el = document.getElementById('view-' + v);
@@ -286,6 +383,7 @@
         document.getElementById('colNotes').classList.toggle('phone-on', m === 'notes');
         document.getElementById('btnPScore').classList.toggle('active', m === 'score');
         document.getElementById('btnPNotes').classList.toggle('active', m === 'notes');
+        if (m === 'notes') this.scrollBookmark();
       },
 
       renderTabs() {
@@ -298,7 +396,14 @@
             const b = document.createElement('button');
             b.className = `tab-pill ${c === this.curClass ? 'active' : ''}`;
             b.innerText = `${c} 班${hasBuf ? ' •' : ''}`;
-            b.onclick = () => { this.curClass = c; this.renderTabs(); this.renderCards(); this.initNotes(); this.loadRosterText(); };
+            b.onclick = () => {
+              if (this.noteDirty) this.saveNote(true);
+              this.curClass = c;
+              this.renderTabs();
+              this.renderCards();
+              this.initNotes();
+              this.loadRosterText();
+            };
             bar.appendChild(b);
           });
           const add = document.createElement('button');
@@ -374,6 +479,7 @@
         this.saveStorage();
         this.renderCards();
         this.initLbWeeks();
+        this.initNotes();
         fetch(GAS_API_URL, {
           method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
           body: JSON.stringify({ action: 'save_current_week', weekKey: clean })
@@ -387,7 +493,7 @@
         if (tag) tag.innerText = `【${w}】 ✏️`;
         const hasDirty = Object.keys(this.data.buf).some(k => k.startsWith(`${this.curClass}_${w}_`) && this.data.buf[k] !== 0);
         if (b) {
-          b.innerText = `☁️️ 結算${w}${hasDirty ? '*' : ''}`;
+          b.innerText = `☁️ 結算${w}${hasDirty ? '*' : ''}`;
           b.classList.toggle('dirty', hasDirty);
         }
       },
@@ -428,18 +534,325 @@
         } catch(e) { alert('網路連線逾時，本機分數已完整保留！'); this.updateSettleUI(); }
       },
 
+      /*
+      ======================================================================
+      備課筆記模組 (日期降序排序 + 週次關聯篩選 + 完整富文本工具)
+      ======================================================================
+      */
+      initNotes() {
+        const wSel = document.getElementById('selNoteWeek');
+        if (wSel) {
+          wSel.innerHTML = '<option value="ALL">全部週次</option>';
+          (this.data.weeks || ["第1週"]).forEach(w => {
+            const o = document.createElement('option');
+            o.value = w;
+            o.innerText = w;
+            wSel.appendChild(o);
+          });
+          wSel.value = this.filterNoteWeek || "ALL";
+        }
+        this.renderUnitSelect();
+      },
+
+      onNoteWeekFilterChange() {
+        this.filterNoteWeek = document.getElementById('selNoteWeek').value;
+        this.renderUnitSelect();
+      },
+
+      // 🌟 嚴格日期由新到舊 (降序) 排序
+      renderUnitSelect() {
+        const sel = document.getElementById('selUnit');
+        if (!sel || !this.curClass) return;
+        sel.innerHTML = "";
+
+        let classNotes = this.data.notes.filter(n => n.classId === this.curClass);
+        if (this.filterNoteWeek !== 'ALL') {
+          classNotes = classNotes.filter(n => (n.dateTitle || '').includes(this.filterNoteWeek));
+        }
+
+        // 依標題內含日期或 updatedAt 進行降序排序 (最新在最上面)
+        classNotes.sort((a, b) => {
+          const dA = a.dateTitle.match(/\d{4}[-/]\d{1,2}[-/]\d{1,2}/);
+          const dB = b.dateTitle.match(/\d{4}[-/]\d{1,2}[-/]\d{1,2}/);
+          if (dA && dB) return dB[0].localeCompare(dA[0]);
+          return (b.updatedAt || 0) - (a.updatedAt || 0);
+        });
+
+        if (classNotes.length === 0) {
+          const today = new Date().toISOString().split('T')[0];
+          const def = {
+            classId: this.curClass,
+            noteId: `${this.curClass}_${Date.now()}`,
+            dateTitle: `【${this.data.curWeek}】${today} (首堂課)`,
+            content: '<div><b>📌 本單元重點：</b></div><ul><li>任務 1：</li></ul>'
+          };
+          this.data.notes.unshift(def);
+          this.saveStorage();
+          classNotes.push(def);
+        }
+
+        classNotes.forEach(n => {
+          const opt = document.createElement('option');
+          opt.value = n.noteId;
+          opt.innerText = n.dateTitle;
+          sel.appendChild(opt);
+        });
+
+        if (!this.activeNoteId || !classNotes.some(n => n.noteId === this.activeNoteId)) {
+          this.activeNoteId = classNotes[0].noteId;
+        }
+        sel.value = this.activeNoteId;
+        this.renderNoteContent();
+      },
+
+      onUnitChange() {
+        if (this.noteDirty) this.saveNote(true);
+        this.activeNoteId = document.getElementById('selUnit').value;
+        this.renderNoteContent();
+      },
+
+      renderNoteContent() {
+        const n = this.data.notes.find(x => x.noteId === this.activeNoteId);
+        const editor = document.getElementById('noteEditor');
+        if (n && editor) {
+          editor.innerHTML = n.content || '';
+          this.noteDirty = false;
+          setTimeout(() => this.scrollBookmark(), 200);
+        }
+      },
+
+      toggleNoteMode() {
+        this.isNoteEdit = !this.isNoteEdit;
+        const btn = document.getElementById('btnEditNote');
+        const tools = document.getElementById('noteTools');
+        const editor = document.getElementById('noteEditor');
+        if (this.isNoteEdit) {
+          btn.innerText = "✏️ 編輯中";
+          btn.style.background = "#d35400";
+          tools.classList.add('on');
+          editor.contentEditable = "true";
+        } else {
+          if (this.noteDirty) this.saveNote(true);
+          btn.innerText = "📖 閱讀中";
+          btn.style.background = "#27ae60";
+          tools.classList.remove('on');
+          editor.contentEditable = "false";
+          this.scrollBookmark();
+        }
+      },
+
+      applyFontSize(px) {
+        document.execCommand('fontSize', false, '7');
+        const fonts = document.getElementById('noteEditor').getElementsByTagName('font');
+        for (let i = 0; i < fonts.length; i++) {
+          if (fonts[i].size === '7') {
+            fonts[i].removeAttribute('size');
+            fonts[i].style.fontSize = px;
+          }
+        }
+        this.triggerNoteAutoSave();
+      },
+
+      addBookmark() {
+        const s = window.getSelection();
+        if (!s || !s.rangeCount) return alert('請先在筆記中選取位置！');
+        
+        // 移除舊標記
+        const old = document.getElementById('noteEditor').querySelectorAll('.marker');
+        old.forEach(el => {
+          const badge = el.querySelector('.marker-badge');
+          if (badge) badge.remove();
+          const p = el.parentNode;
+          while (el.firstChild) p.insertBefore(el.firstChild, el);
+          el.remove();
+        });
+
+        const r = s.getRangeAt(0);
+        const sp = document.createElement('span');
+        sp.className = 'marker';
+        sp.innerHTML = `<span class="marker-badge">📍 進度</span>`;
+        if (!r.collapsed) sp.appendChild(r.extractContents());
+        r.insertNode(sp);
+        s.removeAllRanges();
+        this.triggerNoteAutoSave();
+      },
+
+      scrollBookmark() {
+        const m = document.getElementById('noteEditor').querySelector('.marker');
+        if (m) m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      },
+
+      addUnit() {
+        const today = new Date().toISOString().split('T')[0];
+        const curW = this.data.curWeek || "第1週";
+        const title = prompt('請輸入新教學單元日期與標題：', `【${curW}】${today} (第${this.data.notes.filter(n=>n.classId===this.curClass).length+1}單元)`);
+        if (!title || !title.trim()) return;
+
+        const newNote = {
+          classId: this.curClass,
+          noteId: `${this.curClass}_${Date.now()}`,
+          dateTitle: title.trim(),
+          content: '<div><b>📌 本單元重點：</b></div><ul><li>任務 1：</li></ul>'
+        };
+        this.data.notes.unshift(newNote);
+        this.saveStorage();
+        this.activeNoteId = newNote.noteId;
+        this.initNotes();
+        this.saveNote(true);
+      },
+
+      renameUnit() {
+        const n = this.data.notes.find(x => x.noteId === this.activeNoteId);
+        if (!n) return;
+        const newT = prompt('修改目前單元名稱：', n.dateTitle);
+        if (!newT || !newT.trim()) return;
+        n.dateTitle = newT.trim();
+        this.saveStorage();
+        this.initNotes();
+        this.saveNote(true);
+      },
+
+      delUnit() {
+        const list = this.data.notes.filter(n => n.classId === this.curClass);
+        if (list.length <= 1) return alert('本班至少需保留一個單元，無法刪除！');
+        const n = this.data.notes.find(x => x.noteId === this.activeNoteId);
+        if (!confirm(`確定要封存刪除【${n.dateTitle}】？`)) return;
+
+        const delId = this.activeNoteId;
+        this.data.notes = this.data.notes.filter(x => x.noteId !== delId);
+        this.saveStorage();
+        this.activeNoteId = null;
+        this.initNotes();
+        fetch(GAS_API_URL, {
+          method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
+          body: JSON.stringify({ action: 'archive_note', data: { noteId: delId } })
+        });
+      },
+
+      triggerNoteAutoSave() {
+        this.noteDirty = true;
+        clearTimeout(this.noteTimer);
+        this.noteTimer = setTimeout(() => {
+          this.saveNote(true);
+        }, 3000);
+      },
+
+      initNotePaste() {
+        const ed = document.getElementById('noteEditor');
+        if (!ed) return;
+        ed.addEventListener('paste', (e) => {
+          if (!this.isNoteEdit) return;
+          e.preventDefault();
+          const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+          if (!text) return;
+          const clean = text.split(/\r?\n/).map(l => l.trim() ? `<div>${l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>` : `<div><br></div>`).join('');
+          document.execCommand('insertHTML', false, clean);
+          this.triggerNoteAutoSave();
+        });
+        ed.addEventListener('input', () => this.triggerNoteAutoSave());
+      },
+
+      async saveNote(silent = false) {
+        clearTimeout(this.noteTimer);
+        const ed = document.getElementById('noteEditor');
+        const n = this.data.notes.find(x => x.noteId === this.activeNoteId);
+        if (!n || !ed) return;
+
+        n.content = ed.innerHTML;
+        this.noteDirty = false;
+        this.saveStorage();
+
+        const tag = document.getElementById('noteSaveTag');
+        if (silent && tag) {
+          tag.style.display = 'inline';
+          setTimeout(() => { tag.style.display = 'none'; }, 2500);
+        } else if (!silent) {
+          alert('💾 筆記已成功儲存！');
+        }
+
+        fetch(GAS_API_URL, {
+          method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
+          body: JSON.stringify({ action: 'save_notes', data: n })
+        });
+      },
+
+      openCopyModal() {
+        const curN = this.data.notes.find(x => x.noteId === this.activeNoteId);
+        if (!curN) return;
+        document.getElementById('copyTitleIpt').value = curN.dateTitle;
+        const box = document.getElementById('copyClassBoxes');
+        box.innerHTML = "";
+        const others = this.data.classes.filter(c => c !== this.curClass);
+        if (others.length === 0) return alert('目前僅有單一班級，無需複製至他班！');
+        others.forEach(c => {
+          const l = document.createElement('label');
+          l.style.fontSize = '0.82rem';
+          l.innerHTML = `<input type="checkbox" name="cpClass" value="${c}" checked> 【${c}班】`;
+          box.appendChild(l);
+        });
+        document.getElementById('copyModal').style.display = 'flex';
+      },
+      closeCopyModal() { document.getElementById('copyModal').style.display = 'none'; },
+      toggleCopyAll() {
+        const cbs = document.querySelectorAll('input[name="cpClass"]');
+        const all = Array.from(cbs).every(c => c.checked);
+        cbs.forEach(c => c.checked = !all);
+      },
+      execCopy() {
+        const curN = this.data.notes.find(x => x.noteId === this.activeNoteId);
+        const title = document.getElementById('copyTitleIpt').value.trim();
+        if (!title) return alert('標題不可為空！');
+        const targets = Array.from(document.querySelectorAll('input[name="cpClass"]:checked')).map(c => c.value);
+        if (targets.length === 0) return alert('請至少勾選一個目標班級！');
+
+        // 清除進度標記為純淨副本
+        const temp = document.createElement('div');
+        temp.innerHTML = document.getElementById('noteEditor').innerHTML;
+        temp.querySelectorAll('.marker').forEach(m => {
+          const b = m.querySelector('.marker-badge'); if (b) b.remove();
+          const p = m.parentNode; while(m.firstChild) p.insertBefore(m.firstChild, m); m.remove();
+        });
+        const cleanContent = temp.innerHTML;
+
+        const toSend = [];
+        targets.forEach(cid => {
+          const newN = { classId: cid, noteId: `${cid}_${Date.now()}_${Math.random().toString(36).substring(2,6)}`, dateTitle: title, content: cleanContent };
+          this.data.notes.unshift(newN);
+          toSend.push(newN);
+        });
+        this.saveStorage();
+        this.closeCopyModal();
+        alert(`✨ 成功派發至 ${targets.length} 個班級！`);
+
+        fetch(GAS_API_URL, {
+          method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
+          body: JSON.stringify({ action: 'batch_save_notes', notesList: toSend })
+        });
+      },
+
+      /*
+      ======================================================================
+      排行榜模組 (規則 A：分數梯隊制 + 方式 1：完整並列美感排版)
+      ======================================================================
+      */
       initLbWeeks() {
         const sel = document.getElementById('selLbWeek');
         if (!sel) return;
         sel.innerHTML = "";
         const all = (this.data.weeks || ["第1週"]);
+        const curIdx = all.indexOf(this.data.curWeek || "第1週");
+        let def = this.data.curWeek || "第1週";
+        if (curIdx > 0) def = all[curIdx - 1]; // 預設展示前一週 (結算榜)
+        else if (all.length > 1) def = all[0];
+        this.lbWeek = def;
+
         all.forEach(w => {
           const opt = document.createElement('option');
           opt.value = w;
           opt.innerText = (w === this.data.curWeek) ? `${w} (進行中)` : `${w} (結算榜)`;
           sel.appendChild(opt);
         });
-        sel.value = this.lbWeek || all[0];
+        sel.value = this.lbWeek;
       },
       onLbWeekChange() { this.lbWeek = document.getElementById('selLbWeek').value; this.loadLeaderboard(); },
       onLbClassChange() { this.curClass = document.getElementById('selLbClass').value; this.loadLeaderboard(); },
@@ -474,6 +887,7 @@
           return { ...s, sc: Math.floor(sc) };
         }).sort((a,b) => b.sc - a.sc || a.seatNo - b.seatNo);
 
+        // 規則 A：依不重複分數梯隊提取金銀銅
         const tiers = Array.from(new Set(list.map(s => s.sc))).sort((a,b) => b - a);
         const t1 = list.filter(s => s.sc === tiers[0]);
         const t2 = list.filter(s => s.sc === tiers[1]);
@@ -497,6 +911,11 @@
         });
       },
 
+      /*
+      ======================================================================
+      原生 Google 長輪詢遠端通訊
+      ======================================================================
+      */
       startTvStandby() {
         this.isTv = true;
         document.getElementById('btnStandby').innerText = "🟢 電腦大螢幕待命中...";
@@ -538,74 +957,11 @@
         alert('🚪 已命令電腦關門待命！');
       },
 
-      initNotes() {
-        const sel = document.getElementById('selUnit');
-        sel.innerHTML = "";
-        const list = this.data.notes.filter(n => n.classId === this.curClass);
-        if (list.length === 0) {
-          list.push({ classId: this.curClass, noteId: `${this.curClass}_1`, dateTitle: '首堂課', content: '<div><b>任務重點：</b></div>' });
-          this.data.notes.push(list[0]);
-          this.saveStorage();
-        }
-        list.forEach(n => {
-          const opt = document.createElement('option'); opt.value = n.noteId; opt.innerText = n.dateTitle; sel.appendChild(opt);
-        });
-        this.activeNoteId = list[0].noteId;
-        this.renderNoteContent();
-      },
-      onUnitChange() { this.activeNoteId = document.getElementById('selUnit').value; this.renderNoteContent(); },
-      renderNoteContent() {
-        const n = this.data.notes.find(x => x.noteId === this.activeNoteId);
-        if (n) document.getElementById('noteEditor').innerHTML = n.content;
-      },
-      toggleNoteMode() {
-        this.isNoteEdit = !this.isNoteEdit;
-        document.getElementById('btnEditNote').innerText = this.isNoteEdit ? '✏️ 編輯' : '📖 閱讀';
-        document.getElementById('noteTools').classList.toggle('on', this.isNoteEdit);
-        document.getElementById('noteEditor').contentEditable = this.isNoteEdit ? "true" : "false";
-      },
-      addBookmark() {
-        const s = window.getSelection();
-        if (!s || !s.rangeCount) return;
-        const r = s.getRangeAt(0);
-        const sp = document.createElement('span');
-        sp.className = 'marker';
-        sp.innerText = "📍 進度: ";
-        r.insertNode(sp);
-      },
-      addUnit() {
-        const t = prompt('請輸入新課程單元標題：', '新單元');
-        if (!t) return;
-        const n = { classId: this.curClass, noteId: `${this.curClass}_${Date.now()}`, dateTitle: t, content: '<div></div>' };
-        this.data.notes.unshift(n);
-        this.saveStorage();
-        this.initNotes();
-      },
-      copyNoteModal() {
-        const t = prompt('複製此筆記至班級 (例如: 501, 504)：');
-        if (!t) return;
-        const curN = this.data.notes.find(x => x.noteId === this.activeNoteId);
-        t.split(',').map(x => x.trim()).forEach(cid => {
-          if (this.data.classes.includes(cid)) {
-            this.data.notes.unshift({ classId: cid, noteId: `${cid}_${Date.now()}`, dateTitle: curN.dateTitle, content: curN.content });
-          }
-        });
-        this.saveStorage();
-        alert('派發完成！');
-      },
-      saveNote() {
-        const n = this.data.notes.find(x => x.noteId === this.activeNoteId);
-        if (n) {
-          n.content = document.getElementById('noteEditor').innerHTML;
-          this.saveStorage();
-          fetch(GAS_API_URL, {
-            method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
-            body: JSON.stringify({ action: 'save_notes', data: n })
-          });
-          alert('💾 筆記已成功儲存！');
-        }
-      },
-
+      /*
+      ======================================================================
+      名冊管理與班級增刪
+      ======================================================================
+      */
       loadRosterText() {
         document.getElementById('rosterTitle').innerText = `【${this.curClass} 班】名冊管理`;
         const list = this.data.students.filter(s => s.classId === this.curClass).sort((a,b) => a.seatNo - b.seatNo);
@@ -668,6 +1024,11 @@
         });
       },
 
+      /*
+      ======================================================================
+      雲端同步與防覆蓋鎖
+      ======================================================================
+      */
       async fetchCloud() {
         try {
           const res = await fetch(`${GAS_API_URL}?action=fetch_all&t=${Date.now()}`);
@@ -677,6 +1038,13 @@
             if (json.allWeekKeys && json.allWeekKeys.length > 0) this.data.weeks = json.allWeekKeys;
             if (json.currentWeekKey && !this.data.curWeek) this.data.curWeek = json.currentWeekKey;
             if (json.password) this.data.pwd = json.password;
+
+            // 備課筆記雲端安全回填 (防踩踏鎖：編輯中絕不覆寫)
+            if (!this.isNoteEdit && !this.noteDirty) {
+              if (json.notes && json.notes.length > 0) {
+                this.data.notes = json.notes;
+              }
+            }
 
             const cloudSt = json.students || [];
             if (this.data.students.length === 0) {
@@ -696,6 +1064,7 @@
             this.renderTabs();
             this.renderCards();
             this.initLbWeeks();
+            this.initNotes();
             document.getElementById('syncGem').className = 'gem';
           }
         } catch(e) { document.getElementById('syncGem').className = 'gem pend'; }
