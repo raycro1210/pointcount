@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 V3.3.0</title>
+  <title>魔法學院教務魔導系統 V3.4.0</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <!-- 導入安全極速 MQTT WebSocket 函式庫，實現真正 0.1秒零延遲跨裝置廣播 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
@@ -107,7 +107,7 @@
       .col-score { flex: 0 0 50% !important; display: flex !important; order: 2; }
     }
     
-    /* 🌟 榮譽揭榜視圖 (徹底解鎖上下捲動 + 專屬定製捲軸 + 內層安全滾動容器) */
+    /* 榮譽揭榜視圖 */
     #view-leaderboard {
       background: radial-gradient(circle, #0e3527 0%, #030c08 100%);
       position: relative;
@@ -139,9 +139,8 @@
       align-items: center;
       position: relative;
       -webkit-overflow-scrolling: touch;
-      padding-bottom: 70px; /* 給底部充足的安全留白，防止名冊末尾貼底被遮蔽 */
+      padding-bottom: 70px;
     }
-    /* 學院風金色滾動條美化 */
     .lb-scroll-stage::-webkit-scrollbar { width: 8px; }
     .lb-scroll-stage::-webkit-scrollbar-track { background: rgba(5,20,14,0.7); }
     .lb-scroll-stage::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.4); border-radius: 4px; }
@@ -172,7 +171,7 @@
     .tier-names { font-size: 0.92rem; font-weight: bold; color: #fff; flex: 1; margin: 0 10px; word-break: break-word; }
     .tier-score { font-family: var(--font-serif); font-weight: bold; font-size: 0.92rem; color: var(--gold); }
     
-    /* 🌟 全班名冊總表 (完整保留大卡片尺寸與尊榮排版) */
+    /* 全班名冊總表 */
     .roster-sheet { width: 92%; max-width: 840px; background: rgba(9,29,22,0.95); border: 2px solid var(--gold); border-radius: 8px; padding: 14px; margin-bottom: 24px; position: relative; z-index: 20; opacity: 1; transform: translateY(0); transition: all 0.8s ease-out; flex-shrink: 0; }
     .roster-sheet.anim-hide { opacity: 0 !important; transform: translateY(30px) !important; }
     .roster-sheet.active-show { opacity: 1 !important; transform: translateY(0) !important; }
@@ -186,11 +185,11 @@
     /* 彈窗樣式 */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
     .modal-card { background: #0b251c; border: 2px solid var(--gold); border-radius: 8px; padding: 16px; width: 90%; max-width: 360px; color: #fff; }
-    .modal-card input[type="text"] { width: 100%; padding: 8px; background: #04130d; border: 1px solid var(--border); color: #fff; margin: 8px 0; border-radius: 4px; }
+    .modal-card input[type="text"], .modal-card input[type="password"] { width: 100%; padding: 8px; background: #04130d; border: 1px solid var(--border); color: #fff; margin: 8px 0; border-radius: 4px; }
   </style>
 </head>
 <body>
-  <!-- 頂部導航列 -->
+  <!-- 頂部導航列 (🌟 新增 方案B：🔑 印記自訂密碼按鈕) -->
   <header id="header">
     <div class="brand"><span>⚜️</span> <span>魔導系統</span></div>
     <div class="header-acts">
@@ -199,6 +198,7 @@
       <button class="btn-nav active" id="nav-workspace" onclick="App.switchView('workspace')">後台</button>
       <button class="btn-nav" id="nav-leaderboard" onclick="App.switchView('leaderboard')">榮譽榜</button>
       <button class="btn-nav" id="nav-roster" onclick="App.switchView('roster')">名冊</button>
+      <button class="btn-nav" style="border-color:#f39c12; color:#ffd280;" onclick="App.openPwdModal()">🔑 印記</button>
       <button class="btn-nav" style="border-color:#e74c3c; color:#ff9999;" onclick="App.logout()">登出</button>
     </div>
   </header>
@@ -294,11 +294,11 @@
       </div>
     </section>
 
-    <!-- 榮譽榜視圖 (🌟 具備頂部固定條與平滑獨立捲動舞台) -->
+    <!-- 榮譽榜視圖 (具備頂部固定條與平滑獨立捲動舞台) -->
     <section id="view-leaderboard" class="panel">
       <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
       
-      <!-- 頂部操作工具列 (常駐頂部不捲走) -->
+      <!-- 頂部操作工具列 -->
       <div class="lb-header-sticky">
         <div style="display:flex; gap:6px; align-items:center;">
           <select id="selLbClass" style="padding:4px; background:#081c14; border:1px solid var(--gold); color:#fff; font-weight:bold;" onchange="App.onLbClassChange()"></select>
@@ -312,7 +312,7 @@
         </div>
       </div>
       
-      <!-- 獨立可捲動表演舞台 (🌟 徹底解決高度被限制、無法捲動到底部的問題) -->
+      <!-- 獨立可捲動表演舞台 -->
       <div class="lb-scroll-stage" id="lbScrollStage">
         <!-- 領獎台 (前三名) -->
         <div class="podium" id="podiumStage">
@@ -375,6 +375,22 @@
         </div>
       </div>
     </div>
+
+    <!-- 🌟 方案 B：導師印記自訂密碼彈窗 -->
+    <div class="modal-overlay" id="pwdModal">
+      <div class="modal-card">
+        <h4 style="color:var(--gold-l); margin-bottom:6px;">🔑 修改導師印記 (登入密碼)</h4>
+        <p style="font-size:0.75rem; color:#9cb5ab; margin-bottom:8px;">長度需為 4～8 位英數字。儲存後，大螢幕廣播通訊將自動與新印記綁定隔離！</p>
+        <label style="font-size:0.75rem; color:#bdc3c7;">目前印記：</label>
+        <div id="curPwdDisplay" style="font-size:0.88rem; color:var(--gold); font-family:monospace; margin-bottom:6px;">••••</div>
+        <label style="font-size:0.75rem; color:#bdc3c7;">輸入新印記：</label>
+        <input type="text" id="newPwdIpt" maxlength="8" placeholder="例: 8888 或 ab1234">
+        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:12px;">
+          <button class="btn-tool" onclick="App.closePwdModal()">取消</button>
+          <button class="btn-gold" style="width:auto; padding:4px 14px;" onclick="App.saveAdminPwd()">💾 確認變更</button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -387,9 +403,9 @@
     /*
     ================================================================================
     */
-    const VERSION = "v3.3.0";
+    const VERSION = "v3.4.0";
     
-    // 🌟 全新升級音效合成器 (Web Audio 原生合成)
+    // 🌟 音效合成器 (Web Audio 原生合成)
     const SoundFx = {
       ctx: null,
       init() {
@@ -488,8 +504,19 @@
         this.fetchCloud();
       },
 
+      // 🌟 動態計算專屬隔離頻道名稱 (防止任何串台干擾)
+      getIsolatedTopic() {
+        const pwdStr = String(this.data.pwd || "8888").trim();
+        let hash = 0;
+        for (let i = 0; i < pwdStr.length; i++) {
+          hash = ((hash << 5) - hash) + pwdStr.charCodeAt(i);
+          hash |= 0;
+        }
+        return `magic_academy/raycro_${Math.abs(hash)}_room`;
+      },
+
       migrateAndLoadStorage() {
-        const currentRaw = localStorage.getItem('magic_v330');
+        const currentRaw = localStorage.getItem('magic_v340');
         if (currentRaw) {
           try {
             const p = JSON.parse(currentRaw);
@@ -502,7 +529,7 @@
           } catch(e) {}
         }
 
-        const legacyKeys = ['magic_v320', 'magic_v310', 'magic_v300', 'magic_v290', 'magic_academy_store_v270'];
+        const legacyKeys = ['magic_v330', 'magic_v320', 'magic_v310', 'magic_v300', 'magic_v290'];
         for (let i = 0; i < legacyKeys.length; i++) {
           const raw = localStorage.getItem(legacyKeys[i]);
           if (raw) {
@@ -535,11 +562,11 @@
           }
         });
       },
-      saveStorage() { localStorage.setItem('magic_v330', JSON.stringify(this.data)); },
+      saveStorage() { localStorage.setItem('magic_v340', JSON.stringify(this.data)); },
 
       auth() {
         const p = document.getElementById('pwdIpt').value.trim();
-        if (p === (this.data.pwd || '8888') || p === '8888') {
+        if (p === (this.data.pwd || '8888')) {
           sessionStorage.setItem('magic_auth', 'true');
           this.authSuccess();
         } else {
@@ -565,6 +592,50 @@
         location.reload();
       },
 
+      /*
+      ======================================================================
+      導師印記 (密碼修改彈窗 - 方案 B)
+      ======================================================================
+      */
+      openPwdModal() {
+        document.getElementById('curPwdDisplay').innerText = this.data.pwd || '8888';
+        document.getElementById('newPwdIpt').value = '';
+        document.getElementById('pwdModal').style.display = 'flex';
+      },
+      closePwdModal() {
+        document.getElementById('pwdModal').style.display = 'none';
+      },
+      async saveAdminPwd() {
+        const val = document.getElementById('newPwdIpt').value.trim();
+        if (!val || val.length < 4 || val.length > 8) {
+          return alert('印記長度必須為 4～8 位英數字！');
+        }
+        if (!/^[a-zA-Z0-9]+$/.test(val)) {
+          return alert('印記只允許英文字母與數字組合！');
+        }
+
+        const oldTopic = this.getIsolatedTopic();
+        this.data.pwd = val;
+        this.saveStorage();
+        this.closePwdModal();
+
+        // 重新訂閱專屬隔離頻道
+        if (this.mqttClient && this.mqttConnected) {
+          try {
+            this.mqttClient.unsubscribe(oldTopic);
+            const newTopic = this.getIsolatedTopic();
+            this.mqttClient.subscribe(newTopic);
+          } catch(e) {}
+        }
+
+        alert(`🔑 導師印記已更新為：${val}\n專屬廣播頻道已自動完成重新加密隔離！`);
+
+        fetch(GAS_API_URL, {
+          method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
+          body: JSON.stringify({ action: 'update_admin_password', password: val })
+        });
+      },
+
       switchView(v) {
         if (this.noteDirty && v !== 'workspace') this.saveNote(true);
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -579,7 +650,6 @@
         if (v === 'workspace') { this.renderCards(); this.renderTabs(); this.initNotes(); }
         if (v === 'leaderboard') {
           this.loadLeaderboard();
-          // 切換進榮譽榜時自動將舞台置頂
           const stage = document.getElementById('lbScrollStage');
           if (stage) stage.scrollTop = 0;
         }
@@ -1014,7 +1084,7 @@
 
       /*
       ======================================================================
-      榮譽榜單模組 (🌟 自動捲動導航與大卡片完好展現)
+      榮譽榜單模組
       ======================================================================
       */
       initLbWeeks() {
@@ -1123,7 +1193,7 @@
 
       /*
       ======================================================================
-      🌟 滿血揭榜動畫 (方案 A 倒序 + 終曲鏡頭平滑導航捲動)
+      滿血揭榜動畫 (方案 A 倒序 + 終曲鏡頭平滑導航捲動)
       ======================================================================
       */
       startRevealTheater() {
@@ -1135,7 +1205,6 @@
         const stage = document.getElementById('lbScrollStage');
         const isTotal = (this.rankType === 'total');
 
-        // 動畫一開始將視窗平穩置頂
         if (stage) stage.scrollTo({ top: 0, behavior: 'smooth' });
 
         [p1, p2, p3].forEach(p => { p.classList.remove('reveal'); p.classList.add('anim-hide'); });
@@ -1180,7 +1249,6 @@
           p1.classList.add('reveal');
           this.shootConfetti();
 
-          // 🌟 終曲自動導航：1.5 秒後展開名冊，1.8 秒後鏡頭平滑下推對齊名冊
           setTimeout(() => {
             sheet.classList.remove('anim-hide');
             sheet.classList.add('active-show');
@@ -1196,14 +1264,14 @@
 
       /*
       ======================================================================
-      全新極速 MQTT 通訊協議 (真正 0.1秒跨裝置廣播 + GAS 雙保險)
+      🌟 通訊協議：專屬隔離頻道 + 時間門閥防護 (Time-gate Guardrail)
       ======================================================================
       */
       initMqttBroker() {
         const brokerHost = "broker.hivemq.com";
         const brokerPort = 8884;
         const clientId = "magic_client_" + Math.random().toString(16).substr(2, 8);
-        const topic = "magic_academy/broadcast/channel_2026";
+        const topic = this.getIsolatedTopic();
 
         try {
           this.mqttClient = new Paho.MQTT.Client(brokerHost, brokerPort, clientId);
@@ -1215,6 +1283,7 @@
           this.mqttClient.onMessageArrived = (message) => {
             try {
               const msg = JSON.parse(message.payloadString);
+              // 🌟 嚴格時間門閥檢驗：指令發佈時間必須大於電腦啟動待命時間！
               if (msg && msg.appId === "magic_raycro_2026") {
                 if (msg.action === 'REVEAL' && this.isTv && msg.triggerId > this.lastTriggerId) {
                   this.lastTriggerId = msg.triggerId;
@@ -1223,7 +1292,7 @@
                   this.lbWeek = msg.weekKey;
                   this.enter('leaderboard');
                   setTimeout(() => this.startRevealTheater(), 500);
-                } else if (msg.action === 'CLOSE' && this.isTv) {
+                } else if (msg.action === 'CLOSE' && this.isTv && msg.triggerId > this.lastTriggerId) {
                   location.reload();
                 }
               }
@@ -1252,17 +1321,22 @@
         const b = document.getElementById('tvBadge');
         if (b) {
           b.className = `badge ${on ? 'on' : ''}`;
-          b.innerText = on ? "🖥️️ 在線 (0.1s極速通道)" : "🖥️ 離線 (轉為輪詢)";
+          b.innerText = on ? "🖥️ 在線 (專屬加密通道)" : "🖥️ 離線 (轉為輪詢)";
         }
       },
 
+      // 🌟 點擊待命瞬間：立即鎖死時間門閥基準點，杜絕歷史殘留觸發
       startTvStandby() {
         SoundFx.init();
         this.isTv = true;
-        document.getElementById('btnStandby').innerText = "🟢 電腦大螢幕待命中 (極速通道已啟動)";
+        // 🔒 時間門閥鎖定：當前時間之前的任何殘留 Trigger 一律視為作廢！
+        this.lastTriggerId = Date.now();
+
+        document.getElementById('btnStandby').innerText = "🟢 電腦大螢幕待命中 (專屬加密通道)";
         document.getElementById('btnStandby').disabled = true;
         this.updateTvStatusUI(this.mqttConnected);
 
+        // GAS 備援輪詢同樣受嚴格時間門閥保護
         setInterval(async () => {
           if (!this.isTv) return;
           try {
@@ -1297,7 +1371,7 @@
 
         if (this.mqttClient && this.mqttConnected) {
           const msg = new Paho.MQTT.Message(JSON.stringify(payload));
-          msg.destinationName = "magic_academy/broadcast/channel_2026";
+          msg.destinationName = this.getIsolatedTopic();
           this.mqttClient.send(msg);
         }
 
@@ -1310,15 +1384,16 @@
       },
 
       broadcastClose() {
-        const payload = { appId: "magic_raycro_2026", action: 'CLOSE', triggerId: Date.now() };
+        const triggerId = Date.now();
+        const payload = { appId: "magic_raycro_2026", action: 'CLOSE', triggerId: triggerId };
         if (this.mqttClient && this.mqttConnected) {
           const msg = new Paho.MQTT.Message(JSON.stringify(payload));
-          msg.destinationName = "magic_academy/broadcast/channel_2026";
+          msg.destinationName = this.getIsolatedTopic();
           this.mqttClient.send(msg);
         }
         fetch(GAS_API_URL, {
           method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
-          body: JSON.stringify({ action: 'set_remote_trigger', triggerData: { action: 'CLOSE', t: Date.now() } })
+          body: JSON.stringify({ action: 'set_remote_trigger', triggerData: { action: 'CLOSE', t: triggerId } })
         });
         alert('🚪 已命令電腦關門待命！');
       },
@@ -1414,7 +1489,16 @@
             }
             if (json.allWeekKeys && json.allWeekKeys.length > 0) this.data.weeks = json.allWeekKeys;
             if (json.currentWeekKey && !this.data.curWeek) this.data.curWeek = json.currentWeekKey;
-            if (json.password) this.data.pwd = json.password;
+            
+            // 雲端同步最新密碼並更新頻道
+            if (json.password && json.password !== this.data.pwd) {
+              this.data.pwd = json.password;
+              if (this.mqttClient && this.mqttConnected) {
+                try {
+                  this.mqttClient.subscribe(this.getIsolatedTopic());
+                } catch(e) {}
+              }
+            }
 
             if (!this.isNoteEdit && !this.noteDirty) {
               if (json.notes && json.notes.length > 0) {
