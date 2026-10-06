@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 V3.2.0</title>
+  <title>魔法學院教務魔導系統 V3.3.0</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <!-- 導入安全極速 MQTT WebSocket 函式庫，實現真正 0.1秒零延遲跨裝置廣播 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
@@ -37,7 +37,7 @@
     .gem.pend { background: #f39c12; }
     .gem.err { background: #e74c3c; }
     
-    .viewport { width: 100%; height: calc(100% - 50px); position: relative; }
+    .viewport { width: 100%; height: calc(100% - 50px); position: relative; overflow: hidden; }
     .panel { position: absolute; inset: 0; display: none; flex-direction: column; background: var(--bg); z-index: 10; overflow: hidden; }
     .panel.active { display: flex !important; z-index: 20; }
     
@@ -86,7 +86,7 @@
     .chip { flex: 1; height: 38px; border: 1px solid rgba(212,175,55,0.4); border-radius: 5px; background: rgba(212,175,55,0.08); color: var(--gold-l); font-size: 0.95rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
     .chip.active { background: var(--gold) !important; color: #071912 !important; box-shadow: 0 0 6px rgba(212,175,55,0.6); }
     
-    /* 備課筆記卷軸 (🌟 修正邊界：增加左側內距安全緩衝，解決項目號剩半個的問題) */
+    /* 備課筆記卷軸 */
     .col-notes { flex: 1; display: none; flex-direction: column; background: var(--parch); color: #201e19; height: 100%; overflow: hidden; min-width: 0; }
     .col-notes.phone-on { display: flex; }
     .notes-bar { padding: 6px 8px; background: #ebdcc0; border-bottom: 1px solid var(--parch-b); display: flex; justify-content: space-between; align-items: center; gap: 4px; flex-shrink: 0; }
@@ -94,25 +94,62 @@
     .notes-tools.on { display: flex; }
     .btn-tool { background: #fff; border: 1px solid #bdae93; border-radius: 3px; padding: 3px 6px; font-size: 0.78rem; cursor: pointer; }
     .tool-color { width: 22px; height: 22px; padding: 0; border: 1px solid #bdae93; border-radius: 3px; cursor: pointer; vertical-align: middle; }
-    
-    /* 嚴格重設清單與邊界：左內距安全調升至 22px，清單縮進調校 */
     .notes-box { flex: 1; padding: 12px 16px 12px 22px; outline: none; overflow-y: auto; font-size: 1.02rem; line-height: 1.6; -webkit-overflow-scrolling: touch; box-sizing: border-box; }
     .notes-box ul, .notes-box ol { padding-left: 28px !important; margin: 6px 0 !important; }
     .notes-box li { margin: 2px 0; }
     .marker { background: rgba(241,196,15,0.35); border-left: 4px solid #f39c12; padding: 2px 6px; border-radius: 0 4px 4px 0; }
     .marker-badge { background: #e67e22; color: #fff; font-size: 0.7rem; font-weight: bold; padding: 1px 4px; border-radius: 6px; margin-right: 4px; }
     
-    /* 螢幕適配規則：>= 680px (電腦端與手機展開大螢幕) 左右並列 50% / 50% */
+    /* 螢幕適配規則：>= 680px 左右並列 50% / 50% */
     @media (min-width: 680px) {
       .phone-bar { display: none !important; }
       .col-notes { flex: 0 0 50% !important; display: flex !important; order: 1; border-right: 2px solid var(--gold); }
       .col-score { flex: 0 0 50% !important; display: flex !important; order: 2; }
     }
     
-    /* 榮譽揭榜視圖 (🌟 擴充至第 10 名梯隊與骨牌倒序動畫) */
-    #view-leaderboard { background: radial-gradient(circle, #0e3527 0%, #030c08 100%); overflow-y: auto; align-items: center; position: relative; }
-    .confetti-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
-    .podium { width: 92%; max-width: 760px; display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin: 16px 0 10px 0; min-height: 230px; position: relative; z-index: 20; }
+    /* 🌟 榮譽揭榜視圖 (徹底解鎖上下捲動 + 專屬定製捲軸 + 內層安全滾動容器) */
+    #view-leaderboard {
+      background: radial-gradient(circle, #0e3527 0%, #030c08 100%);
+      position: relative;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .lb-header-sticky {
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+      background: #05140e;
+      border-bottom: 1px solid rgba(212,175,55,0.3);
+      z-index: 30;
+      position: relative;
+      width: 100%;
+      flex-shrink: 0;
+    }
+    .lb-scroll-stage {
+      flex: 1;
+      width: 100%;
+      overflow-y: scroll !important;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 70px; /* 給底部充足的安全留白，防止名冊末尾貼底被遮蔽 */
+    }
+    /* 學院風金色滾動條美化 */
+    .lb-scroll-stage::-webkit-scrollbar { width: 8px; }
+    .lb-scroll-stage::-webkit-scrollbar-track { background: rgba(5,20,14,0.7); }
+    .lb-scroll-stage::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.4); border-radius: 4px; }
+    .lb-scroll-stage::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+    .confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 15; }
+    
+    .podium { width: 92%; max-width: 760px; display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin: 16px 0 10px 0; min-height: 230px; position: relative; z-index: 20; flex-shrink: 0; }
     .podium-col { flex: 1; display: flex; flex-direction: column; align-items: center; opacity: 1; transform: translateY(0); transition: all 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
     .podium-col.anim-hide { opacity: 0 !important; transform: translateY(50px) !important; }
     .podium-col.reveal { opacity: 1 !important; transform: translateY(0) !important; }
@@ -125,8 +162,8 @@
     .p2 .podium-box { height: 95px; background: linear-gradient(180deg, #e6e6e6, #8c8c8c); font-size: 1.7rem; }
     .p3 .podium-box { height: 75px; background: linear-gradient(180deg, #cd7f32, #7c471d); font-size: 1.5rem; }
     
-    /* 🌟 第 4～10 名梯隊榮譽階梯殿堂 */
-    .tier-hall { width: 92%; max-width: 760px; margin: 6px 0 16px 0; display: none; flex-direction: column; gap: 6px; position: relative; z-index: 20; }
+    /* 第 4～10 名梯隊殿堂 */
+    .tier-hall { width: 92%; max-width: 760px; margin: 6px 0 16px 0; display: none; flex-direction: column; gap: 6px; position: relative; z-index: 20; flex-shrink: 0; }
     .tier-hall.active-hall { display: flex; }
     .tier-item { background: rgba(11,37,28,0.92); border: 1px solid rgba(212,175,55,0.4); border-radius: 6px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center; opacity: 1; transform: translateY(0); transition: all 0.4s ease-out; }
     .tier-item.anim-hide { opacity: 0 !important; transform: translateY(20px) !important; }
@@ -135,12 +172,12 @@
     .tier-names { font-size: 0.92rem; font-weight: bold; color: #fff; flex: 1; margin: 0 10px; word-break: break-word; }
     .tier-score { font-family: var(--font-serif); font-weight: bold; font-size: 0.92rem; color: var(--gold); }
     
-    /* 全班名冊總表 */
-    .roster-sheet { width: 92%; max-width: 820px; background: rgba(9,29,22,0.95); border: 2px solid var(--gold); border-radius: 8px; padding: 12px; margin-bottom: 30px; position: relative; z-index: 20; opacity: 1; transform: translateY(0); transition: all 0.8s ease-out; }
+    /* 🌟 全班名冊總表 (完整保留大卡片尺寸與尊榮排版) */
+    .roster-sheet { width: 92%; max-width: 840px; background: rgba(9,29,22,0.95); border: 2px solid var(--gold); border-radius: 8px; padding: 14px; margin-bottom: 24px; position: relative; z-index: 20; opacity: 1; transform: translateY(0); transition: all 0.8s ease-out; flex-shrink: 0; }
     .roster-sheet.anim-hide { opacity: 0 !important; transform: translateY(30px) !important; }
     .roster-sheet.active-show { opacity: 1 !important; transform: translateY(0) !important; }
     .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
-    .roster-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(212,175,55,0.25); border-radius: 4px; padding: 6px 8px; display: flex; flex-direction: column; gap: 2px; font-size: 0.82rem; }
+    .roster-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(212,175,55,0.25); border-radius: 4px; padding: 6px 8px; display: flex; flex-direction: column; gap: 2px; font-size: 0.84rem; }
     
     /* 名冊管理 */
     .mgr-box { max-width: 600px; margin: 16px auto; background: #0b251c; border: 1.5px solid var(--gold); border-radius: 8px; padding: 16px; width: 92%; }
@@ -257,10 +294,12 @@
       </div>
     </section>
 
-    <!-- 榮譽榜視圖 (🌟 包含 1-3 名立柱與 4-10 名梯隊殿堂) -->
+    <!-- 榮譽榜視圖 (🌟 具備頂部固定條與平滑獨立捲動舞台) -->
     <section id="view-leaderboard" class="panel">
       <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
-      <div style="padding:8px 10px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; background:#05140e; border-bottom:1px solid rgba(212,175,55,0.3); z-index:20; position:relative; width:100%;">
+      
+      <!-- 頂部操作工具列 (常駐頂部不捲走) -->
+      <div class="lb-header-sticky">
         <div style="display:flex; gap:6px; align-items:center;">
           <select id="selLbClass" style="padding:4px; background:#081c14; border:1px solid var(--gold); color:#fff; font-weight:bold;" onchange="App.onLbClassChange()"></select>
           <button class="btn-nav" id="btnToggleRank" onclick="App.toggleRankType()">【週排行榜】</button>
@@ -273,29 +312,32 @@
         </div>
       </div>
       
-      <!-- 領獎台 (前三名) -->
-      <div class="podium" id="podiumStage">
-        <div class="podium-col p2" id="pCol2">
-          <div class="podium-badge"><div class="p-name" id="pn2">--</div><div class="p-score" id="ps2">-- 分</div></div>
-          <div class="podium-box">2</div>
+      <!-- 獨立可捲動表演舞台 (🌟 徹底解決高度被限制、無法捲動到底部的問題) -->
+      <div class="lb-scroll-stage" id="lbScrollStage">
+        <!-- 領獎台 (前三名) -->
+        <div class="podium" id="podiumStage">
+          <div class="podium-col p2" id="pCol2">
+            <div class="podium-badge"><div class="p-name" id="pn2">--</div><div class="p-score" id="ps2">-- 分</div></div>
+            <div class="podium-box">2</div>
+          </div>
+          <div class="podium-col p1" id="pCol1">
+            <div class="podium-badge"><div class="p-name" id="pn1">--</div><div class="p-score" id="ps1">-- 分</div></div>
+            <div class="podium-box">1</div>
+          </div>
+          <div class="podium-col p3" id="pCol3">
+            <div class="podium-badge"><div class="p-name" id="pn3">--</div><div class="p-score" id="ps3">-- 分</div></div>
+            <div class="podium-box">3</div>
+          </div>
         </div>
-        <div class="podium-col p1" id="pCol1">
-          <div class="podium-badge"><div class="p-name" id="pn1">--</div><div class="p-score" id="ps1">-- 分</div></div>
-          <div class="podium-box">1</div>
-        </div>
-        <div class="podium-col p3" id="pCol3">
-          <div class="podium-badge"><div class="p-name" id="pn3">--</div><div class="p-score" id="ps3">-- 分</div></div>
-          <div class="podium-box">3</div>
-        </div>
-      </div>
 
-      <!-- 🌟 第 4～10 名梯隊殿堂 (總榜專屬展開，週榜自動隱藏) -->
-      <div class="tier-hall" id="tierHall"></div>
-      
-      <!-- 全班名冊總表 -->
-      <div class="roster-sheet" id="rosterSheet">
-        <h4 id="sheetTitle" style="color:var(--gold); text-align:center; margin-bottom:8px;">全班學員成績名冊</h4>
-        <div class="roster-grid" id="rosterGrid"></div>
+        <!-- 第 4～10 名梯隊殿堂 (總榜專屬展開，週榜自動隱藏) -->
+        <div class="tier-hall" id="tierHall"></div>
+        
+        <!-- 全班名冊總表 (維持經典大卡片設計) -->
+        <div class="roster-sheet" id="rosterSheet">
+          <h4 id="sheetTitle" style="color:var(--gold); text-align:center; margin-bottom:10px;">全班學員成績名冊</h4>
+          <div class="roster-grid" id="rosterGrid"></div>
+        </div>
       </div>
     </section>
 
@@ -345,9 +387,9 @@
     /*
     ================================================================================
     */
-    const VERSION = "v3.2.0";
+    const VERSION = "v3.3.0";
     
-    // 🌟 全新升級音效合成器：加入 4~10名倒序短音（Marimba/Chime）+ 雙重重低音戰鼓 + 宏偉號角 Fanfare
+    // 🌟 全新升級音效合成器 (Web Audio 原生合成)
     const SoundFx = {
       ctx: null,
       init() {
@@ -357,7 +399,6 @@
         }
         if (this.ctx.state === 'suspended') this.ctx.resume();
       },
-      // 4~10名 倒序滑入時的清脆戰階短音
       playStepNote(freq = 440) {
         this.init();
         const now = this.ctx.currentTime;
@@ -372,7 +413,6 @@
         osc.start(now);
         osc.stop(now + 0.19);
       },
-      // 複合重低音戰鼓
       playDrum() {
         this.init();
         const now = this.ctx.currentTime;
@@ -400,7 +440,6 @@
         osc2.start(now);
         osc2.stop(now + 0.16);
       },
-      // 宏偉勝利號角 Fanfare
       playFanfare() {
         this.init();
         const now = this.ctx.currentTime;
@@ -450,7 +489,7 @@
       },
 
       migrateAndLoadStorage() {
-        const currentRaw = localStorage.getItem('magic_v320');
+        const currentRaw = localStorage.getItem('magic_v330');
         if (currentRaw) {
           try {
             const p = JSON.parse(currentRaw);
@@ -463,7 +502,7 @@
           } catch(e) {}
         }
 
-        const legacyKeys = ['magic_v310', 'magic_v300', 'magic_v290', 'magic_academy_store_v270'];
+        const legacyKeys = ['magic_v320', 'magic_v310', 'magic_v300', 'magic_v290', 'magic_academy_store_v270'];
         for (let i = 0; i < legacyKeys.length; i++) {
           const raw = localStorage.getItem(legacyKeys[i]);
           if (raw) {
@@ -496,7 +535,7 @@
           }
         });
       },
-      saveStorage() { localStorage.setItem('magic_v320', JSON.stringify(this.data)); },
+      saveStorage() { localStorage.setItem('magic_v330', JSON.stringify(this.data)); },
 
       auth() {
         const p = document.getElementById('pwdIpt').value.trim();
@@ -538,7 +577,12 @@
         if (el) el.classList.add('active');
         
         if (v === 'workspace') { this.renderCards(); this.renderTabs(); this.initNotes(); }
-        if (v === 'leaderboard') { this.loadLeaderboard(); }
+        if (v === 'leaderboard') {
+          this.loadLeaderboard();
+          // 切換進榮譽榜時自動將舞台置頂
+          const stage = document.getElementById('lbScrollStage');
+          if (stage) stage.scrollTop = 0;
+        }
         if (v === 'roster') { this.loadRosterText(); }
       },
 
@@ -711,7 +755,7 @@
 
       /*
       ======================================================================
-      備課筆記模組 (每班獨立、純週次排序、進度書籤、左側無被切角)
+      備課筆記模組
       ======================================================================
       */
       initNotes() {
@@ -970,7 +1014,7 @@
 
       /*
       ======================================================================
-      榮譽榜單模組 (🌟 支援第 4～10名梯隊殿堂、週榜維持1-3名、方案A倒序動畫)
+      榮譽榜單模組 (🌟 自動捲動導航與大卡片完好展現)
       ======================================================================
       */
       initLbWeeks() {
@@ -1001,7 +1045,6 @@
         this.loadLeaderboard();
       },
 
-      // 載入榜單與梯隊計算
       loadLeaderboard() {
         const selC = document.getElementById('selLbClass');
         if (selC) {
@@ -1026,13 +1069,11 @@
           return { ...s, sc: Math.floor(isNaN(sc) ? 0 : sc) };
         }).sort((a,b) => b.sc - a.sc || a.seatNo - b.seatNo);
 
-        // 分數梯隊 (由高至低)
         const tiers = Array.from(new Set(list.map(s => s.sc))).sort((a,b) => b - a);
         const t1 = tiers[0] !== undefined ? list.filter(s => s.sc === tiers[0]) : [];
         const t2 = tiers[1] !== undefined ? list.filter(s => s.sc === tiers[1]) : [];
         const t3 = tiers[2] !== undefined ? list.filter(s => s.sc === tiers[2]) : [];
 
-        // 渲染前 3 名領獎台
         document.getElementById('pn1').innerText = t1.map(s => s.name).join('、') || '無';
         document.getElementById('ps1').innerText = t1.length ? `${tiers[0]} 分` : '-- 分';
         document.getElementById('pn2').innerText = t2.map(s => s.name).join('、') || '無';
@@ -1040,13 +1081,11 @@
         document.getElementById('pn3').innerText = t3.map(s => s.name).join('、') || '無';
         document.getElementById('ps3').innerText = t3.length ? `${tiers[2]} 分` : '-- 分';
 
-        // 🌟 處理第 4～10 名梯隊 (僅總排行榜開啟，週排行榜隱藏)
         const hall = document.getElementById('tierHall');
         if (hall) {
           hall.innerHTML = "";
           if (!isW) {
             hall.classList.add('active-hall');
-            // 取第 4 到 第 10 名梯隊 (索引 3 ~ 9)，若梯隊不存在自動忽略不顯示
             for (let idx = 3; idx < 10; idx++) {
               if (tiers[idx] !== undefined) {
                 const subStudents = list.filter(s => s.sc === tiers[idx]);
@@ -1066,7 +1105,6 @@
           }
         }
 
-        // 渲染全班名冊
         const rg = document.getElementById('rosterGrid');
         rg.innerHTML = "";
         list.slice().sort((a,b) => a.seatNo - b.seatNo).forEach(s => {
@@ -1085,9 +1123,7 @@
 
       /*
       ======================================================================
-      🌟 滿血揭榜動畫 (方案 A：最強懸念倒序機制)
-      總排行榜：10 ➔ 4名 快速倒序滑入 ➔ 3 ➔ 2 ➔ 1名 震撼升起 + 號角彩帶
-      週排行榜：3 ➔ 2 ➔ 1名 經典震撼升起 + 號角彩帶
+      🌟 滿血揭榜動畫 (方案 A 倒序 + 終曲鏡頭平滑導航捲動)
       ======================================================================
       */
       startRevealTheater() {
@@ -1096,9 +1132,12 @@
         const p2 = document.getElementById('pCol2');
         const p3 = document.getElementById('pCol3');
         const sheet = document.getElementById('rosterSheet');
+        const stage = document.getElementById('lbScrollStage');
         const isTotal = (this.rankType === 'total');
 
-        // 先重置並隱藏所有動畫元素
+        // 動畫一開始將視窗平穩置頂
+        if (stage) stage.scrollTo({ top: 0, behavior: 'smooth' });
+
         [p1, p2, p3].forEach(p => { p.classList.remove('reveal'); p.classList.add('anim-hide'); });
         sheet.classList.remove('active-show');
         sheet.classList.add('anim-hide');
@@ -1109,21 +1148,18 @@
         let currentDelay = 300;
 
         if (isTotal && tierItems.length > 0) {
-          // 🌟 方案 A 倒序：從最後一個梯隊（例如第 10 名）往回揭曉至 第 4 名
           const reversedTiers = tierItems.slice().reverse();
           reversedTiers.forEach((item, i) => {
             setTimeout(() => {
-              // 伴隨戰階音階 (頻率微幅隨名次上升)
               SoundFx.playStepNote(380 + (i * 35));
               item.classList.remove('anim-hide');
               item.classList.add('reveal');
             }, currentDelay);
-            currentDelay += 220; // 每 0.22 秒揭曉一位
+            currentDelay += 220;
           });
-          currentDelay += 400; // 稍微停頓蓄力，準備進入前三名高潮
+          currentDelay += 400;
         }
 
-        // 進入前三名高潮立柱
         setTimeout(() => {
           SoundFx.playDrum();
           p3.classList.remove('anim-hide');
@@ -1138,18 +1174,23 @@
         }, currentDelay);
         currentDelay += 1100;
 
-        // 冠軍誕生：爆發勝利號角與金色彩帶
         setTimeout(() => {
           SoundFx.playFanfare();
           p1.classList.remove('anim-hide');
           p1.classList.add('reveal');
           this.shootConfetti();
 
-          // 最後平滑展開全班名冊總表
+          // 🌟 終曲自動導航：1.5 秒後展開名冊，1.8 秒後鏡頭平滑下推對齊名冊
           setTimeout(() => {
             sheet.classList.remove('anim-hide');
             sheet.classList.add('active-show');
           }, 1500);
+
+          setTimeout(() => {
+            if (stage && sheet) {
+              sheet.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 1800);
         }, currentDelay);
       },
 
@@ -1211,7 +1252,7 @@
         const b = document.getElementById('tvBadge');
         if (b) {
           b.className = `badge ${on ? 'on' : ''}`;
-          b.innerText = on ? "🖥️ 在線 (0.1s極速通道)" : "🖥️ 離線 (轉為輪詢)";
+          b.innerText = on ? "🖥️️ 在線 (0.1s極速通道)" : "🖥️ 離線 (轉為輪詢)";
         }
       },
 
@@ -1357,7 +1398,7 @@
 
       /*
       ======================================================================
-      極速雲端同步與防覆蓋鎖 (SWR 機制：先顯示本機，背景秒速同步)
+      極速雲端同步與防覆蓋鎖 (SWR 機制)
       ======================================================================
       */
       async fetchCloud() {
