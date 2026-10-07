@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 V3.4.0</title>
+  <title>魔法學院教務魔導系統 V3.4.1</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <!-- 導入安全極速 MQTT WebSocket 函式庫，實現真正 0.1秒零延遲跨裝置廣播 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
@@ -161,11 +161,22 @@
     .p2 .podium-box { height: 95px; background: linear-gradient(180deg, #e6e6e6, #8c8c8c); font-size: 1.7rem; }
     .p3 .podium-box { height: 75px; background: linear-gradient(180deg, #cd7f32, #7c471d); font-size: 1.5rem; }
     
-    /* 第 4～10 名梯隊殿堂 */
+    /* 🌟 第 4～10 名梯隊殿堂 (強化動態過渡與初始隱藏狀態) */
     .tier-hall { width: 92%; max-width: 760px; margin: 6px 0 16px 0; display: none; flex-direction: column; gap: 6px; position: relative; z-index: 20; flex-shrink: 0; }
     .tier-hall.active-hall { display: flex; }
-    .tier-item { background: rgba(11,37,28,0.92); border: 1px solid rgba(212,175,55,0.4); border-radius: 6px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center; opacity: 1; transform: translateY(0); transition: all 0.4s ease-out; }
-    .tier-item.anim-hide { opacity: 0 !important; transform: translateY(20px) !important; }
+    .tier-item {
+      background: rgba(11,37,28,0.92);
+      border: 1px solid rgba(212,175,55,0.4);
+      border-radius: 6px;
+      padding: 6px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .tier-item.anim-hide { opacity: 0 !important; transform: translateY(35px) !important; pointer-events: none; }
     .tier-item.reveal { opacity: 1 !important; transform: translateY(0) !important; }
     .tier-rank { font-family: var(--font-serif); font-weight: bold; font-size: 0.95rem; color: var(--gold-l); min-width: 48px; }
     .tier-names { font-size: 0.92rem; font-weight: bold; color: #fff; flex: 1; margin: 0 10px; word-break: break-word; }
@@ -189,7 +200,7 @@
   </style>
 </head>
 <body>
-  <!-- 頂部導航列 (🌟 新增 方案B：🔑 印記自訂密碼按鈕) -->
+  <!-- 頂部導航列 -->
   <header id="header">
     <div class="brand"><span>⚜️</span> <span>魔導系統</span></div>
     <div class="header-acts">
@@ -316,15 +327,15 @@
       <div class="lb-scroll-stage" id="lbScrollStage">
         <!-- 領獎台 (前三名) -->
         <div class="podium" id="podiumStage">
-          <div class="podium-col p2" id="pCol2">
+          <div class="podium-col p2 anim-hide" id="pCol2">
             <div class="podium-badge"><div class="p-name" id="pn2">--</div><div class="p-score" id="ps2">-- 分</div></div>
             <div class="podium-box">2</div>
           </div>
-          <div class="podium-col p1" id="pCol1">
+          <div class="podium-col p1 anim-hide" id="pCol1">
             <div class="podium-badge"><div class="p-name" id="pn1">--</div><div class="p-score" id="ps1">-- 分</div></div>
             <div class="podium-box">1</div>
           </div>
-          <div class="podium-col p3" id="pCol3">
+          <div class="podium-col p3 anim-hide" id="pCol3">
             <div class="podium-badge"><div class="p-name" id="pn3">--</div><div class="p-score" id="ps3">-- 分</div></div>
             <div class="podium-box">3</div>
           </div>
@@ -334,7 +345,7 @@
         <div class="tier-hall" id="tierHall"></div>
         
         <!-- 全班名冊總表 (維持經典大卡片設計) -->
-        <div class="roster-sheet" id="rosterSheet">
+        <div class="roster-sheet anim-hide" id="rosterSheet">
           <h4 id="sheetTitle" style="color:var(--gold); text-align:center; margin-bottom:10px;">全班學員成績名冊</h4>
           <div class="roster-grid" id="rosterGrid"></div>
         </div>
@@ -376,7 +387,7 @@
       </div>
     </div>
 
-    <!-- 🌟 方案 B：導師印記自訂密碼彈窗 -->
+    <!-- 導師印記自訂密碼彈窗 -->
     <div class="modal-overlay" id="pwdModal">
       <div class="modal-card">
         <h4 style="color:var(--gold-l); margin-bottom:6px;">🔑 修改導師印記 (登入密碼)</h4>
@@ -403,7 +414,7 @@
     /*
     ================================================================================
     */
-    const VERSION = "v3.4.0";
+    const VERSION = "v3.4.1";
     
     // 🌟 音效合成器 (Web Audio 原生合成)
     const SoundFx = {
@@ -422,7 +433,7 @@
         const gain = this.ctx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.setValueAtTime(0.28, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
@@ -504,7 +515,6 @@
         this.fetchCloud();
       },
 
-      // 🌟 動態計算專屬隔離頻道名稱 (防止任何串台干擾)
       getIsolatedTopic() {
         const pwdStr = String(this.data.pwd || "8888").trim();
         let hash = 0;
@@ -516,7 +526,7 @@
       },
 
       migrateAndLoadStorage() {
-        const currentRaw = localStorage.getItem('magic_v340');
+        const currentRaw = localStorage.getItem('magic_v341');
         if (currentRaw) {
           try {
             const p = JSON.parse(currentRaw);
@@ -529,7 +539,7 @@
           } catch(e) {}
         }
 
-        const legacyKeys = ['magic_v330', 'magic_v320', 'magic_v310', 'magic_v300', 'magic_v290'];
+        const legacyKeys = ['magic_v340', 'magic_v330', 'magic_v320', 'magic_v310', 'magic_v300', 'magic_v290'];
         for (let i = 0; i < legacyKeys.length; i++) {
           const raw = localStorage.getItem(legacyKeys[i]);
           if (raw) {
@@ -562,7 +572,7 @@
           }
         });
       },
-      saveStorage() { localStorage.setItem('magic_v340', JSON.stringify(this.data)); },
+      saveStorage() { localStorage.setItem('magic_v341', JSON.stringify(this.data)); },
 
       auth() {
         const p = document.getElementById('pwdIpt').value.trim();
@@ -592,11 +602,6 @@
         location.reload();
       },
 
-      /*
-      ======================================================================
-      導師印記 (密碼修改彈窗 - 方案 B)
-      ======================================================================
-      */
       openPwdModal() {
         document.getElementById('curPwdDisplay').innerText = this.data.pwd || '8888';
         document.getElementById('newPwdIpt').value = '';
@@ -619,7 +624,6 @@
         this.saveStorage();
         this.closePwdModal();
 
-        // 重新訂閱專屬隔離頻道
         if (this.mqttClient && this.mqttConnected) {
           try {
             this.mqttClient.unsubscribe(oldTopic);
@@ -1084,7 +1088,7 @@
 
       /*
       ======================================================================
-      榮譽榜單模組
+      榮譽榜單模組 (🌟 徹底修復：生成時強制賦予 anim-hide，杜絕穿幫)
       ======================================================================
       */
       initLbWeeks() {
@@ -1115,6 +1119,7 @@
         this.loadLeaderboard();
       },
 
+      // 🌟 加載榜單資料：生成卡片時強制預設隱藏 anim-hide，待動畫喚醒
       loadLeaderboard() {
         const selC = document.getElementById('selLbClass');
         if (selC) {
@@ -1124,8 +1129,16 @@
           });
           selC.value = this.curClass;
         }
+
         const isW = (this.rankType === 'weekly');
         const targetW = this.lbWeek || this.data.curWeek || "第1週";
+
+        // 更新按鈕與週次選擇器狀態
+        const btnRank = document.getElementById('btnToggleRank');
+        if (btnRank) btnRank.innerText = `【${isW ? '週排行榜' : '總排行榜'}】`;
+        const selW = document.getElementById('selLbWeek');
+        if (selW) selW.style.display = isW ? 'inline-block' : 'none';
+
         const list = this.data.students.filter(s => s.classId === this.curClass).map(s => {
           let sc = 0;
           if (isW) {
@@ -1160,11 +1173,12 @@
               if (tiers[idx] !== undefined) {
                 const subStudents = list.filter(s => s.sc === tiers[idx]);
                 const item = document.createElement('div');
-                item.className = 'tier-item';
+                // 🔒 核心關鍵：生成初始直接賦予 anim-hide，絕不提前裸露在畫面上！
+                item.className = 'tier-item anim-hide';
                 item.id = `tier_item_${idx + 1}`;
                 item.innerHTML = `
                   <div class="tier-rank">第 ${idx + 1} 名</div>
-                  <div class="tier-names">${subStudents.map(s => `#${s.seatNo} ${s.name}`).join('、 ')}</div>
+                  <div class="tier-names">${subStudents.map(s => `#${s.seatNo}${s.name}`).join('、 ')}</div>
                   <div class="tier-score">${tiers[idx]} 分</div>
                 `;
                 hall.appendChild(item);
@@ -1193,7 +1207,7 @@
 
       /*
       ======================================================================
-      滿血揭榜動畫 (方案 A 倒序 + 終曲鏡頭平滑導航捲動)
+      🌟 滿血揭榜動畫 (方案 A 倒序動畫引擎・嚴格重繪刷新 Flush 守門)
       ======================================================================
       */
       startRevealTheater() {
@@ -1202,33 +1216,44 @@
         const p2 = document.getElementById('pCol2');
         const p3 = document.getElementById('pCol3');
         const sheet = document.getElementById('rosterSheet');
+        const hall = document.getElementById('tierHall');
         const stage = document.getElementById('lbScrollStage');
         const isTotal = (this.rankType === 'total');
 
         if (stage) stage.scrollTo({ top: 0, behavior: 'smooth' });
 
+        // 重置前三名與全班名冊
         [p1, p2, p3].forEach(p => { p.classList.remove('reveal'); p.classList.add('anim-hide'); });
         sheet.classList.remove('active-show');
         sheet.classList.add('anim-hide');
 
+        // 取得並重置第 4～10 名梯隊卡片
         const tierItems = Array.from(document.querySelectorAll('.tier-item'));
-        tierItems.forEach(t => { t.classList.remove('reveal'); t.classList.add('anim-hide'); });
+        tierItems.forEach(t => {
+          t.classList.remove('reveal');
+          t.classList.add('anim-hide');
+        });
 
-        let currentDelay = 300;
+        // 🌟 強制觸發重繪 (Reflow Flush)，確保瀏覽器完成幾何層更新
+        if (hall) void hall.offsetHeight;
 
+        let currentDelay = 350;
+
+        // 🌟 總排行榜：依序由最後一個梯隊（例如第10名）倒序滑入至第4名
         if (isTotal && tierItems.length > 0) {
           const reversedTiers = tierItems.slice().reverse();
           reversedTiers.forEach((item, i) => {
             setTimeout(() => {
-              SoundFx.playStepNote(380 + (i * 35));
+              SoundFx.playStepNote(380 + (i * 38));
               item.classList.remove('anim-hide');
               item.classList.add('reveal');
             }, currentDelay);
-            currentDelay += 220;
+            currentDelay += 240; // 每 0.24 秒穩健揭曉一位
           });
-          currentDelay += 400;
+          currentDelay += 450; // 蓄力停頓，迎來領獎台高潮
         }
 
+        // 升起第 3 名 (伴隨低音戰鼓)
         setTimeout(() => {
           SoundFx.playDrum();
           p3.classList.remove('anim-hide');
@@ -1236,6 +1261,7 @@
         }, currentDelay);
         currentDelay += 1000;
 
+        // 升起第 2 名 (伴隨低音戰鼓)
         setTimeout(() => {
           SoundFx.playDrum();
           p2.classList.remove('anim-hide');
@@ -1243,12 +1269,14 @@
         }, currentDelay);
         currentDelay += 1100;
 
+        // 冠軍誕生：升起第 1 名、爆發勝利號角與金色彩帶粒子
         setTimeout(() => {
           SoundFx.playFanfare();
           p1.classList.remove('anim-hide');
           p1.classList.add('reveal');
           this.shootConfetti();
 
+          // 終曲平滑導航捲動
           setTimeout(() => {
             sheet.classList.remove('anim-hide');
             sheet.classList.add('active-show');
@@ -1264,7 +1292,7 @@
 
       /*
       ======================================================================
-      🌟 通訊協議：專屬隔離頻道 + 時間門閥防護 (Time-gate Guardrail)
+      通訊協議 (時間門閥防護 + 專屬加密頻道隔離 + 完整重繪時序)
       ======================================================================
       */
       initMqttBroker() {
@@ -1283,15 +1311,16 @@
           this.mqttClient.onMessageArrived = (message) => {
             try {
               const msg = JSON.parse(message.payloadString);
-              // 🌟 嚴格時間門閥檢驗：指令發佈時間必須大於電腦啟動待命時間！
               if (msg && msg.appId === "magic_raycro_2026") {
                 if (msg.action === 'REVEAL' && this.isTv && msg.triggerId > this.lastTriggerId) {
                   this.lastTriggerId = msg.triggerId;
                   this.curClass = msg.classId;
                   this.rankType = msg.period;
                   this.lbWeek = msg.weekKey;
+                  // 🌟 確保先載入最新狀態與預設隱藏節點，再開門啟動動畫！
+                  this.loadLeaderboard();
                   this.enter('leaderboard');
-                  setTimeout(() => this.startRevealTheater(), 500);
+                  setTimeout(() => this.startRevealTheater(), 650);
                 } else if (msg.action === 'CLOSE' && this.isTv && msg.triggerId > this.lastTriggerId) {
                   location.reload();
                 }
@@ -1325,18 +1354,15 @@
         }
       },
 
-      // 🌟 點擊待命瞬間：立即鎖死時間門閥基準點，杜絕歷史殘留觸發
       startTvStandby() {
         SoundFx.init();
         this.isTv = true;
-        // 🔒 時間門閥鎖定：當前時間之前的任何殘留 Trigger 一律視為作廢！
-        this.lastTriggerId = Date.now();
+        this.lastTriggerId = Date.now(); // 🔒 嚴格時間門閥鎖定
 
         document.getElementById('btnStandby').innerText = "🟢 電腦大螢幕待命中 (專屬加密通道)";
         document.getElementById('btnStandby').disabled = true;
         this.updateTvStatusUI(this.mqttConnected);
 
-        // GAS 備援輪詢同樣受嚴格時間門閥保護
         setInterval(async () => {
           if (!this.isTv) return;
           try {
@@ -1348,8 +1374,9 @@
                 this.curClass = json.trigger.classId;
                 this.rankType = json.trigger.period;
                 this.lbWeek = json.trigger.weekKey;
+                this.loadLeaderboard();
                 this.enter('leaderboard');
-                setTimeout(() => this.startRevealTheater(), 500);
+                setTimeout(() => this.startRevealTheater(), 650);
               } else if (json.trigger.action === 'CLOSE') {
                 location.reload();
               }
@@ -1490,7 +1517,6 @@
             if (json.allWeekKeys && json.allWeekKeys.length > 0) this.data.weeks = json.allWeekKeys;
             if (json.currentWeekKey && !this.data.curWeek) this.data.curWeek = json.currentWeekKey;
             
-            // 雲端同步最新密碼並更新頻道
             if (json.password && json.password !== this.data.pwd) {
               this.data.pwd = json.password;
               if (this.mqttClient && this.mqttConnected) {
