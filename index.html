@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 V3.4.1</title>
+  <title>魔法學院教務魔導系統 V3.5.0</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
-  <!-- 導入安全極速 MQTT WebSocket 函式庫，實現真正 0.1秒零延遲跨裝置廣播 -->
+  <!-- 導入安全極速 MQTT WebSocket 函式庫 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
   <style>
     :root {
@@ -68,7 +68,13 @@
     /* 雙欄切換結構 */
     .split { flex: 1; display: flex; overflow: hidden; position: relative; }
     .col-score { flex: 1; display: flex; flex-direction: column; height: 100%; min-width: 0; }
-    .guide-banner { background: #0c2b20; border-bottom: 1px solid var(--gold); padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; white-space: nowrap; flex-shrink: 0; }
+    
+    /* 🌟 週次導航引導橫幅 (方案 2-C：步進箭頭 + 下拉選單 + 自訂編輯) */
+    .guide-banner { background: #0c2b20; border-bottom: 1px solid var(--gold); padding: 5px 8px; display: flex; justify-content: space-between; align-items: center; white-space: nowrap; flex-shrink: 0; }
+    .week-stepper { display: inline-flex; align-items: center; gap: 3px; background: rgba(0,0,0,0.35); border: 1px solid rgba(212,175,55,0.4); border-radius: 4px; padding: 2px 4px; }
+    .btn-step { background: transparent; border: none; color: var(--gold-l); font-size: 0.82rem; cursor: pointer; padding: 0 4px; font-weight: bold; }
+    .btn-step:hover { color: #fff; }
+    .sel-week-nav { background: transparent; border: none; color: var(--gold-l); font-size: 0.78rem; font-weight: bold; outline: none; cursor: pointer; }
     .btn-settle { background: rgba(212,175,55,0.18); border: 1px solid var(--gold); color: var(--gold-l); font-size: 0.74rem; font-weight: bold; padding: 4px 9px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
     .btn-settle.dirty { background: rgba(243,156,18,0.4) !important; border-color: #f39c12 !important; color: #ffd280 !important; font-weight: bold; }
     
@@ -161,7 +167,7 @@
     .p2 .podium-box { height: 95px; background: linear-gradient(180deg, #e6e6e6, #8c8c8c); font-size: 1.7rem; }
     .p3 .podium-box { height: 75px; background: linear-gradient(180deg, #cd7f32, #7c471d); font-size: 1.5rem; }
     
-    /* 🌟 第 4～10 名梯隊殿堂 (強化動態過渡與初始隱藏狀態) */
+    /* 第 4～10 名梯隊殿堂 */
     .tier-hall { width: 92%; max-width: 760px; margin: 6px 0 16px 0; display: none; flex-direction: column; gap: 6px; position: relative; z-index: 20; flex-shrink: 0; }
     .tier-hall.active-hall { display: flex; }
     .tier-item {
@@ -196,7 +202,7 @@
     /* 彈窗樣式 */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
     .modal-card { background: #0b251c; border: 2px solid var(--gold); border-radius: 8px; padding: 16px; width: 90%; max-width: 360px; color: #fff; }
-    .modal-card input[type="text"], .modal-card input[type="password"] { width: 100%; padding: 8px; background: #04130d; border: 1px solid var(--border); color: #fff; margin: 8px 0; border-radius: 4px; }
+    .modal-card input[type="text"], .modal-card input[type="date"] { width: 100%; padding: 8px; background: #04130d; border: 1px solid var(--border); color: #fff; margin: 8px 0; border-radius: 4px; }
   </style>
 </head>
 <body>
@@ -284,10 +290,16 @@
 
         <!-- 學生計分面板 (右側) -->
         <div class="col-score" id="colScore">
+          <!-- 🌟 方案 2-C：全方位週次導航器 (步進箭頭 + 下拉選單 + 自訂編輯) -->
           <div class="guide-banner">
             <span style="color:#ffe680; font-size:0.75rem;">💡 長按設幹部｜點擊計分</span>
-            <div style="display:flex; gap:6px; align-items:center;">
-              <span id="bannerWeek" style="font-size:0.75rem; color:var(--gold-l); cursor:pointer;" onclick="App.promptEditWeek()">【第1週】 ✏️</span>
+            <div style="display:flex; gap:5px; align-items:center;">
+              <div class="week-stepper">
+                <button class="btn-step" onclick="App.stepWeek(-1)" title="上一週">◀</button>
+                <select class="sel-week-nav" id="selCurWeekNav" onchange="App.onCurWeekNavChange(this.value)"></select>
+                <button class="btn-step" onclick="App.stepWeek(1)" title="下一週">▶</button>
+              </div>
+              <button class="btn-tool" style="padding:2px 5px;" onclick="App.openWeekConfigModal()" title="自訂編輯週次與開學日">✏️</button>
               <button class="btn-settle" id="btnSettle" onclick="App.settleScores()">☁️ 結算</button>
             </div>
           </div>
@@ -305,7 +317,7 @@
       </div>
     </section>
 
-    <!-- 榮譽榜視圖 (具備頂部固定條與平滑獨立捲動舞台) -->
+    <!-- 榮譽榜視圖 -->
     <section id="view-leaderboard" class="panel">
       <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
       
@@ -323,7 +335,7 @@
         </div>
       </div>
       
-      <!-- 獨立可捲動表演舞台 -->
+      <!-- 獨立可捲動表演舞台 (🌟 動畫結束後停在頂部，手動滾動名冊) -->
       <div class="lb-scroll-stage" id="lbScrollStage">
         <!-- 領獎台 (前三名) -->
         <div class="podium" id="podiumStage">
@@ -344,7 +356,7 @@
         <!-- 第 4～10 名梯隊殿堂 (總榜專屬展開，週榜自動隱藏) -->
         <div class="tier-hall" id="tierHall"></div>
         
-        <!-- 全班名冊總表 (維持經典大卡片設計) -->
+        <!-- 全班名冊總表 -->
         <div class="roster-sheet anim-hide" id="rosterSheet">
           <h4 id="sheetTitle" style="color:var(--gold); text-align:center; margin-bottom:10px;">全班學員成績名冊</h4>
           <div class="roster-grid" id="rosterGrid"></div>
@@ -359,11 +371,12 @@
         <h3 id="rosterTitle" style="color:var(--gold);">班級名冊管理</h3>
         <p style="font-size:0.75rem; color:#9cb5ab; margin:4px 0 8px 0;">
           💡 格式：<code>座號 姓名</code>（每行一位，例：<code>1 王小明</code>）。<br>
-          <span style="color:#f39c12;">安全承諾：系統採智能平移比對，修改或增刪學員時，絕對完整保護歷史各週成績！</span>
+          <span style="color:#f39c12;">安全承諾：修改學員資料時，系統自動平移保護歷史各週成績！</span>
         </p>
         <textarea id="rosterTxt" class="mgr-txt" placeholder="1 王小明&#10;2 李小美"></textarea>
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
           <button class="btn-gold" style="flex:2;" onclick="App.saveRoster()">💾 儲存並安全同步</button>
+          <button class="btn-nav" style="flex:1.2; border-color:#e67e22; color:#f39c12;" onclick="App.requestMigrateWeek1ToWeek2()" title="將第1週誤登成績自動平移至第2週">🔄 第1週平移至第2週</button>
           <button class="btn-nav" style="flex:1; border-color:#e74c3c; color:#ff9999;" onclick="App.delClass()">🗑️ 刪除此班</button>
         </div>
       </div>
@@ -402,6 +415,22 @@
         </div>
       </div>
     </div>
+
+    <!-- 🌟 自訂編輯週次與開學日彈窗 -->
+    <div class="modal-overlay" id="weekConfigModal">
+      <div class="modal-card">
+        <h4 style="color:var(--gold-l); margin-bottom:6px;">⚙️ 週次設定與開學日管理</h4>
+        <p style="font-size:0.75rem; color:#9cb5ab; margin-bottom:8px;">可設定第一週開始日期自動推算，亦可手動建立/切換教學週次名稱！</p>
+        <label style="font-size:0.75rem; color:#bdc3c7;">第一週開始日期 (開學週一)：</label>
+        <input type="date" id="iptTermStartDate" onchange="App.onTermDateChange(this.value)">
+        <label style="font-size:0.75rem; color:#bdc3c7;">目前自訂週次名稱：</label>
+        <input type="text" id="iptCustomWeekName" placeholder="例: 第2週 或 期中評量週">
+        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:12px;">
+          <button class="btn-tool" onclick="App.closeWeekConfigModal()">取消</button>
+          <button class="btn-gold" style="width:auto; padding:4px 14px;" onclick="App.saveWeekConfig()">💾 確認設定</button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -414,9 +443,9 @@
     /*
     ================================================================================
     */
-    const VERSION = "v3.4.1";
+    const VERSION = "v3.5.0";
     
-    // 🌟 音效合成器 (Web Audio 原生合成)
+    // 音效合成器 (Web Audio 原生合成)
     const SoundFx = {
       ctx: null,
       init() {
@@ -498,15 +527,21 @@
       isTv: false, isNoteEdit: false, activeNoteId: null,
       noteDirty: false, noteTimer: null, longFired: false,
       mqttClient: null, mqttConnected: false, lastTriggerId: 0,
-      data: { classes: [], students: [], notes: [], curWeek: "第1週", weeks: ["第1週"], pwd: "8888", buf: {} },
+      data: {
+        classes: [], students: [], notes: [],
+        curWeek: "第1週", weeks: ["第1週", "第2週"],
+        termStartDate: "", pwd: "8888", buf: {}
+      },
 
       init() {
         document.getElementById('gateVer').innerText = `⚜️ 核心版本：${VERSION} ⚜️`;
         this.migrateAndLoadStorage();
+        this.autoCalculateWeekByDate(); // 🌟 方案 2-C：依開學日自動計算推算週次
         if (sessionStorage.getItem('magic_auth') === 'true') {
           this.authSuccess();
         }
         this.renderTabs();
+        this.renderCurWeekNav();
         this.renderCards();
         this.initLbWeeks();
         this.initNotePaste();
@@ -526,7 +561,7 @@
       },
 
       migrateAndLoadStorage() {
-        const currentRaw = localStorage.getItem('magic_v341');
+        const currentRaw = localStorage.getItem('magic_v350');
         if (currentRaw) {
           try {
             const p = JSON.parse(currentRaw);
@@ -539,7 +574,7 @@
           } catch(e) {}
         }
 
-        const legacyKeys = ['magic_v340', 'magic_v330', 'magic_v320', 'magic_v310', 'magic_v300', 'magic_v290'];
+        const legacyKeys = ['magic_v341', 'magic_v340', 'magic_v330', 'magic_v320', 'magic_v310', 'magic_v300', 'magic_v290'];
         for (let i = 0; i < legacyKeys.length; i++) {
           const raw = localStorage.getItem(legacyKeys[i]);
           if (raw) {
@@ -550,7 +585,8 @@
                 this.data.students = legacy.students || [];
                 this.data.notes = legacy.notes || [];
                 this.data.curWeek = legacy.curWeek || legacy.currentWeekKey || "第1週";
-                this.data.weeks = legacy.weeks || legacy.allWeekKeys || ["第1週"];
+                this.data.weeks = legacy.weeks || legacy.allWeekKeys || ["第1週", "第2週"];
+                this.data.termStartDate = legacy.termStartDate || "";
                 this.data.pwd = legacy.pwd || legacy.adminPassword || "8888";
                 this.data.buf = legacy.buf || {};
                 if (legacy.classes && legacy.classes.length > 0) this.curClass = legacy.classes[0];
@@ -572,7 +608,24 @@
           }
         });
       },
-      saveStorage() { localStorage.setItem('magic_v341', JSON.stringify(this.data)); },
+      saveStorage() { localStorage.setItem('magic_v350', JSON.stringify(this.data)); },
+
+      // 🌟 方案 2-C：依據設定之開學日期（週一）自動推算今天是第幾週
+      autoCalculateWeekByDate() {
+        if (!this.data.termStartDate) return;
+        try {
+          const start = new Date(this.data.termStartDate + "T00:00:00");
+          const now = new Date();
+          const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+          if (diffDays >= 0) {
+            const wNum = Math.floor(diffDays / 7) + 1;
+            const wKey = `第${wNum}週`;
+            if (!this.data.weeks.includes(wKey)) this.data.weeks.push(wKey);
+            this.data.curWeek = wKey;
+            this.saveStorage();
+          }
+        } catch(e) {}
+      },
 
       auth() {
         const p = document.getElementById('pwdIpt').value.trim();
@@ -640,6 +693,108 @@
         });
       },
 
+      /*
+      ======================================================================
+      🌟 方案 2-C：週次導航與設定管理 (下拉選擇 + 左右步進 + 彈窗自訂)
+      ======================================================================
+      */
+      renderCurWeekNav() {
+        const sel = document.getElementById('selCurWeekNav');
+        if (!sel) return;
+        sel.innerHTML = "";
+        
+        // 保證週次排序
+        const sortedWeeks = (this.data.weeks || ["第1週"]).slice().sort((a,b) => {
+          const nA = parseInt(a.replace(/\D/g, ''), 10) || 0;
+          const nB = parseInt(b.replace(/\D/g, ''), 10) || 0;
+          return nA - nB;
+        });
+
+        sortedWeeks.forEach(w => {
+          const opt = document.createElement('option');
+          opt.value = w;
+          opt.innerText = `【${w}】`;
+          sel.appendChild(opt);
+        });
+
+        sel.value = this.data.curWeek || sortedWeeks[0];
+        this.updateSettleUI();
+      },
+
+      onCurWeekNavChange(wKey) {
+        this.data.curWeek = wKey;
+        this.saveStorage();
+        this.renderCards();
+        this.initLbWeeks();
+        this.initNotes();
+        this.updateSettleUI();
+        fetch(GAS_API_URL, {
+          method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
+          body: JSON.stringify({ action: 'save_current_week', weekKey: wKey })
+        });
+      },
+
+      stepWeek(delta) {
+        const sortedWeeks = (this.data.weeks || ["第1週"]).slice().sort((a,b) => {
+          const nA = parseInt(a.replace(/\D/g, ''), 10) || 0;
+          const nB = parseInt(b.replace(/\D/g, ''), 10) || 0;
+          return nA - nB;
+        });
+        const curIdx = sortedWeeks.indexOf(this.data.curWeek || "第1週");
+        let nextIdx = curIdx + delta;
+
+        if (nextIdx < 0) return alert('已經是現有第一週！');
+        if (nextIdx >= sortedWeeks.length) {
+          // 若超過現有最高週次，自動新增下一週
+          const maxNum = parseInt(sortedWeeks[sortedWeeks.length - 1].replace(/\D/g, ''), 10) || sortedWeeks.length;
+          const newW = `第${maxNum + 1}週`;
+          this.data.weeks.push(newW);
+          sortedWeeks.push(newW);
+          nextIdx = sortedWeeks.length - 1;
+        }
+
+        const nextWeek = sortedWeeks[nextIdx];
+        this.onCurWeekNavChange(nextWeek);
+        this.renderCurWeekNav();
+      },
+
+      openWeekConfigModal() {
+        document.getElementById('iptTermStartDate').value = this.data.termStartDate || '';
+        document.getElementById('iptCustomWeekName').value = this.data.curWeek || '第1週';
+        document.getElementById('weekConfigModal').style.display = 'flex';
+      },
+      closeWeekConfigModal() {
+        document.getElementById('weekConfigModal').style.display = 'none';
+      },
+      onTermDateChange(dateVal) {
+        this.data.termStartDate = dateVal;
+        this.autoCalculateWeekByDate();
+        document.getElementById('iptCustomWeekName').value = this.data.curWeek || '第1週';
+      },
+      saveWeekConfig() {
+        const dateVal = document.getElementById('iptTermStartDate').value.trim();
+        const customName = document.getElementById('iptCustomWeekName').value.trim().replace('周', '週');
+        
+        if (dateVal) this.data.termStartDate = dateVal;
+        if (customName) {
+          if (!this.data.weeks.includes(customName)) this.data.weeks.push(customName);
+          this.data.curWeek = customName;
+        }
+
+        this.saveStorage();
+        this.closeWeekConfigModal();
+        this.renderCurWeekNav();
+        this.renderCards();
+        this.initLbWeeks();
+        this.initNotes();
+        alert(`✨ 已成功設定目前教學週次為：【${this.data.curWeek}】！`);
+
+        fetch(GAS_API_URL, {
+          method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
+          body: JSON.stringify({ action: 'save_current_week', weekKey: this.data.curWeek, termStartDate: this.data.termStartDate })
+        });
+      },
+
       switchView(v) {
         if (this.noteDirty && v !== 'workspace') this.saveNote(true);
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -651,7 +806,7 @@
         const el = document.getElementById('view-' + v);
         if (el) el.classList.add('active');
         
-        if (v === 'workspace') { this.renderCards(); this.renderTabs(); this.initNotes(); }
+        if (v === 'workspace') { this.renderCards(); this.renderTabs(); this.initNotes(); this.renderCurWeekNav(); }
         if (v === 'leaderboard') {
           this.loadLeaderboard();
           const stage = document.getElementById('lbScrollStage');
@@ -759,28 +914,9 @@
         });
       },
 
-      promptEditWeek() {
-        const cur = this.data.curWeek || "第1週";
-        const w = prompt(`【切換或輸入自訂教學週次】\n目前為：${cur}\n現有週次：${(this.data.weeks||[]).join(', ')}\n請輸入欲操作的週次：`, cur);
-        if (!w || !w.trim()) return;
-        const clean = w.trim().replace('周', '週');
-        if (!this.data.weeks.includes(clean)) this.data.weeks.push(clean);
-        this.data.curWeek = clean;
-        this.saveStorage();
-        this.renderCards();
-        this.initLbWeeks();
-        this.initNotes();
-        fetch(GAS_API_URL, {
-          method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
-          body: JSON.stringify({ action: 'save_current_week', weekKey: clean })
-        });
-      },
-
       updateSettleUI() {
         const b = document.getElementById('btnSettle');
-        const tag = document.getElementById('bannerWeek');
         const w = this.data.curWeek || "第1週";
-        if (tag) tag.innerText = `【${w}】 ✏️`;
         const hasDirty = Object.keys(this.data.buf).some(k => k.startsWith(`${this.curClass}_${w}_`) && this.data.buf[k] !== 0);
         if (b) {
           b.innerText = `☁️ 結算${w}${hasDirty ? '*' : ''}`;
@@ -820,6 +956,12 @@
             this.renderCards();
             b.innerText = `✔ ${w}已結算`;
             setTimeout(() => this.updateSettleUI(), 2500);
+
+            // 結算後溫馨詢問是否前進至下一週
+            const wNum = parseInt(w.replace(/\D/g, ''), 10);
+            if (!isNaN(wNum) && confirm(`🎉 【${w}】成績已成功結算！\n是否要直接將系統推進至【第${wNum + 1}週】？`)) {
+              this.stepWeek(1);
+            }
           } else { alert(json.message || '結算失敗'); }
         } catch(e) {
           alert('網路逾時，分數已安全保留於本機！');
@@ -1088,21 +1230,32 @@
 
       /*
       ======================================================================
-      榮譽榜單模組 (🌟 徹底修復：生成時強制賦予 anim-hide，杜絕穿幫)
+      🌟 榮譽榜單模組 (方案 1-A：嚴格結算鎖定，總榜與課堂即時 buf 徹底隔離！)
+      週排行榜預設鎖定為「上一週的正式結算榜單」
       ======================================================================
       */
       initLbWeeks() {
         const sel = document.getElementById('selLbWeek');
         if (!sel) return;
         sel.innerHTML = "";
-        const all = (this.data.weeks && this.data.weeks.length > 0) ? this.data.weeks : ["第1週"];
-        const curIdx = all.indexOf(this.data.curWeek || "第1週");
-        let def = this.data.curWeek || "第1週";
-        if (curIdx > 0) def = all[curIdx - 1];
-        else if (all.length > 1) def = all[0];
+        
+        const sortedWeeks = (this.data.weeks || ["第1週"]).slice().sort((a,b) => {
+          const nA = parseInt(a.replace(/\D/g, ''), 10) || 0;
+          const nB = parseInt(b.replace(/\D/g, ''), 10) || 0;
+          return nA - nB;
+        });
+
+        // 🌟 週排行榜預設展示「上一週（已定案結算）」成績
+        const curIdx = sortedWeeks.indexOf(this.data.curWeek || "第1週");
+        let def = sortedWeeks[0];
+        if (curIdx > 0) {
+          def = sortedWeeks[curIdx - 1]; // 自動跳至上一週
+        } else if (sortedWeeks.length > 1) {
+          def = sortedWeeks[0];
+        }
         this.lbWeek = def;
 
-        all.forEach(w => {
+        sortedWeeks.forEach(w => {
           const opt = document.createElement('option');
           opt.value = w;
           opt.innerText = (w === this.data.curWeek) ? `${w} (進行中)` : `${w} (結算榜)`;
@@ -1119,7 +1272,7 @@
         this.loadLeaderboard();
       },
 
-      // 🌟 加載榜單資料：生成卡片時強制預設隱藏 anim-hide，待動畫喚醒
+      // 🌟 加載榜單資料：方案 1-A 嚴格鎖定（總分只取已結算的 s.totalScore，絕不加 delta！）
       loadLeaderboard() {
         const selC = document.getElementById('selLbClass');
         if (selC) {
@@ -1133,7 +1286,6 @@
         const isW = (this.rankType === 'weekly');
         const targetW = this.lbWeek || this.data.curWeek || "第1週";
 
-        // 更新按鈕與週次選擇器狀態
         const btnRank = document.getElementById('btnToggleRank');
         if (btnRank) btnRank.innerText = `【${isW ? '週排行榜' : '總排行榜'}】`;
         const selW = document.getElementById('selLbWeek');
@@ -1142,12 +1294,12 @@
         const list = this.data.students.filter(s => s.classId === this.curClass).map(s => {
           let sc = 0;
           if (isW) {
+            // 週排行榜：只取已定案結算的週次得分 + 幹部固定加分 (不加未結算 buf)
             const base = (s.weekScores && s.weekScores[targetW] !== undefined) ? Number(s.weekScores[targetW]) : 0;
-            const delta = (targetW === this.data.curWeek) ? (Number(this.data.buf[`${s.classId}_${targetW}_${s.seatNo}`]) || 0) : 0;
-            sc = base + (Number(s.weeklyBonus) || 0) + delta;
+            sc = base + (Number(s.weeklyBonus) || 0);
           } else {
-            const delta = Number(this.data.buf[`${s.classId}_${this.data.curWeek}_${s.seatNo}`]) || 0;
-            sc = (Number(s.totalScore) || 0) + delta;
+            // 🌟 方案 1-A 核心：總分永遠只取「已結算總分」，徹底與本堂課未結算的 buf 隔離！
+            sc = Number(s.totalScore) || 0;
           }
           return { ...s, sc: Math.floor(isNaN(sc) ? 0 : sc) };
         }).sort((a,b) => b.sc - a.sc || a.seatNo - b.seatNo);
@@ -1173,7 +1325,6 @@
               if (tiers[idx] !== undefined) {
                 const subStudents = list.filter(s => s.sc === tiers[idx]);
                 const item = document.createElement('div');
-                // 🔒 核心關鍵：生成初始直接賦予 anim-hide，絕不提前裸露在畫面上！
                 item.className = 'tier-item anim-hide';
                 item.id = `tier_item_${idx + 1}`;
                 item.innerHTML = `
@@ -1201,13 +1352,13 @@
 
         const stEl = document.getElementById('sheetTitle');
         if (stEl) {
-          stEl.innerText = isW ? `【${targetW}】全班學員成績名冊 (週得分+幹部加分)` : `全班學員總成績名冊 (總分累積)`;
+          stEl.innerText = isW ? `【${targetW}】全班學員結算成績 (週得分+幹部加分)` : `全班學員總成績名冊 (定案總分累積)`;
         }
       },
 
       /*
       ======================================================================
-      🌟 滿血揭榜動畫 (方案 A 倒序動畫引擎・嚴格重繪刷新 Flush 守門)
+      🌟 滿血揭榜動畫 (動畫結束後停在頂部，不再自動下滑，保留手動捲動)
       ======================================================================
       */
       startRevealTheater() {
@@ -1222,24 +1373,21 @@
 
         if (stage) stage.scrollTo({ top: 0, behavior: 'smooth' });
 
-        // 重置前三名與全班名冊
         [p1, p2, p3].forEach(p => { p.classList.remove('reveal'); p.classList.add('anim-hide'); });
         sheet.classList.remove('active-show');
         sheet.classList.add('anim-hide');
 
-        // 取得並重置第 4～10 名梯隊卡片
         const tierItems = Array.from(document.querySelectorAll('.tier-item'));
         tierItems.forEach(t => {
           t.classList.remove('reveal');
           t.classList.add('anim-hide');
         });
 
-        // 🌟 強制觸發重繪 (Reflow Flush)，確保瀏覽器完成幾何層更新
         if (hall) void hall.offsetHeight;
 
         let currentDelay = 350;
 
-        // 🌟 總排行榜：依序由最後一個梯隊（例如第10名）倒序滑入至第4名
+        // 總排行榜倒序滑入 10 -> 4 名
         if (isTotal && tierItems.length > 0) {
           const reversedTiers = tierItems.slice().reverse();
           reversedTiers.forEach((item, i) => {
@@ -1248,12 +1396,11 @@
               item.classList.remove('anim-hide');
               item.classList.add('reveal');
             }, currentDelay);
-            currentDelay += 240; // 每 0.24 秒穩健揭曉一位
+            currentDelay += 240;
           });
-          currentDelay += 450; // 蓄力停頓，迎來領獎台高潮
+          currentDelay += 450;
         }
 
-        // 升起第 3 名 (伴隨低音戰鼓)
         setTimeout(() => {
           SoundFx.playDrum();
           p3.classList.remove('anim-hide');
@@ -1261,7 +1408,6 @@
         }, currentDelay);
         currentDelay += 1000;
 
-        // 升起第 2 名 (伴隨低音戰鼓)
         setTimeout(() => {
           SoundFx.playDrum();
           p2.classList.remove('anim-hide');
@@ -1269,30 +1415,23 @@
         }, currentDelay);
         currentDelay += 1100;
 
-        // 冠軍誕生：升起第 1 名、爆發勝利號角與金色彩帶粒子
         setTimeout(() => {
           SoundFx.playFanfare();
           p1.classList.remove('anim-hide');
           p1.classList.add('reveal');
           this.shootConfetti();
 
-          // 終曲平滑導航捲動
+          // 🌟 展開名冊，但不再自動捲動！視野安穩停在頂部領獎台
           setTimeout(() => {
             sheet.classList.remove('anim-hide');
             sheet.classList.add('active-show');
           }, 1500);
-
-          setTimeout(() => {
-            if (stage && sheet) {
-              sheet.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-          }, 1800);
         }, currentDelay);
       },
 
       /*
       ======================================================================
-      通訊協議 (時間門閥防護 + 專屬加密頻道隔離 + 完整重繪時序)
+      通訊協議 (時間門閥防護 + 專屬加密隔離)
       ======================================================================
       */
       initMqttBroker() {
@@ -1317,7 +1456,6 @@
                   this.curClass = msg.classId;
                   this.rankType = msg.period;
                   this.lbWeek = msg.weekKey;
-                  // 🌟 確保先載入最新狀態與預設隱藏節點，再開門啟動動畫！
                   this.loadLeaderboard();
                   this.enter('leaderboard');
                   setTimeout(() => this.startRevealTheater(), 650);
@@ -1357,7 +1495,7 @@
       startTvStandby() {
         SoundFx.init();
         this.isTv = true;
-        this.lastTriggerId = Date.now(); // 🔒 嚴格時間門閥鎖定
+        this.lastTriggerId = Date.now();
 
         document.getElementById('btnStandby').innerText = "🟢 電腦大螢幕待命中 (專屬加密通道)";
         document.getElementById('btnStandby').disabled = true;
@@ -1427,7 +1565,7 @@
 
       /*
       ======================================================================
-      名冊管理 (智慧平移保護歷史成績)
+      名冊管理與第1週成績自動平移救援 API
       ======================================================================
       */
       loadRosterText() {
@@ -1469,6 +1607,28 @@
         });
         alert(`✨ ${this.curClass} 班名冊更新成功，歷史週次成績已完整受到保護！`);
       },
+
+      // 🌟 雲端第1週平移至第2週救援行動
+      async requestMigrateWeek1ToWeek2() {
+        if (!confirm(`⚠️ 確定要執行「第1週成績自動平移至第2週」？\n\n系統將自動把【${this.curClass} 班】所有學員在第1週記錄的分數轉移至第2週，並將第1週扣回復原！`)) return;
+        
+        try {
+          const res = await fetch(GAS_API_URL, {
+            method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
+            body: JSON.stringify({ action: 'migrate_week1_to_week2', classId: this.curClass })
+          });
+          const json = await res.json();
+          if (json.status === 'success') {
+            alert(`✨ 救援成功！已自動將 ${json.migratedCount} 位學員在第1週的分數平移至第2週！`);
+            this.fetchCloud(); // 立即同步最新雲端資料
+          } else {
+            alert(json.message || '平移失敗，請檢查網路連線');
+          }
+        } catch(e) {
+          alert('連線逾時，請稍後重試！');
+        }
+      },
+
       addClass() {
         const c = prompt('請輸入新班級代號 (例: 502)：');
         if (!c || this.data.classes.includes(c.trim())) return;
@@ -1516,6 +1676,7 @@
             }
             if (json.allWeekKeys && json.allWeekKeys.length > 0) this.data.weeks = json.allWeekKeys;
             if (json.currentWeekKey && !this.data.curWeek) this.data.curWeek = json.currentWeekKey;
+            if (json.termStartDate && !this.data.termStartDate) this.data.termStartDate = json.termStartDate;
             
             if (json.password && json.password !== this.data.pwd) {
               this.data.pwd = json.password;
@@ -1553,6 +1714,7 @@
 
             this.saveStorage();
             this.renderTabs();
+            this.renderCurWeekNav();
             this.renderCards();
             this.initLbWeeks();
             this.initNotes();
