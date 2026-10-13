@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 V3.6.0</title>
+  <title>魔法學院教務魔導系統 V3.6.1</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <!-- 導入安全極速 MQTT WebSocket 函式庫 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
@@ -24,20 +24,20 @@
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
     html, body { width: 100%; height: 100%; height: 100dvh; background: var(--bg); color: var(--text); font-family: var(--font-sans); overflow: hidden; }
     
-    /* 頂部導航列 */
-    header { display: none; height: 50px; background: #05140e; border-bottom: 2px solid var(--gold); padding: 0 8px; justify-content: space-between; align-items: center; z-index: 50; flex-shrink: 0; }
+    /* 頂部導航列 (🌟 方案 A 緊湊化：內距與字級微調，確保 Z Fold 外螢幕 7 個按鈕單行滿版不溢出) */
+    header { display: none; height: 46px; background: #05140e; border-bottom: 2px solid var(--gold); padding: 0 4px; justify-content: space-between; align-items: center; z-index: 50; flex-shrink: 0; }
     header.auth { display: flex; }
-    .brand { font-family: var(--font-serif); font-size: 0.95rem; color: var(--gold); display: flex; align-items: center; gap: 4px; font-weight: bold; }
-    .header-acts { display: flex; gap: 5px; align-items: center; }
-    .badge { font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; border: 1px solid #7f8c8d; color: #95a5a6; }
+    .brand { font-family: var(--font-serif); font-size: 0.85rem; color: var(--gold); display: flex; align-items: center; gap: 2px; font-weight: bold; white-space: nowrap; }
+    .header-acts { display: flex; gap: 3px; align-items: center; }
+    .badge { font-size: 0.68rem; padding: 2px 4px; border-radius: 4px; border: 1px solid #7f8c8d; color: #95a5a6; white-space: nowrap; }
     .badge.on { border-color: #2ecc71; color: #2ecc71; background: rgba(46,204,113,0.15); }
-    .btn-nav { background: rgba(212,175,55,0.12); border: 1px solid var(--gold); color: var(--gold-l); padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-family: var(--font-serif); transition: all 0.2s; }
-    .btn-nav.active { background: var(--gold) !important; color: #071912 !important; font-weight: bold !important; box-shadow: 0 0 8px rgba(212,175,55,0.6); }
-    .gem { width: 10px; height: 10px; border-radius: 50%; background: #2ecc71; display: inline-block; transition: background 0.3s; }
+    .btn-nav { background: rgba(212,175,55,0.12); border: 1px solid var(--gold); color: var(--gold-l); padding: 4px 6px; border-radius: 4px; cursor: pointer; font-size: 0.74rem; font-family: var(--font-serif); transition: all 0.2s; white-space: nowrap; }
+    .btn-nav.active { background: var(--gold) !important; color: #071912 !important; font-weight: bold !important; box-shadow: 0 0 6px rgba(212,175,55,0.6); }
+    .gem { width: 8px; height: 8px; border-radius: 50%; background: #2ecc71; display: inline-block; transition: background 0.3s; flex-shrink: 0; }
     .gem.pend { background: #f39c12; }
     .gem.err { background: #e74c3c; }
     
-    .viewport { width: 100%; height: calc(100% - 50px); position: relative; overflow: hidden; }
+    .viewport { width: 100%; height: calc(100% - 46px); position: relative; overflow: hidden; }
     .panel { position: absolute; inset: 0; display: none; flex-direction: column; background: var(--bg); z-index: 10; overflow: hidden; }
     .panel.active { display: flex !important; z-index: 20; }
     
@@ -55,58 +55,58 @@
     .btn-gold:active { filter: brightness(0.85); }
     
     /* 班級選擇標籤列 */
-    .tabs-bar { display: flex; overflow-x: auto; gap: 6px; padding: 6px 10px; background: #0b251c; border-bottom: 1px solid rgba(212,175,55,0.25); flex-shrink: 0; scrollbar-width: none; }
+    .tabs-bar { display: flex; overflow-x: auto; gap: 5px; padding: 5px 6px; background: #0b251c; border-bottom: 1px solid rgba(212,175,55,0.25); flex-shrink: 0; scrollbar-width: none; }
     .tabs-bar::-webkit-scrollbar { display: none; }
-    .tab-pill { padding: 5px 14px; border-radius: 16px; border: 1px solid var(--gold); background: rgba(0,0,0,0.35); color: #cbdad3; font-size: 0.82rem; white-space: nowrap; cursor: pointer; transition: all 0.2s; }
+    .tab-pill { padding: 4px 12px; border-radius: 16px; border: 1px solid var(--gold); background: rgba(0,0,0,0.35); color: #cbdad3; font-size: 0.8rem; white-space: nowrap; cursor: pointer; transition: all 0.2s; }
     .tab-pill.active { background: var(--gold) !important; color: #071912 !important; font-weight: bold !important; box-shadow: 0 0 6px rgba(212,175,55,0.5); }
     
     /* 手機外螢幕切換欄 */
     .phone-bar { display: flex; background: #05140e; border-bottom: 1px solid rgba(212,175,55,0.3); flex-shrink: 0; }
-    .phone-btn { flex: 1; padding: 10px 4px; background: transparent; border: none; color: #9cb5ab; font-size: 0.88rem; cursor: pointer; border-bottom: 2px solid transparent; }
+    .phone-btn { flex: 1; padding: 8px 4px; background: transparent; border: none; color: #9cb5ab; font-size: 0.85rem; cursor: pointer; border-bottom: 2px solid transparent; }
     .phone-btn.active { color: var(--gold-l) !important; background: rgba(212,175,55,0.12) !important; border-bottom: 2px solid var(--gold) !important; font-weight: bold !important; }
     
     /* 雙欄切換結構 */
     .split { flex: 1; display: flex; overflow: hidden; position: relative; }
-    .col-score { flex: 1; display: flex; flex-direction: column; height: 100%; min-width: 0; }
+    .col-score { flex: 1; display: flex; flex-direction: column; height: 100%; min-width: 0; overflow: hidden; }
     
-    /* 週次導航引導橫幅 (步進箭頭 + 下拉選單 + 自訂編輯) */
-    .guide-banner { background: #0c2b20; border-bottom: 1px solid var(--gold); padding: 5px 8px; display: flex; justify-content: space-between; align-items: center; white-space: nowrap; flex-shrink: 0; }
-    .week-stepper { display: inline-flex; align-items: center; gap: 3px; background: rgba(0,0,0,0.35); border: 1px solid rgba(212,175,55,0.4); border-radius: 4px; padding: 2px 4px; }
-    .btn-step { background: transparent; border: none; color: var(--gold-l); font-size: 0.82rem; cursor: pointer; padding: 0 4px; font-weight: bold; }
-    .btn-step:hover { color: #fff; }
-    .sel-week-nav { background: transparent; border: none; color: var(--gold-l); font-size: 0.78rem; font-weight: bold; outline: none; cursor: pointer; }
-    .btn-settle { background: rgba(212,175,55,0.18); border: 1px solid var(--gold); color: var(--gold-l); font-size: 0.74rem; font-weight: bold; padding: 4px 9px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+    /* 🌟 週次引導橫幅 (長按設幹部精準對齊，結算按鈕 100% 留存於畫面內) */
+    .guide-banner { background: #0c2b20; border-bottom: 1px solid var(--gold); padding: 4px 6px; display: flex; justify-content: space-between; align-items: center; white-space: nowrap; flex-shrink: 0; gap: 4px; }
+    .guide-tip { color: #ffe680; font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; }
+    .week-stepper { display: inline-flex; align-items: center; gap: 1px; background: rgba(0,0,0,0.4); border: 1px solid rgba(212,175,55,0.4); border-radius: 4px; padding: 1px 3px; flex-shrink: 0; }
+    .btn-step { background: transparent; border: none; color: var(--gold-l); font-size: 0.76rem; cursor: pointer; padding: 0 3px; font-weight: bold; }
+    .sel-week-nav { background: transparent; border: none; color: var(--gold-l); font-size: 0.75rem; font-weight: bold; outline: none; cursor: pointer; max-width: 68px; }
+    .btn-settle { background: rgba(212,175,55,0.18); border: 1px solid var(--gold); color: var(--gold-l); font-size: 0.72rem; font-weight: bold; padding: 3px 7px; border-radius: 4px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; white-space: nowrap; }
     .btn-settle.dirty { background: rgba(243,156,18,0.4) !important; border-color: #f39c12 !important; color: #ffd280 !important; font-weight: bold; }
     
-    /* 學生名冊雙列大卡片 */
-    .grid { flex: 1; overflow-y: auto; padding: 8px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; align-content: start; -webkit-overflow-scrolling: touch; }
-    .card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; position: relative; cursor: pointer; transition: transform 0.1s, border-color 0.2s; }
+    /* 學生名冊雙列大卡片 (特別針對 Fold 邊界優化，消除左右橫向晃動) */
+    .grid { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 6px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; align-content: start; -webkit-overflow-scrolling: touch; }
+    .card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 8px; padding: 6px 3px; display: flex; flex-direction: column; align-items: center; position: relative; cursor: pointer; transition: transform 0.1s, border-color 0.2s; min-width: 0; }
     .card:active { transform: scale(0.96); background: var(--card-act); border-color: var(--gold); }
-    .card-seat { position: absolute; top: 4px; left: 6px; font-size: 0.72rem; color: #9cb5ab; font-weight: bold; }
-    .card-star { position: absolute; top: 4px; right: 6px; font-size: 0.75rem; color: #ffd700; font-weight: bold; background: rgba(0,0,0,0.6); padding: 1px 5px; border-radius: 8px; }
-    .card-name { font-size: 1.1rem; font-weight: bold; color: #fff; margin: 2px 0; }
-    .card-score { font-size: 1.3rem; font-family: var(--font-serif); font-weight: bold; color: var(--gold); }
+    .card-seat { position: absolute; top: 3px; left: 5px; font-size: 0.7rem; color: #9cb5ab; font-weight: bold; }
+    .card-star { position: absolute; top: 3px; right: 5px; font-size: 0.72rem; color: #ffd700; font-weight: bold; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 6px; }
+    .card-name { font-size: 1.05rem; font-weight: bold; color: #fff; margin: 1px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 90%; }
+    .card-score { font-size: 1.25rem; font-family: var(--font-serif); font-weight: bold; color: var(--gold); }
     
     /* 底部加減分快捷列 */
-    .bottom-bar { height: 50px; background: #05140e; border-top: 1.5px solid var(--gold); padding: 0 8px; display: flex; justify-content: space-around; align-items: center; gap: 5px; flex-shrink: 0; }
-    .chip { flex: 1; height: 38px; border: 1px solid rgba(212,175,55,0.4); border-radius: 5px; background: rgba(212,175,55,0.08); color: var(--gold-l); font-size: 0.95rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .bottom-bar { height: 46px; background: #05140e; border-top: 1.5px solid var(--gold); padding: 0 4px; display: flex; justify-content: space-around; align-items: center; gap: 4px; flex-shrink: 0; }
+    .chip { flex: 1; height: 34px; border: 1px solid rgba(212,175,55,0.4); border-radius: 4px; background: rgba(212,175,55,0.08); color: var(--gold-l); font-size: 0.9rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
     .chip.active { background: var(--gold) !important; color: #071912 !important; box-shadow: 0 0 6px rgba(212,175,55,0.6); }
     
     /* 備課筆記卷軸 */
     .col-notes { flex: 1; display: none; flex-direction: column; background: var(--parch); color: #201e19; height: 100%; overflow: hidden; min-width: 0; }
     .col-notes.phone-on { display: flex; }
-    .notes-bar { padding: 6px 8px; background: #ebdcc0; border-bottom: 1px solid var(--parch-b); display: flex; justify-content: space-between; align-items: center; gap: 4px; flex-shrink: 0; }
-    .notes-tools { display: none; flex-wrap: wrap; align-items: center; gap: 4px; padding: 4px 6px; background: #dfcfaf; border-bottom: 1px solid #c9b896; flex-shrink: 0; }
+    .notes-bar { padding: 4px 6px; background: #ebdcc0; border-bottom: 1px solid var(--parch-b); display: flex; justify-content: space-between; align-items: center; gap: 3px; flex-shrink: 0; }
+    .notes-tools { display: none; flex-wrap: wrap; align-items: center; gap: 3px; padding: 4px; background: #dfcfaf; border-bottom: 1px solid #c9b896; flex-shrink: 0; }
     .notes-tools.on { display: flex; }
-    .btn-tool { background: #fff; border: 1px solid #bdae93; border-radius: 3px; padding: 3px 6px; font-size: 0.78rem; cursor: pointer; }
-    .tool-color { width: 22px; height: 22px; padding: 0; border: 1px solid #bdae93; border-radius: 3px; cursor: pointer; vertical-align: middle; }
-    .notes-box { flex: 1; padding: 12px 16px 12px 22px; outline: none; overflow-y: auto; font-size: 1.02rem; line-height: 1.6; -webkit-overflow-scrolling: touch; box-sizing: border-box; }
-    .notes-box ul, .notes-box ol { padding-left: 28px !important; margin: 6px 0 !important; }
+    .btn-tool { background: #fff; border: 1px solid #bdae93; border-radius: 3px; padding: 2px 5px; font-size: 0.74rem; cursor: pointer; }
+    .tool-color { width: 20px; height: 20px; padding: 0; border: 1px solid #bdae93; border-radius: 3px; cursor: pointer; vertical-align: middle; }
+    .notes-box { flex: 1; padding: 10px 14px 10px 18px; outline: none; overflow-y: auto; font-size: 0.98rem; line-height: 1.55; -webkit-overflow-scrolling: touch; box-sizing: border-box; }
+    .notes-box ul, .notes-box ol { padding-left: 24px !important; margin: 4px 0 !important; }
     .notes-box li { margin: 2px 0; }
-    .marker { background: rgba(241,196,15,0.35); border-left: 4px solid #f39c12; padding: 2px 6px; border-radius: 0 4px 4px 0; }
-    .marker-badge { background: #e67e22; color: #fff; font-size: 0.7rem; font-weight: bold; padding: 1px 4px; border-radius: 6px; margin-right: 4px; }
+    .marker { background: rgba(241,196,15,0.35); border-left: 4px solid #f39c12; padding: 2px 5px; border-radius: 0 4px 4px 0; }
+    .marker-badge { background: #e67e22; color: #fff; font-size: 0.68rem; font-weight: bold; padding: 1px 4px; border-radius: 6px; margin-right: 4px; }
     
-    /* 螢幕適配規則：>= 680px 左右並列 50% / 50% */
+    /* 螢幕適配規則：>= 680px (Fold 展開內螢幕與電腦端) 左右並列 50% / 50% */
     @media (min-width: 680px) {
       .phone-bar { display: none !important; }
       .col-notes { flex: 0 0 50% !important; display: flex !important; order: 1; border-right: 2px solid var(--gold); }
@@ -123,11 +123,11 @@
       flex-direction: column;
     }
     .lb-header-sticky {
-      padding: 8px 10px;
+      padding: 6px 8px;
       display: flex;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 5px;
       background: #05140e;
       border-bottom: 1px solid rgba(212,175,55,0.3);
       z-index: 30;
@@ -147,34 +147,34 @@
       -webkit-overflow-scrolling: touch;
       padding-bottom: 70px;
     }
-    .lb-scroll-stage::-webkit-scrollbar { width: 8px; }
+    .lb-scroll-stage::-webkit-scrollbar { width: 6px; }
     .lb-scroll-stage::-webkit-scrollbar-track { background: rgba(5,20,14,0.7); }
     .lb-scroll-stage::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.4); border-radius: 4px; }
     .lb-scroll-stage::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
     .confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 15; }
     
-    .podium { width: 92%; max-width: 760px; display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin: 16px 0 10px 0; min-height: 230px; position: relative; z-index: 20; flex-shrink: 0; }
+    .podium { width: 94%; max-width: 760px; display: flex; justify-content: center; align-items: flex-end; gap: 8px; margin: 14px 0 8px 0; min-height: 220px; position: relative; z-index: 20; flex-shrink: 0; }
     .podium-col { flex: 1; display: flex; flex-direction: column; align-items: center; opacity: 1; transform: translateY(0); transition: all 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
     .podium-col.anim-hide { opacity: 0 !important; transform: translateY(50px) !important; }
     .podium-col.reveal { opacity: 1 !important; transform: translateY(0) !important; }
     
-    .podium-badge { background: rgba(11,37,28,0.95); border: 1.5px solid var(--gold); border-radius: 6px; padding: 6px; text-align: center; margin-bottom: 6px; width: 100%; min-height: 60px; display: flex; flex-direction: column; justify-content: center; }
-    .p-name { font-size: clamp(0.85rem, 2vw, 1.1rem); font-weight: bold; color: #fff; line-height: 1.3; word-break: break-word; white-space: normal; }
-    .p-score { font-family: var(--font-serif); font-size: 0.9rem; color: var(--gold-l); margin-top: 2px; }
+    .podium-badge { background: rgba(11,37,28,0.95); border: 1.5px solid var(--gold); border-radius: 6px; padding: 5px; text-align: center; margin-bottom: 5px; width: 100%; min-height: 56px; display: flex; flex-direction: column; justify-content: center; }
+    .p-name { font-size: clamp(0.82rem, 2vw, 1.05rem); font-weight: bold; color: #fff; line-height: 1.25; word-break: break-word; white-space: normal; }
+    .p-score { font-family: var(--font-serif); font-size: 0.86rem; color: var(--gold-l); margin-top: 1px; }
     .podium-box { width: 100%; display: flex; justify-content: center; align-items: center; font-family: var(--font-serif); font-weight: bold; color: #05140e; border-radius: 6px 6px 0 0; }
-    .p1 .podium-box { height: 125px; background: linear-gradient(180deg, #ffd700, #b8860b); font-size: 2.2rem; }
-    .p2 .podium-box { height: 95px; background: linear-gradient(180deg, #e6e6e6, #8c8c8c); font-size: 1.7rem; }
-    .p3 .podium-box { height: 75px; background: linear-gradient(180deg, #cd7f32, #7c471d); font-size: 1.5rem; }
+    .p1 .podium-box { height: 120px; background: linear-gradient(180deg, #ffd700, #b8860b); font-size: 2.1rem; }
+    .p2 .podium-box { height: 90px; background: linear-gradient(180deg, #e6e6e6, #8c8c8c); font-size: 1.65rem; }
+    .p3 .podium-box { height: 70px; background: linear-gradient(180deg, #cd7f32, #7c471d); font-size: 1.45rem; }
     
     /* 第 4～10 名梯隊殿堂 */
-    .tier-hall { width: 92%; max-width: 760px; margin: 6px 0 16px 0; display: none; flex-direction: column; gap: 6px; position: relative; z-index: 20; flex-shrink: 0; }
+    .tier-hall { width: 94%; max-width: 760px; margin: 4px 0 14px 0; display: none; flex-direction: column; gap: 5px; position: relative; z-index: 20; flex-shrink: 0; }
     .tier-hall.active-hall { display: flex; }
     .tier-item {
       background: rgba(11,37,28,0.92);
       border: 1px solid rgba(212,175,55,0.4);
       border-radius: 6px;
-      padding: 6px 12px;
+      padding: 5px 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -184,38 +184,38 @@
     }
     .tier-item.anim-hide { opacity: 0 !important; transform: translateY(35px) !important; pointer-events: none; }
     .tier-item.reveal { opacity: 1 !important; transform: translateY(0) !important; }
-    .tier-rank { font-family: var(--font-serif); font-weight: bold; font-size: 0.95rem; color: var(--gold-l); min-width: 48px; }
-    .tier-names { font-size: 0.92rem; font-weight: bold; color: #fff; flex: 1; margin: 0 10px; word-break: break-word; }
-    .tier-score { font-family: var(--font-serif); font-weight: bold; font-size: 0.92rem; color: var(--gold); }
+    .tier-rank { font-family: var(--font-serif); font-weight: bold; font-size: 0.9rem; color: var(--gold-l); min-width: 44px; }
+    .tier-names { font-size: 0.88rem; font-weight: bold; color: #fff; flex: 1; margin: 0 8px; word-break: break-word; }
+    .tier-score { font-family: var(--font-serif); font-weight: bold; font-size: 0.88rem; color: var(--gold); }
     
     /* 全班名冊總表 */
-    .roster-sheet { width: 92%; max-width: 840px; background: rgba(9,29,22,0.95); border: 2px solid var(--gold); border-radius: 8px; padding: 14px; margin-bottom: 24px; position: relative; z-index: 20; opacity: 1; transform: translateY(0); transition: all 0.8s ease-out; flex-shrink: 0; }
+    .roster-sheet { width: 94%; max-width: 840px; background: rgba(9,29,22,0.95); border: 2px solid var(--gold); border-radius: 8px; padding: 12px; margin-bottom: 24px; position: relative; z-index: 20; opacity: 1; transform: translateY(0); transition: all 0.8s ease-out; flex-shrink: 0; }
     .roster-sheet.anim-hide { opacity: 0 !important; transform: translateY(30px) !important; }
     .roster-sheet.active-show { opacity: 1 !important; transform: translateY(0) !important; }
-    .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
-    .roster-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(212,175,55,0.25); border-radius: 4px; padding: 6px 8px; display: flex; flex-direction: column; gap: 2px; font-size: 0.84rem; }
+    .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+    .roster-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(212,175,55,0.25); border-radius: 4px; padding: 5px 7px; display: flex; flex-direction: column; gap: 2px; font-size: 0.82rem; }
     
     /* 名冊管理 */
-    .mgr-box { max-width: 600px; margin: 16px auto; background: #0b251c; border: 1.5px solid var(--gold); border-radius: 8px; padding: 16px; width: 92%; }
-    .mgr-txt { width: 100%; height: 220px; background: #04130d; border: 1px solid var(--border); border-radius: 4px; color: #fff; padding: 10px; font-family: monospace; font-size: 0.9rem; outline: none; margin: 10px 0; }
+    .mgr-box { max-width: 600px; margin: 12px auto; background: #0b251c; border: 1.5px solid var(--gold); border-radius: 8px; padding: 14px; width: 94%; }
+    .mgr-txt { width: 100%; height: 210px; background: #04130d; border: 1px solid var(--border); border-radius: 4px; color: #fff; padding: 8px; font-family: monospace; font-size: 0.88rem; outline: none; margin: 8px 0; }
     
     /* 彈窗樣式 */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-card { background: #0b251c; border: 2px solid var(--gold); border-radius: 8px; padding: 16px; width: 90%; max-width: 360px; color: #fff; }
-    .modal-card input[type="text"], .modal-card input[type="date"] { width: 100%; padding: 8px; background: #04130d; border: 1px solid var(--border); color: #fff; margin: 8px 0; border-radius: 4px; }
+    .modal-card { background: #0b251c; border: 2px solid var(--gold); border-radius: 8px; padding: 14px; width: 90%; max-width: 350px; color: #fff; }
+    .modal-card input[type="text"], .modal-card input[type="date"] { width: 100%; padding: 7px; background: #04130d; border: 1px solid var(--border); color: #fff; margin: 6px 0; border-radius: 4px; }
   </style>
 </head>
 <body>
-  <!-- 頂部導航列 -->
+  <!-- 頂部導航列 (🌟 緊湊化排版：狀態簡化、Padding 緊縮，保證單行滿版不溢出) -->
   <header id="header">
-    <div class="brand"><span>⚜️</span> <span>魔導系統</span></div>
+    <div class="brand"><span>⚜️</span><span>魔導</span></div>
     <div class="header-acts">
       <span class="badge" id="tvBadge">🖥️ 離線</span>
       <span class="gem" id="syncGem" title="雲端同步狀態"></span>
       <button class="btn-nav active" id="nav-workspace" onclick="App.switchView('workspace')">後台</button>
       <button class="btn-nav" id="nav-leaderboard" onclick="App.switchView('leaderboard')">榮譽榜</button>
       <button class="btn-nav" id="nav-roster" onclick="App.switchView('roster')">名冊</button>
-      <button class="btn-nav" style="border-color:#f39c12; color:#ffd280;" onclick="App.openPwdModal()">🔑 印記</button>
+      <button class="btn-nav" style="border-color:#f39c12; color:#ffd280;" onclick="App.openPwdModal()">🔑印記</button>
       <button class="btn-nav" style="border-color:#e74c3c; color:#ff9999;" onclick="App.logout()">登出</button>
     </div>
   </header>
@@ -253,8 +253,8 @@
         <!-- 備課筆記卷軸 (左側) -->
         <div class="col-notes" id="colNotes">
           <div class="notes-bar">
-            <div style="display:flex; width:100%; gap:4px; align-items:center;">
-              <select id="selNoteUnit" style="flex:1; min-width:0; padding:4px; font-size:0.82rem; font-weight:bold;" onchange="App.onNoteUnitChange()"></select>
+            <div style="display:flex; width:100%; gap:3px; align-items:center;">
+              <select id="selNoteUnit" style="flex:1; min-width:0; padding:3px; font-size:0.8rem; font-weight:bold;" onchange="App.onNoteUnitChange()"></select>
               <button class="btn-tool" onclick="App.addNoteUnit()" title="新增週次筆記">➕</button>
               <button class="btn-tool" onclick="App.delNoteUnit()" title="刪除此週筆記">🗑️</button>
               <button class="btn-tool" id="btnEditNote" style="background:#27ae60; color:#fff; font-weight:bold;" onclick="App.toggleNoteMode()">📖 閱讀</button>
@@ -267,7 +267,6 @@
               <option value="16px" selected>16px</option>
               <option value="18px">18px</option>
               <option value="22px">22px</option>
-              <option value="26px">26px</option>
             </select>
             <button class="btn-tool" onclick="document.execCommand('bold')"><b>B</b></button>
             <button class="btn-tool" onclick="document.execCommand('italic')"><i>I</i></button>
@@ -290,16 +289,16 @@
 
         <!-- 學生計分面板 (右側) -->
         <div class="col-score" id="colScore">
-          <!-- 週次導航引導橫幅 (步進箭頭 + 下拉選單 + 自訂編輯) -->
+          <!-- 🌟 週次引導橫幅 (左側保留「💡 長按設幹部」，右側結算按鈕完整顯示於畫面中) -->
           <div class="guide-banner">
-            <span style="color:#ffe680; font-size:0.75rem;">💡 長按設幹部｜點擊計分</span>
-            <div style="display:flex; gap:5px; align-items:center;">
+            <span class="guide-tip">💡 長按設幹部</span>
+            <div style="display:flex; gap:3px; align-items:center;">
               <div class="week-stepper">
                 <button class="btn-step" onclick="App.stepWeek(-1)" title="上一週">◀</button>
                 <select class="sel-week-nav" id="selCurWeekNav" onchange="App.onCurWeekNavChange(this.value)"></select>
                 <button class="btn-step" onclick="App.stepWeek(1)" title="下一週">▶</button>
               </div>
-              <button class="btn-tool" style="padding:2px 5px;" onclick="App.openWeekConfigModal()" title="自訂編輯週次與開學日">✏️</button>
+              <button class="btn-tool" style="padding:2px 4px;" onclick="App.openWeekConfigModal()" title="自訂編輯週次與開學日">✏️</button>
               <button class="btn-settle" id="btnSettle" onclick="App.settleScores()">☁️ 結算</button>
             </div>
           </div>
@@ -323,19 +322,19 @@
       
       <!-- 頂部操作工具列 -->
       <div class="lb-header-sticky">
-        <div style="display:flex; gap:6px; align-items:center;">
-          <select id="selLbClass" style="padding:4px; background:#081c14; border:1px solid var(--gold); color:#fff; font-weight:bold;" onchange="App.onLbClassChange()"></select>
+        <div style="display:flex; gap:5px; align-items:center;">
+          <select id="selLbClass" style="padding:3px; background:#081c14; border:1px solid var(--gold); color:#fff; font-weight:bold; font-size:0.8rem;" onchange="App.onLbClassChange()"></select>
           <button class="btn-nav" id="btnToggleRank" onclick="App.toggleRankType()">【週排行榜】</button>
-          <select id="selLbWeek" style="padding:4px; background:#081c14; border:1px solid var(--gold); color:#fff;" onchange="App.onLbWeekChange()"></select>
+          <select id="selLbWeek" style="padding:3px; background:#081c14; border:1px solid var(--gold); color:#fff; font-size:0.8rem;" onchange="App.onLbWeekChange()"></select>
         </div>
-        <div style="display:flex; gap:6px;">
-          <button class="btn-nav" style="background:var(--gold); color:#071912; font-weight:bold;" onclick="App.broadcastReveal()">📢 廣播大螢幕揭榜</button>
-          <button class="btn-nav" style="border-color:#3498db; color:#85c1e9;" onclick="App.startRevealTheater()">▶ 重播動畫</button>
-          <button class="btn-nav" style="border-color:#e67e22; color:#f39c12;" onclick="App.broadcastClose()">🚪 關閉大門</button>
+        <div style="display:flex; gap:4px;">
+          <button class="btn-nav" style="background:var(--gold); color:#071912; font-weight:bold;" onclick="App.broadcastReveal()">📢 廣播揭榜</button>
+          <button class="btn-nav" style="border-color:#3498db; color:#85c1e9;" onclick="App.startRevealTheater()">▶ 重播</button>
+          <button class="btn-nav" style="border-color:#e67e22; color:#f39c12;" onclick="App.broadcastClose()">🚪 關門</button>
         </div>
       </div>
       
-      <!-- 獨立可捲動表演舞台 -->
+      <!-- 獨立可捲動表演舞台 (動畫結束後停在頂部，手動滾動名冊) -->
       <div class="lb-scroll-stage" id="lbScrollStage">
         <!-- 領獎台 (前三名) -->
         <div class="podium" id="podiumStage">
@@ -358,7 +357,7 @@
         
         <!-- 全班名冊總表 -->
         <div class="roster-sheet anim-hide" id="rosterSheet">
-          <h4 id="sheetTitle" style="color:var(--gold); text-align:center; margin-bottom:10px;">全班學員成績名冊</h4>
+          <h4 id="sheetTitle" style="color:var(--gold); text-align:center; margin-bottom:8px; font-size:0.92rem;">全班學員成績名冊</h4>
           <div class="roster-grid" id="rosterGrid"></div>
         </div>
       </div>
@@ -368,8 +367,8 @@
     <section id="view-roster" class="panel">
       <div class="tabs-bar" id="rosterTabs"></div>
       <div class="mgr-box">
-        <h3 id="rosterTitle" style="color:var(--gold);">班級名冊管理</h3>
-        <p style="font-size:0.75rem; color:#9cb5ab; margin:4px 0 8px 0;">
+        <h3 id="rosterTitle" style="color:var(--gold); font-size:1rem;">班級名冊管理</h3>
+        <p style="font-size:0.72rem; color:#9cb5ab; margin:3px 0 6px 0;">
           💡 格式：<code>座號 姓名</code>（每行一位，例：<code>1 王小明</code>）。<br>
           <span style="color:#f39c12;">安全承諾：修改學員資料時，系統自動平移保護歷史各週成績！</span>
         </p>
@@ -404,12 +403,12 @@
     <div class="modal-overlay" id="pwdModal">
       <div class="modal-card">
         <h4 style="color:var(--gold-l); margin-bottom:6px;">🔑 修改導師印記 (登入密碼)</h4>
-        <p style="font-size:0.75rem; color:#9cb5ab; margin-bottom:8px;">長度需為 4～8 位英數字。儲存後，大螢幕廣播通訊將自動與新印記綁定隔離！</p>
+        <p style="font-size:0.72rem; color:#9cb5ab; margin-bottom:6px;">長度需為 4～8 位英數字。儲存後，大螢幕廣播通訊將自動與新印記綁定隔離！</p>
         <label style="font-size:0.75rem; color:#bdc3c7;">目前印記：</label>
-        <div id="curPwdDisplay" style="font-size:0.88rem; color:var(--gold); font-family:monospace; margin-bottom:6px;">••••</div>
+        <div id="curPwdDisplay" style="font-size:0.88rem; color:var(--gold); font-family:monospace; margin-bottom:4px;">••••</div>
         <label style="font-size:0.75rem; color:#bdc3c7;">輸入新印記：</label>
         <input type="text" id="newPwdIpt" maxlength="8" placeholder="例: 8888 或 ab1234">
-        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:12px;">
+        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:10px;">
           <button class="btn-tool" onclick="App.closePwdModal()">取消</button>
           <button class="btn-gold" style="width:auto; padding:4px 14px;" onclick="App.saveAdminPwd()">💾 確認變更</button>
         </div>
@@ -420,12 +419,12 @@
     <div class="modal-overlay" id="weekConfigModal">
       <div class="modal-card">
         <h4 style="color:var(--gold-l); margin-bottom:6px;">⚙️ 週次設定與開學日管理</h4>
-        <p style="font-size:0.75rem; color:#9cb5ab; margin-bottom:8px;">可設定第一週開始日期自動推算，亦可手動建立/切換教學週次名稱！</p>
+        <p style="font-size:0.72rem; color:#9cb5ab; margin-bottom:6px;">可設定第一週開始日期自動推算，亦可手動建立/切換教學週次名稱！</p>
         <label style="font-size:0.75rem; color:#bdc3c7;">第一週開始日期 (開學週一)：</label>
         <input type="date" id="iptTermStartDate" onchange="App.onTermDateChange(this.value)">
         <label style="font-size:0.75rem; color:#bdc3c7;">目前自訂週次名稱：</label>
         <input type="text" id="iptCustomWeekName" placeholder="例: 第7週 或 期中評量週">
-        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:12px;">
+        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:10px;">
           <button class="btn-tool" onclick="App.closeWeekConfigModal()">取消</button>
           <button class="btn-gold" style="width:auto; padding:4px 14px;" onclick="App.saveWeekConfig()">💾 確認設定</button>
         </div>
@@ -443,7 +442,7 @@
     /*
     ================================================================================
     */
-    const VERSION = "v3.6.0";
+    const VERSION = "v3.6.1";
     
     // 音效合成器 (Web Audio 原生合成)
     const SoundFx = {
@@ -512,8 +511,8 @@
           osc.type = 'sawtooth';
           osc.frequency.setValueAtTime(n.f, now + n.start);
           gain.gain.setValueAtTime(0, now + n.start);
-          gain.gain.linearRampToValueAtTime(0.35, now + n.start + 0.03);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + n.start + n.dur);
+          gain.linearRampToValueAtTime(0.35, now + n.start + 0.03);
+          gain.exponentialRampToValueAtTime(0.0001, now + n.start + n.dur);
           osc.connect(gain);
           gain.connect(this.ctx.destination);
           osc.start(now + n.start);
@@ -561,7 +560,7 @@
       },
 
       migrateAndLoadStorage() {
-        const currentRaw = localStorage.getItem('magic_v360');
+        const currentRaw = localStorage.getItem('magic_v361');
         if (currentRaw) {
           try {
             const p = JSON.parse(currentRaw);
@@ -574,7 +573,7 @@
           } catch(e) {}
         }
 
-        const legacyKeys = ['magic_v350', 'magic_v341', 'magic_v340', 'magic_v330', 'magic_v320', 'magic_v310', 'magic_v300'];
+        const legacyKeys = ['magic_v360', 'magic_v350', 'magic_v341', 'magic_v340', 'magic_v330', 'magic_v320', 'magic_v310', 'magic_v300'];
         for (let i = 0; i < legacyKeys.length; i++) {
           const raw = localStorage.getItem(legacyKeys[i]);
           if (raw) {
@@ -608,7 +607,7 @@
           }
         });
       },
-      saveStorage() { localStorage.setItem('magic_v360', JSON.stringify(this.data)); },
+      saveStorage() { localStorage.setItem('magic_v361', JSON.stringify(this.data)); },
 
       autoCalculateWeekByDate() {
         if (!this.data.termStartDate) return;
@@ -866,7 +865,7 @@
             ${(s.weeklyBonus > 0) ? `<span class="card-star">⭐+${s.weeklyBonus}</span>` : ''}
             <div class="card-name">${s.name}</div>
             <div class="card-score" id="cScore_${s.seatNo}">${delta >= 0 ? `+${delta}` : delta}</div>
-            <div style="font-size:0.72rem; color:#9cb5ab;" id="cTotal_${s.seatNo}">總分: ${total}</div>
+            <div style="font-size:0.7rem; color:#9cb5ab;" id="cTotal_${s.seatNo}">總分: ${total}</div>
           `;
           let t;
           c.onmousedown = c.ontouchstart = () => {
@@ -916,7 +915,7 @@
         const w = this.data.curWeek || "第7週";
         const hasDirty = Object.keys(this.data.buf).some(k => k.startsWith(`${this.curClass}_${w}_`) && this.data.buf[k] !== 0);
         if (b) {
-          b.innerText = `☁️ 結算${w}${hasDirty ? '*' : ''}`;
+          b.innerText = `☁️ 結算${hasDirty ? '*' : ''}`;
           b.classList.toggle('dirty', hasDirty);
         }
       },
@@ -1241,7 +1240,6 @@
           return nA - nB;
         });
 
-        // 預設鎖定為上一週 (例如目前第7週，預設看第6週結算成績)
         const curIdx = sortedWeeks.indexOf(this.data.curWeek || "第7週");
         let def = sortedWeeks[0];
         if (curIdx > 0) {
@@ -1479,7 +1477,7 @@
         const b = document.getElementById('tvBadge');
         if (b) {
           b.className = `badge ${on ? 'on' : ''}`;
-          b.innerText = on ? "🖥️ 在線 (專屬加密通道)" : "🖥️ 離線 (轉為輪詢)";
+          b.innerText = on ? "🖥️ 在線" : "🖥️ 離線";
         }
       },
 
@@ -1556,7 +1554,7 @@
 
       /*
       ======================================================================
-      名冊管理與🌟 全原子性雙軌平移引擎 (第1週➔第6週, 第2週➔第7週)
+      名冊管理與全原子性雙軌平移引擎 (第1週➔第6週, 第2週➔第7週)
       ======================================================================
       */
       loadRosterText() {
@@ -1599,7 +1597,6 @@
         alert(`✨ ${this.curClass} 班名冊更新成功，歷史週次成績已完整受到保護！`);
       },
 
-      // 🌟 全原子性雙軌平移引擎：第1週➔第6週、第2週➔第7週、補齊1-5週為0、筆記同步替換
       async requestRealignWeeks() {
         const msgConfirm = `⚠️ 【全自動週次平移與筆記對齊工程】\n\n系統將為所有班級執行以下完整重構：\n1. 將「第2週」的成績完整遷移至「第7週」\n2. 將「第1週」的成績完整遷移至「第6週」\n3. 補齊「第1週～第5週」為 0 分\n4. 備課筆記第1週與第2週標籤與內文自動替換為第6週與第7週\n5. 系統預設操作週次推進至【第7週】\n\n確定立即執行此項不可逆平移？`;
         if (!confirm(msgConfirm)) return;
@@ -1611,7 +1608,6 @@
           });
           const json = await res.json();
           if (json.status === 'success') {
-            // 本機快取即時平移
             const targetWeeks = ["第1週", "第2週", "第3週", "第4週", "第5週", "第6週", "第7週"];
             this.data.weeks = targetWeeks;
             this.data.curWeek = "第7週";
@@ -1627,7 +1623,6 @@
               s.weekScores['第5週'] = 0;
             });
 
-            // 備課筆記同步替換
             this.data.notes.forEach(n => {
               if (n.weekKey === '第2週') {
                 n.weekKey = '第7週';
@@ -1647,7 +1642,7 @@
             this.initNotes();
 
             alert(`🎉 平移大成功！\n\n已成功補齊第1～7週欄位，第1週成績已歸入第6週，第2週成績已歸入第7週，備課筆記已完成全文同步對齊！`);
-            this.fetchCloud(); // 重新靜默驗證雲端數據
+            this.fetchCloud();
           } else {
             alert(json.message || '平移失敗，請檢查網路連線');
           }
