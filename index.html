@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 V3.7.0</title>
+  <title>魔法學院教務魔導系統 V3.8.0</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
-  <!-- 導入安全極速 MQTT WebSocket 函式庫 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
   <style>
     :root {
@@ -69,23 +68,28 @@
     .split { flex: 1; display: flex; overflow: hidden; position: relative; }
     .col-score { flex: 1; display: flex; flex-direction: column; height: 100%; min-width: 0; overflow: hidden; }
     
-    /* 週次引導橫幅 (長按設幹部精準對齊，結算按鈕完整顯示) */
+    /* 週次引導橫幅 (支援唯讀檢視模式與長按設幹部) */
     .guide-banner { background: #0c2b20; border-bottom: 1px solid var(--gold); padding: 4px 6px; display: flex; justify-content: space-between; align-items: center; white-space: nowrap; flex-shrink: 0; gap: 4px; }
     .guide-tip { color: #ffe680; font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; }
+    .guide-tip.locked { color: #e67e22; font-weight: bold; }
     .week-stepper { display: inline-flex; align-items: center; gap: 1px; background: rgba(0,0,0,0.4); border: 1px solid rgba(212,175,55,0.4); border-radius: 4px; padding: 1px 3px; flex-shrink: 0; }
     .btn-step { background: transparent; border: none; color: var(--gold-l); font-size: 0.76rem; cursor: pointer; padding: 0 3px; font-weight: bold; }
     .sel-week-nav { background: transparent; border: none; color: var(--gold-l); font-size: 0.75rem; font-weight: bold; outline: none; cursor: pointer; max-width: 68px; }
     .btn-settle { background: rgba(212,175,55,0.18); border: 1px solid var(--gold); color: var(--gold-l); font-size: 0.72rem; font-weight: bold; padding: 3px 7px; border-radius: 4px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; white-space: nowrap; }
     .btn-settle.dirty { background: rgba(243,156,18,0.4) !important; border-color: #f39c12 !important; color: #ffd280 !important; font-weight: bold; }
     
-    /* 學生名冊雙列大卡片 */
+    /* 🌟 計分卡片三維視覺佈局：中央大字【+0】，左下【當週】，右下【總分】 */
     .grid { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 6px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; align-content: start; -webkit-overflow-scrolling: touch; }
-    .card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 8px; padding: 6px 3px; display: flex; flex-direction: column; align-items: center; position: relative; cursor: pointer; transition: transform 0.1s, border-color 0.2s; min-width: 0; }
+    .card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 8px; padding: 6px 4px 4px 4px; display: flex; flex-direction: column; align-items: center; position: relative; cursor: pointer; transition: transform 0.1s, border-color 0.2s; min-width: 0; }
     .card:active { transform: scale(0.96); background: var(--card-act); border-color: var(--gold); }
+    .card.read-only { opacity: 0.88; border-color: #5d6d7e; }
+    .card.read-only:active { transform: none; }
     .card-seat { position: absolute; top: 3px; left: 5px; font-size: 0.7rem; color: #9cb5ab; font-weight: bold; }
     .card-star { position: absolute; top: 3px; right: 5px; font-size: 0.72rem; color: #ffd700; font-weight: bold; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 6px; }
     .card-name { font-size: 1.05rem; font-weight: bold; color: #fff; margin: 1px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 90%; }
-    .card-score { font-size: 1.25rem; font-family: var(--font-serif); font-weight: bold; color: var(--gold); }
+    .card-score { font-size: 1.3rem; font-family: var(--font-serif); font-weight: bold; color: var(--gold); margin: 1px 0; }
+    .card-footer { width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: #9cb5ab; padding: 2px 2px 0 2px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .card-footer-w { color: var(--gold-l); font-weight: bold; }
     
     /* 底部加減分快捷列 */
     .bottom-bar { height: 46px; background: #05140e; border-top: 1.5px solid var(--gold); padding: 0 4px; display: flex; justify-content: space-around; align-items: center; gap: 4px; flex-shrink: 0; }
@@ -177,11 +181,7 @@
     .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 5px; }
     .roster-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(212,175,55,0.25); border-radius: 4px; padding: 5px 6px; display: flex; flex-direction: column; gap: 2px; font-size: 0.8rem; }
     
-    /*
-    ================================================================================
-    🌟🌟🌟 【75吋大螢幕 / 5公尺視距專屬：置中劇院滿版 ＆ 免滾動同屏全景架構】 🌟🌟🌟
-    ================================================================================
-    */
+    /* 75吋大螢幕專屬：大字滿版置中 ＆ 免滾動全景架構 */
     @media (min-width: 1024px) {
       .phone-bar { display: none !important; }
       .col-notes { flex: 0 0 50% !important; display: flex !important; order: 1; border-right: 2px solid var(--gold); }
@@ -195,8 +195,6 @@
         align-items: center !important;
         justify-content: flex-start !important;
       }
-      
-      /* 1. 寬度全開至 1400px，善用兩側留白 */
       .podium {
         width: 96% !important;
         max-width: 1400px !important;
@@ -210,7 +208,6 @@
         border-width: 2px !important;
         border-radius: 8px !important;
       }
-      /* 🌟 前三名巨型名字：放大 2 倍，75吋電視5公尺外清晰奪目 */
       .p-name {
         font-size: 1.65rem !important;
         font-weight: 800 !important;
@@ -225,7 +222,6 @@
       .p2 .podium-box { height: 108px !important; font-size: 2.1rem !important; }
       .p3 .podium-box { height: 82px !important; font-size: 1.75rem !important; }
 
-      /* 🌟 4~10名梯隊：雙欄對稱展開 (高度省一半，字體翻倍，免滾動關鍵！) */
       .tier-hall {
         width: 96% !important;
         max-width: 1400px !important;
@@ -255,7 +251,6 @@
         font-size: 1.25rem !important;
       }
 
-      /* 🌟 全班名冊總表：大字化 + 6欄密集排列 (完全免滾動同屏呈現) */
       .roster-sheet {
         width: 96% !important;
         max-width: 1400px !important;
@@ -378,7 +373,7 @@
         <!-- 學生計分面板 (右側) -->
         <div class="col-score" id="colScore">
           <div class="guide-banner">
-            <span class="guide-tip">💡 長按設幹部</span>
+            <span class="guide-tip" id="guideTipText">💡 長按設幹部</span>
             <div style="display:flex; gap:3px; align-items:center;">
               <div class="week-stepper">
                 <button class="btn-step" onclick="App.stepWeek(-1)" title="上一週">◀</button>
@@ -402,7 +397,7 @@
       </div>
     </section>
 
-    <!-- 榮譽榜視圖 (🌟 升級版：大字滿版置中 ＆ 免滾動全屏同台) -->
+    <!-- 榮譽榜視圖 -->
     <section id="view-leaderboard" class="panel">
       <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
       
@@ -420,9 +415,8 @@
         </div>
       </div>
       
-      <!-- 獨立舞台：75吋螢幕天然全屏一覽，無須滾動 -->
+      <!-- 獨立舞台 -->
       <div class="lb-scroll-stage" id="lbScrollStage">
-        <!-- 領獎台 (前三名巨字階梯) -->
         <div class="podium" id="podiumStage">
           <div class="podium-col p2 anim-hide" id="pCol2">
             <div class="podium-badge"><div class="p-name" id="pn2">--</div><div class="p-score" id="ps2">-- 分</div></div>
@@ -438,10 +432,8 @@
           </div>
         </div>
 
-        <!-- 第 4～10 名梯隊殿堂 (大螢幕雙欄對稱展開，字體放大) -->
         <div class="tier-hall" id="tierHall"></div>
         
-        <!-- 全班名冊總表 (大螢幕 6 欄大字展開，同屏看盡) -->
         <div class="roster-sheet anim-hide" id="rosterSheet">
           <h4 id="sheetTitle" style="color:var(--gold); text-align:center; margin-bottom:8px;">全班學員成績名冊</h4>
           <div class="roster-grid" id="rosterGrid"></div>
@@ -528,7 +520,7 @@
     /*
     ================================================================================
     */
-    const VERSION = "v3.7.0";
+    const VERSION = "v3.8.0";
     
     // 音效合成器
     const SoundFx = {
@@ -620,6 +612,7 @@
 
     const App = {
       curClass: "", weight: 1, rankType: "weekly", lbWeek: "第6週",
+      activeWeekKey: "第7週", // 🌟 系統真實進行中之當前週次 (用於判定是否唯讀)
       isTv: false, isNoteEdit: false, activeNoteId: null,
       noteDirty: false, noteTimer: null, longFired: false,
       mqttClient: null, mqttConnected: false, lastTriggerId: 0,
@@ -633,6 +626,7 @@
         document.getElementById('gateVer').innerText = `⚜️ 核心版本：${VERSION} ⚜️`;
         this.migrateAndLoadStorage();
         this.autoCalculateWeekByDate();
+        this.activeWeekKey = this.data.curWeek || "第7週";
         if (sessionStorage.getItem('magic_auth') === 'true') {
           this.authSuccess();
         }
@@ -657,7 +651,7 @@
       },
 
       migrateAndLoadStorage() {
-        const currentRaw = localStorage.getItem('magic_v370');
+        const currentRaw = localStorage.getItem('magic_v380');
         if (currentRaw) {
           try {
             const p = JSON.parse(currentRaw);
@@ -670,7 +664,7 @@
           } catch(e) {}
         }
 
-        const legacyKeys = ['magic_v362', 'magic_v361', 'magic_v360', 'magic_v350', 'magic_v341', 'magic_v340', 'magic_v330'];
+        const legacyKeys = ['magic_v370', 'magic_v362', 'magic_v361', 'magic_v360', 'magic_v350'];
         for (let i = 0; i < legacyKeys.length; i++) {
           const raw = localStorage.getItem(legacyKeys[i]);
           if (raw) {
@@ -704,7 +698,7 @@
           }
         });
       },
-      saveStorage() { localStorage.setItem('magic_v370', JSON.stringify(this.data)); },
+      saveStorage() { localStorage.setItem('magic_v380', JSON.stringify(this.data)); },
 
       autoCalculateWeekByDate() {
         if (!this.data.termStartDate) return;
@@ -717,6 +711,7 @@
             const wKey = `第${wNum}週`;
             if (!this.data.weeks.includes(wKey)) this.data.weeks.push(wKey);
             this.data.curWeek = wKey;
+            this.activeWeekKey = wKey;
             this.saveStorage();
           }
         } catch(e) {}
@@ -788,6 +783,11 @@
         });
       },
 
+      /*
+      ======================================================================
+      週次導航與設定管理 (支援歷史週次唯讀切換)
+      ======================================================================
+      */
       renderCurWeekNav() {
         const sel = document.getElementById('selCurWeekNav');
         if (!sel) return;
@@ -817,10 +817,6 @@
         this.initLbWeeks();
         this.initNotes();
         this.updateSettleUI();
-        fetch(GAS_API_URL, {
-          method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
-          body: JSON.stringify({ action: 'save_current_week', weekKey: wKey })
-        });
       },
 
       stepWeek(delta) {
@@ -867,6 +863,7 @@
         if (customName) {
           if (!this.data.weeks.includes(customName)) this.data.weeks.push(customName);
           this.data.curWeek = customName;
+          this.activeWeekKey = customName;
         }
 
         this.saveStorage();
@@ -939,43 +936,64 @@
         });
       },
 
+      /*
+      ======================================================================
+      🌟 學生計分卡片渲染：中央大字【+0】，左下【當週】，右下【總分】
+      歷史週次自動啟用【唯讀防護鎖】
+      ======================================================================
+      */
       renderCards() {
         const g = document.getElementById('stGrid');
         if (!g) return;
         g.innerHTML = "";
         const list = this.data.students.filter(s => s.classId === this.curClass).sort((a,b) => a.seatNo - b.seatNo);
         const w = this.data.curWeek || "第7週";
+        const isHistory = (w !== this.activeWeekKey); // 判斷是否為歷史週次
+
         list.forEach(s => {
           const k = `${s.classId}_${w}_${s.seatNo}`;
           const delta = this.data.buf[k] || 0;
-          const total = (s.totalScore || 0) + delta;
+          const weekSettled = (s.weekScores && s.weekScores[w] !== undefined) ? Number(s.weekScores[w]) : 0;
+          const total = (Number(s.totalScore) || 0) + delta;
+
           const c = document.createElement('div');
-          c.className = 'card';
+          c.className = `card ${isHistory ? 'read-only' : ''}`;
           c.id = `card_${s.seatNo}`;
           c.innerHTML = `
             <span class="card-seat">#${s.seatNo}</span>
             ${(s.weeklyBonus > 0) ? `<span class="card-star">⭐+${s.weeklyBonus}</span>` : ''}
             <div class="card-name">${s.name}</div>
-            <div class="card-score" id="cScore_${s.seatNo}">${delta >= 0 ? `+${delta}` : delta}</div>
-            <div style="font-size:0.7rem; color:#9cb5ab;" id="cTotal_${s.seatNo}">總分: ${total}</div>
+            <div class="card-score" id="cScore_${s.seatNo}">${isHistory ? (weekSettled >= 0 ? `${weekSettled}` : weekSettled) : (delta >= 0 ? `+${delta}` : delta)}</div>
+            <div class="card-footer">
+              <span class="card-footer-w" id="cWeek_${s.seatNo}">${isHistory ? '定案' : '當週'}: ${weekSettled}</span>
+              <span id="cTotal_${s.seatNo}">總分: ${total}</span>
+            </div>
           `;
+
           let t;
           c.onmousedown = c.ontouchstart = () => {
+            if (isHistory) return;
             this.longFired = false;
             t = setTimeout(() => { this.longFired = true; this.setBonus(s); }, 1100);
           };
           c.onmouseup = c.ontouchend = () => clearTimeout(t);
+
           c.onclick = () => {
+            if (isHistory) {
+              return alert(`🔒【${w}】為歷史結算週次（唯讀模式）。\n如需修正過往週次分數，請直接從 Google 試算表修改！`);
+            }
             if (this.longFired) return;
             const newDelta = (this.data.buf[k] || 0) + this.weight;
             this.data.buf[k] = newDelta;
             this.saveStorage();
+
             const scEl = document.getElementById(`cScore_${s.seatNo}`);
             const totEl = document.getElementById(`cTotal_${s.seatNo}`);
             if (scEl) scEl.innerText = newDelta >= 0 ? `+${newDelta}` : newDelta;
-            if (totEl) totEl.innerText = `總分: ${(s.totalScore || 0) + newDelta}`;
+            if (totEl) totEl.innerText = `總分: ${(Number(s.totalScore) || 0) + newDelta}`;
             this.updateSettleUI();
           };
+
           g.appendChild(c);
         });
         this.updateSettleUI();
@@ -1004,23 +1022,50 @@
 
       updateSettleUI() {
         const b = document.getElementById('btnSettle');
+        const tip = document.getElementById('guideTipText');
         const w = this.data.curWeek || "第7週";
-        const hasDirty = Object.keys(this.data.buf).some(k => k.startsWith(`${this.curClass}_${w}_`) && this.data.buf[k] !== 0);
+        const isHistory = (w !== this.activeWeekKey);
+
+        if (tip) {
+          if (isHistory) {
+            tip.innerText = "🔒 歷史週次 (僅供檢視)";
+            tip.classList.add('locked');
+          } else {
+            tip.innerText = "💡 長按設幹部";
+            tip.classList.remove('locked');
+          }
+        }
+
         if (b) {
-          b.innerText = `☁️ 結算${hasDirty ? '*' : ''}`;
-          b.classList.toggle('dirty', hasDirty);
+          if (isHistory) {
+            b.style.display = 'none'; // 歷史週次隱藏結算按鈕
+          } else {
+            b.style.display = 'inline-block';
+            const hasDirty = Object.keys(this.data.buf).some(k => k.startsWith(`${this.curClass}_${w}_`) && this.data.buf[k] !== 0);
+            b.innerText = `☁️ 結算${hasDirty ? '*' : ''}`;
+            b.classList.toggle('dirty', hasDirty);
+          }
         }
       },
 
+      /*
+      ======================================================================
+      🌟 結算成績與白話化提醒視窗 (純增量累加，絕不覆蓋)
+      ======================================================================
+      */
       async settleScores() {
         const w = this.data.curWeek || "第7週";
+        if (w !== this.activeWeekKey) {
+          return alert('歷史週次不可重複結算，若需修改請至 Google 試算表！');
+        }
+
         const modified = [];
         const prefix = `${this.curClass}_${w}_`;
         this.data.students.filter(s => s.classId === this.curClass).forEach(s => {
           const delta = this.data.buf[`${prefix}${s.seatNo}`] || 0;
           if (delta !== 0) modified.push({ seatNo: s.seatNo, name: s.name, deltaScore: delta });
         });
-        if (modified.length === 0) return alert(`【${this.curClass} 班】在【${w}】無未結算分數！`);
+        if (modified.length === 0) return alert(`【${this.curClass} 班】在【${w}】目前沒有未結算的加分！`);
 
         const b = document.getElementById('btnSettle');
         b.innerText = "⏳ 結算中...";
@@ -1045,13 +1090,23 @@
             b.innerText = `✔ ${w}已結算`;
             setTimeout(() => this.updateSettleUI(), 2500);
 
+            // 🌟 結算確認視窗極致白話化
             const wNum = parseInt(w.replace(/\D/g, ''), 10);
-            if (!isNaN(wNum) && confirm(`🎉 【${w}】成績已成功結算！\n是否要直接將系統推進至【第${wNum + 1}週】？`)) {
-              this.stepWeek(1);
+            if (!isNaN(wNum)) {
+              const msgAdvance = `🎉 【${w}】成績已經成功存檔上傳！\n\n・這週若還有第二次上課要繼續累加計分，請按【取消】(維持在${w})；\n・若這週課程已全部結束、下節課要上【第 ${wNum + 1} 週】，請按【確定】直接前進！`;
+              if (confirm(msgAdvance)) {
+                this.stepWeek(1);
+                this.activeWeekKey = this.data.curWeek;
+                this.saveStorage();
+                fetch(GAS_API_URL, {
+                  method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
+                  body: JSON.stringify({ action: 'save_current_week', weekKey: this.data.curWeek })
+                });
+              }
             }
           } else { alert(json.message || '結算失敗'); }
         } catch(e) {
-          alert('網路逾時，分數已安全保留於本機！');
+          alert('網路逾時，加分已安全保留於本機！');
           this.updateSettleUI();
         }
       },
@@ -1317,7 +1372,7 @@
 
       /*
       ======================================================================
-      🌟 榮譽榜單模組 (大螢幕置中大字 ＆ 梯隊雙欄架構)
+      榮譽榜單模組
       ======================================================================
       */
       initLbWeeks() {
@@ -1448,11 +1503,6 @@
         }
       },
 
-      /*
-      ======================================================================
-      🌟 滿血揭榜動畫 (置中劇院時間軸：保證 Fanfare 與全名冊 100% 顯現)
-      ======================================================================
-      */
       startRevealTheater() {
         try {
           SoundFx.init();
@@ -1727,6 +1777,7 @@
             const targetWeeks = ["第1週", "第2週", "第3週", "第4週", "第5週", "第6週", "第7週"];
             this.data.weeks = targetWeeks;
             this.data.curWeek = "第7週";
+            this.activeWeekKey = "第7週";
 
             this.data.students.forEach(s => {
               if (!s.weekScores) s.weekScores = {};
@@ -1798,7 +1849,7 @@
 
       /*
       ======================================================================
-      極速雲端同步與防覆蓋鎖 (SWR 機制)
+      極速雲端同步與防覆蓋鎖 (SWR 機制：先顯現本機，雲端校準更新)
       ======================================================================
       */
       async fetchCloud() {
@@ -1813,7 +1864,10 @@
               this.curClass = this.data.classes[0];
             }
             if (json.allWeekKeys && json.allWeekKeys.length > 0) this.data.weeks = json.allWeekKeys;
-            if (json.currentWeekKey && !this.data.curWeek) this.data.curWeek = json.currentWeekKey;
+            if (json.currentWeekKey) {
+              this.activeWeekKey = json.currentWeekKey;
+              if (!this.data.curWeek) this.data.curWeek = json.currentWeekKey;
+            }
             if (json.termStartDate && !this.data.termStartDate) this.data.termStartDate = json.termStartDate;
             
             if (json.password && json.password !== this.data.pwd) {
@@ -1832,6 +1886,7 @@
               }
             }
 
+            // 🌟 雲端數值強制校準 (徹底解決網頁端使用過期快取問題)
             const cloudSt = json.students || [];
             if (this.data.students.length === 0) {
               this.data.students = cloudSt;
