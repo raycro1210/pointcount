@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 V4.2.0</title>
+  <title>魔法學院教務魔導系統 V4.3.0</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
   <style>
@@ -179,9 +179,10 @@
     
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; justify-content: center; align-items: center; }
     .modal-card { background: #0b251c; border: 2px solid var(--gold); border-radius: 8px; padding: 14px; width: 92%; max-width: 440px; color: #fff; max-height: 92dvh; overflow-y: auto; }
-    .modal-card input[type="text"], .modal-card input[type="date"] { width: 100%; padding: 7px; background: #04130d; border: 1px solid var(--border); color: #fff; margin: 5px 0; border-radius: 4px; color-scheme: dark; }
+    .modal-card input[type="text"], .modal-card input[type="date"], .modal-card input[type="number"] { width: 100%; padding: 7px; background: #04130d; border: 1px solid var(--border); color: #fff; margin: 5px 0; border-radius: 4px; color-scheme: dark; }
     
     .sch-term-box { background: rgba(4, 19, 13, 0.85); border: 1px solid rgba(212, 175, 55, 0.45); border-radius: 6px; padding: 8px; margin-bottom: 8px; }
+    .sch-row-2col { display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px; align-items: end; }
     .schedule-table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 0.78rem; text-align: center; }
     .schedule-table th, .schedule-table td { border: 1px solid var(--border); padding: 4px 2px; }
     .schedule-table th { background: rgba(0,0,0,0.4); color: var(--gold-l); }
@@ -276,7 +277,7 @@
                 <select class="sel-week-nav" id="selCurWeekNav" onchange="App.onCurWeekNavChange(this.value)"></select>
                 <button class="btn-step" onclick="App.stepWeek(1)" title="下一週">▶</button>
               </div>
-              <button class="btn-tool" style="padding:2px 4px;" onclick="App.openWeekConfigModal()" title="設定開學基準日">✏️</button>
+              <button class="btn-tool" style="padding:2px 4px;" onclick="App.openWeekConfigModal()" title="設定開學基準日與學期總週數">✏️</button>
               <button class="btn-unlock" id="btnUnlockHistory" style="display:none;" onclick="App.toggleHistoryOverride()">🔓 補登</button>
               <button class="btn-settle" id="btnSettle" onclick="App.settleScores()">☁️ 結算</button>
             </div>
@@ -384,10 +385,18 @@
 
     <div class="modal-overlay" id="weekConfigModal">
       <div class="modal-card">
-        <h4 style="color:var(--gold-l); margin-bottom:6px;">⚙️ 開學基準日與週次管理</h4>
-        <p style="font-size:0.72rem; color:#9cb5ab; margin-bottom:6px;">固定以開學日所在週的「週一」為第 1 週起點，每週日 00:00 自動換週（週六 23:59 前屬當週）。</p>
-        <label style="font-size:0.75rem; color:#bdc3c7;">開學基準日（系統自動對齊該週週一）：</label>
-        <input type="date" id="iptTermStartDate" onchange="App.onTermDateChange(this.value)">
+        <h4 style="color:var(--gold-l); margin-bottom:6px;">⚙️ 開學基準日與學期週次上限</h4>
+        <p style="font-size:0.72rem; color:#9cb5ab; margin-bottom:6px;">固定以開學日所在週的「週一」為第 1 週起點，每週日 00:00 自動換週；達到學期總週數上限後自動停止進位。</p>
+        <div class="sch-row-2col">
+          <div>
+            <label style="font-size:0.75rem; color:#bdc3c7;">開學基準日（對齊該週週一）：</label>
+            <input type="date" id="iptTermStartDate" onchange="App.onTermDateChange()">
+          </div>
+          <div>
+            <label style="font-size:0.75rem; color:#bdc3c7;">學期總週數上限：</label>
+            <input type="number" id="iptMaxWeeks" min="1" max="52" value="21" onchange="App.onTermDateChange()" oninput="App.onTermDateChange()">
+          </div>
+        </div>
         <label style="font-size:0.75rem; color:#bdc3c7;">目前檢視／操作週次名稱：</label>
         <input type="text" id="iptCustomWeekName" placeholder="例: 第12週">
         <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:12px;">
@@ -399,11 +408,19 @@
 
     <div class="modal-overlay" id="scheduleModal">
       <div class="modal-card">
-        <h4 style="color:var(--gold-l); margin-bottom:6px;">📅 開學基準日與授課課表設定</h4>
+        <h4 style="color:var(--gold-l); margin-bottom:6px;">📅 開學基準日、上限與授課課表設定</h4>
         <div class="sch-term-box">
-          <label style="font-size:0.75rem; color:var(--gold-l); font-weight:bold; display:block;">📆 開學基準日（以該週週一為第 1 週起點）：</label>
-          <input type="date" id="schTermStartDate" onchange="App.onScheduleTermDateChange(this.value)">
-          <div id="schCalcWeekHint" style="font-size:0.72rem; color:#2ecc71; margin-top:2px;">請選擇開學基準日，系統將於每週日 00:00 自動換週</div>
+          <div class="sch-row-2col">
+            <div>
+              <label style="font-size:0.74rem; color:var(--gold-l); font-weight:bold; display:block;">📆 開學基準日：</label>
+              <input type="date" id="schTermStartDate" onchange="App.onScheduleTermDateChange()">
+            </div>
+            <div>
+              <label style="font-size:0.74rem; color:var(--gold-l); font-weight:bold; display:block;">🛑 學期總週數上限：</label>
+              <input type="number" id="schMaxWeeks" min="1" max="52" value="21" onchange="App.onScheduleTermDateChange()" oninput="App.onScheduleTermDateChange()">
+            </div>
+          </div>
+          <div id="schCalcWeekHint" style="font-size:0.71rem; color:#2ecc71; margin-top:3px;">請選擇開學基準日，達到學期總週數上限後將自動停止進位</div>
         </div>
         <p style="font-size:0.71rem; color:#9cb5ab; margin-bottom:4px;">勾選本班授課時段（每週六 23:59 前屬當週，週日 00:00 自動切換下一週並鎖定歷史週次）：</p>
         <div style="font-size:0.82rem; font-weight:bold; color:var(--gold);" id="schTargetClassTitle">【班級設定】</div>
@@ -434,9 +451,10 @@
     /*
     ================================================================================
     */
-    const VERSION = "v4.2.0";
-    // 115學年度第1學期預設開學基準日（2026/08/31 週一，推算至 2026/11/17 正好為第12週）
+    const VERSION = "v4.3.0";
+    // 115學年度第1學期預設開學基準日（2026/08/31 週一）與學期總週數上限（21週）
     const DEFAULT_TERM_START = "2026-08-31";
+    const DEFAULT_MAX_WEEKS = 21;
     
     const PERIOD_TIMES = [
       { p: 1, name: "第一節 08:40~09:20", endH: 9, endM: 20 },
@@ -533,13 +551,12 @@
         activeWeeks: {},
         schedule: JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)),
         weeks: ["第1週", "第2週", "第3週", "第4週", "第5週", "第6週", "第7週", "第8週", "第9週", "第10週", "第11週", "第12週"],
-        termStartDate: DEFAULT_TERM_START, pwd: "8888", buf: {}
+        termStartDate: DEFAULT_TERM_START, maxWeeks: DEFAULT_MAX_WEEKS, pwd: "8888", buf: {}
       },
 
       init() {
         document.getElementById('gateVer').innerText = `⚜️ 核心版本：${VERSION} ⚜️`;
         this.migrateAndLoadStorage();
-        // 啟動時強制將所有班級的記分板與筆記同步對齊至目前當週
         this.runScheduleClockEngine(true);
         if (sessionStorage.getItem('magic_auth') === 'true') {
           this.authSuccess();
@@ -567,9 +584,13 @@
         });
       },
 
-      /**
-       * 標準化各種日期格式（含 YYYY-MM-DD、YYYY/MM/DD、Google Sheets Date 字串）為 YYYY-MM-DD
-       */
+      sanitizeMaxWeeks(val) {
+        const n = parseInt(val, 10);
+        if (!Number.isFinite(n) || n < 1) return DEFAULT_MAX_WEEKS;
+        if (n > 52) return 52;
+        return n;
+      },
+
       normalizeDateStr(raw) {
         if (!raw) return "";
         const s = String(raw).trim();
@@ -601,23 +622,18 @@
         return new Date(p[0], p[1] - 1, p[2], 0, 0, 0, 0);
       },
 
-      /**
-       * 取得指定開學日所在那一週的「週一 00:00:00」作為第 1 週起點
-       */
       getWeek1Monday(dateStr) {
         const dt = this.parseLocalDate(dateStr);
         if (!dt) return null;
-        const day = dt.getDay(); // 0(日) ~ 6(六)
+        const day = dt.getDay();
         const diffToMon = (day === 0) ? -6 : (1 - day);
         return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + diffToMon, 0, 0, 0, 0);
       },
 
       /**
-       * 核心週次計算引擎：
-       * - 第 1 週起點：開學基準日所在週之週一 00:00
-       * - 換週時間點：每週日 00:00 自動進位下一週（週六 23:59 前仍屬當週）
+       * 計算未封關前之原始推算週次
        */
-      calcWeekNumFromDate(dateStr, refNow = new Date()) {
+      calcRawWeekNumFromDate(dateStr, refNow = new Date()) {
         const week1Mon = this.getWeek1Monday(dateStr || DEFAULT_TERM_START);
         if (!week1Mon) return 12;
         const todayMidnight = new Date(refNow.getFullYear(), refNow.getMonth(), refNow.getDate(), 0, 0, 0, 0);
@@ -626,6 +642,16 @@
         if (diffDays < 0) return 1;
         const weekNum = Math.floor((diffDays + 1) / 7) + 1;
         return Number.isFinite(weekNum) && weekNum >= 1 ? weekNum : 1;
+      },
+
+      /**
+       * 核心週次計算引擎（含學期總週數上限封關保護）：
+       * 達到 maxWeeks（預設 21 週）後自動停止進位新週次
+       */
+      calcWeekNumFromDate(dateStr, refNow = new Date(), customMaxWeeks = null) {
+        const rawWeek = this.calcRawWeekNumFromDate(dateStr, refNow);
+        const cap = this.sanitizeMaxWeeks(customMaxWeeks !== null ? customMaxWeeks : this.data.maxWeeks);
+        return Math.min(rawWeek, cap);
       },
 
       parseWeekNumber(wKey) {
@@ -644,7 +670,7 @@
       },
 
       migrateAndLoadStorage() {
-        const keysToCheck = ['magic_v420', 'magic_v410', 'magic_v400', 'magic_v390', 'magic_v380'];
+        const keysToCheck = ['magic_v430', 'magic_v420', 'magic_v410', 'magic_v400', 'magic_v390'];
         for (let i = 0; i < keysToCheck.length; i++) {
           const raw = localStorage.getItem(keysToCheck[i]);
           if (raw) {
@@ -658,6 +684,7 @@
                 this.data.weeks = rawWeeks.length > 0 ? rawWeeks : ["第1週", "第2週", "第3週", "第4週", "第5週", "第6週", "第7週", "第8週", "第9週", "第10週", "第11週", "第12週"];
                 const normTerm = this.normalizeDateStr(p.termStartDate);
                 this.data.termStartDate = normTerm || DEFAULT_TERM_START;
+                this.data.maxWeeks = this.sanitizeMaxWeeks(p.maxWeeks);
                 this.data.pwd = p.pwd || "8888";
                 this.data.buf = p.buf || {};
                 this.data.schedule = (p.schedule && Object.keys(p.schedule).length > 0) ? p.schedule : JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
@@ -692,14 +719,19 @@
       },
 
       saveStorage() {
-        localStorage.setItem('magic_v420', JSON.stringify(this.data));
+        localStorage.setItem('magic_v430', JSON.stringify(this.data));
       },
 
       updateTopWeekBadge() {
         const badge = document.getElementById('headerWeekBadge');
         if (!badge) return;
         const activeW = this.getActiveClassWeek();
+        const cap = this.sanitizeMaxWeeks(this.data.maxWeeks);
+        const rawW = this.calcRawWeekNumFromDate(this.data.termStartDate);
         badge.innerText = `📆 ${activeW}`;
+        badge.title = rawW > cap
+          ? `已達學期總週數上限（第${cap}週封關），點擊跳回當週記分板與筆記`
+          : `系統自動推算目前當週（上限第${cap}週），點擊立即跳回當週記分板與筆記`;
       },
 
       jumpToActiveWeek() {
@@ -712,8 +744,9 @@
       runScheduleClockEngine(syncViewWeek = false) {
         const effectiveTerm = this.normalizeDateStr(this.data.termStartDate) || DEFAULT_TERM_START;
         this.data.termStartDate = effectiveTerm;
+        this.data.maxWeeks = this.sanitizeMaxWeeks(this.data.maxWeeks);
 
-        const currentWeekNum = this.calcWeekNumFromDate(effectiveTerm, new Date());
+        const currentWeekNum = this.calcWeekNumFromDate(effectiveTerm, new Date(), this.data.maxWeeks);
         const activeWKey = `第${currentWeekNum}週`;
         if (!this.data.weeks.includes(activeWKey)) {
           this.data.weeks.push(activeWKey);
@@ -727,7 +760,6 @@
           }
           this.data.activeWeeks[cid] = activeWKey;
 
-          // 開啟頁面、雲端同步或跨過週日 00:00 自動換週時，強制同步推進各班檢視週次至最新當週
           if (syncViewWeek || !this.data.classWeeks[cid] || String(this.data.classWeeks[cid]).includes('NaN') || (prevActive && prevActive !== activeWKey)) {
             this.data.classWeeks[cid] = activeWKey;
           }
@@ -807,10 +839,14 @@
 
       openScheduleModal() {
         const dateIpt = document.getElementById('schTermStartDate');
+        const maxIpt = document.getElementById('schMaxWeeks');
         if (dateIpt) {
           dateIpt.value = this.normalizeDateStr(this.data.termStartDate) || DEFAULT_TERM_START;
-          this.onScheduleTermDateChange(dateIpt.value);
         }
+        if (maxIpt) {
+          maxIpt.value = this.sanitizeMaxWeeks(this.data.maxWeeks);
+        }
+        this.onScheduleTermDateChange();
 
         document.getElementById('schTargetClassTitle').innerText = `【${this.curClass} 班】授課時段矩陣`;
         const tbody = document.getElementById('schTableBody');
@@ -834,20 +870,28 @@
       closeScheduleModal() {
         document.getElementById('scheduleModal').style.display = 'none';
       },
-      onScheduleTermDateChange(val) {
+      onScheduleTermDateChange() {
         const hint = document.getElementById('schCalcWeekHint');
+        const dateVal = document.getElementById('schTermStartDate')?.value;
+        const maxVal = document.getElementById('schMaxWeeks')?.value;
         if (!hint) return;
-        const norm = this.normalizeDateStr(val);
+
+        const norm = this.normalizeDateStr(dateVal);
         if (!norm) {
           hint.style.color = '#e74c3c';
           hint.innerText = '⚠️ 日期格式無效，請重新選擇有效日期！';
           return;
         }
+        const cap = this.sanitizeMaxWeeks(maxVal);
         const mon = this.getWeek1Monday(norm);
         const monStr = mon ? `${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}` : norm;
-        const wNum = this.calcWeekNumFromDate(norm);
+        const rawW = this.calcRawWeekNumFromDate(norm);
+        const wNum = Math.min(rawW, cap);
+
         hint.style.color = '#2ecc71';
-        hint.innerText = `✔ 第1週週一：${monStr} ➔ 目前為【第${wNum}週】（週日 00:00 自動換週）`;
+        hint.innerText = rawW > cap
+          ? `✔ 第1週週一：${monStr} ➔ 已達上限【第${wNum}週】（停止自動進位）`
+          : `✔ 第1週週一：${monStr} ➔ 目前【第${wNum}週】／上限第${cap}週`;
       },
       updateSchedulePreview() {
         const cbs = Array.from(document.querySelectorAll('#schTableBody input[type="checkbox"]:checked'));
@@ -875,6 +919,10 @@
         if (!normDate) {
           return alert('⚠️ 開學基準日格式無效，請選擇正確的年月日！');
         }
+        const rawMax = parseInt(document.getElementById('schMaxWeeks').value, 10);
+        if (!Number.isFinite(rawMax) || rawMax < 1 || rawMax > 52) {
+          return alert('⚠️ 學期總週數上限請輸入 1 ～ 52 之間的有效整數！');
+        }
 
         const cbs = Array.from(document.querySelectorAll('#schTableBody input[type="checkbox"]:checked'));
         const newSch = cbs.map(cb => ({
@@ -885,6 +933,7 @@
         if (!this.data.schedule) this.data.schedule = {};
         this.data.schedule[this.curClass] = newSch;
         this.data.termStartDate = normDate;
+        this.data.maxWeeks = rawMax;
 
         this.historyOverrideWeek = null;
         this.runScheduleClockEngine(true);
@@ -894,7 +943,7 @@
         this.initLbWeeks();
         this.initNotes();
         this.closeScheduleModal();
-        alert(`✨ 【${this.curClass} 班】課表與開學基準日已成功儲存！\n目前系統當週：【${this.getActiveClassWeek()}】`);
+        alert(`✨ 【${this.curClass} 班】設定已儲存！\n目前系統當週：【${this.getActiveClassWeek()}】（學期上限：第${rawMax}週）`);
 
         fetch(GAS_API_URL, {
           method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
@@ -903,6 +952,7 @@
             classId: this.curClass,
             scheduleList: newSch,
             termStartDate: this.data.termStartDate,
+            maxWeeks: this.data.maxWeeks,
             weekKey: this.getActiveClassWeek()
           })
         });
@@ -915,7 +965,7 @@
       },
       getActiveClassWeek() {
         const effectiveTerm = this.normalizeDateStr(this.data.termStartDate) || DEFAULT_TERM_START;
-        const wNum = this.calcWeekNumFromDate(effectiveTerm);
+        const wNum = this.calcWeekNumFromDate(effectiveTerm, new Date(), this.data.maxWeeks);
         return `第${wNum}週`;
       },
 
@@ -991,6 +1041,10 @@
         if (nextIdx < 0) return alert('已經是現有第一週！');
         if (nextIdx >= sortedWeeks.length) {
           const maxNum = this.parseWeekNumber(sortedWeeks[sortedWeeks.length - 1]);
+          const cap = this.sanitizeMaxWeeks(this.data.maxWeeks);
+          if (maxNum >= cap) {
+            if (!confirm(`⚠️ 目前設定之學期總週數上限為【第${cap}週】。\n確定要手動建立超過學期上限的【第${maxNum + 1}週】嗎？`)) return;
+          }
           const newW = `第${maxNum + 1}週`;
           this.data.weeks.push(newW);
           sortedWeeks.push(newW);
@@ -1004,27 +1058,34 @@
 
       openWeekConfigModal() {
         document.getElementById('iptTermStartDate').value = this.normalizeDateStr(this.data.termStartDate) || DEFAULT_TERM_START;
+        document.getElementById('iptMaxWeeks').value = this.sanitizeMaxWeeks(this.data.maxWeeks);
         document.getElementById('iptCustomWeekName').value = this.getCurClassWeek();
         document.getElementById('weekConfigModal').style.display = 'flex';
       },
       closeWeekConfigModal() {
         document.getElementById('weekConfigModal').style.display = 'none';
       },
-      onTermDateChange(dateVal) {
-        const norm = this.normalizeDateStr(dateVal);
+      onTermDateChange() {
+        const norm = this.normalizeDateStr(document.getElementById('iptTermStartDate')?.value);
         if (!norm) return;
-        this.data.termStartDate = norm;
-        this.runScheduleClockEngine(true);
-        document.getElementById('iptCustomWeekName').value = this.getCurClassWeek();
+        const cap = this.sanitizeMaxWeeks(document.getElementById('iptMaxWeeks')?.value);
+        const wNum = this.calcWeekNumFromDate(norm, new Date(), cap);
+        document.getElementById('iptCustomWeekName').value = `第${wNum}週`;
       },
       saveWeekConfig() {
         const normDate = this.normalizeDateStr(document.getElementById('iptTermStartDate').value);
+        const rawMax = parseInt(document.getElementById('iptMaxWeeks').value, 10);
         const customName = document.getElementById('iptCustomWeekName').value.trim().replace('周', '週');
         
         if (!normDate) {
           return alert('⚠️ 開學基準日格式錯誤，請重新選擇有效日期！');
         }
+        if (!Number.isFinite(rawMax) || rawMax < 1 || rawMax > 52) {
+          return alert('⚠️ 學期總週數上限請輸入 1 ～ 52 之間的有效整數！');
+        }
+
         this.data.termStartDate = normDate;
+        this.data.maxWeeks = rawMax;
         this.runScheduleClockEngine(true);
 
         if (customName && !customName.includes('NaN')) {
@@ -1040,11 +1101,17 @@
         this.initLbWeeks();
         this.initNotes();
         this.closeWeekConfigModal();
-        alert(`✨ 設定已更新！系統目前當週為：【${this.getActiveClassWeek()}】`);
+        alert(`✨ 設定已更新！系統目前當週：【${this.getActiveClassWeek()}】（學期上限：第${rawMax}週）`);
 
         fetch(GAS_API_URL, {
           method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
-          body: JSON.stringify({ action: 'save_class_week', classId: this.curClass, weekKey: this.getActiveClassWeek(), termStartDate: this.data.termStartDate })
+          body: JSON.stringify({
+            action: 'save_class_week',
+            classId: this.curClass,
+            weekKey: this.getActiveClassWeek(),
+            termStartDate: this.data.termStartDate,
+            maxWeeks: this.data.maxWeeks
+          })
         });
       },
 
@@ -1293,7 +1360,6 @@
         let classNotes = this.data.notes.filter(n => n.classId === this.curClass);
         let matchNote = classNotes.find(n => n.weekKey === curW);
 
-        // 若本班尚無「當週（例如第12週）」備課筆記，自動建立並定位至當週卷軸
         if (!matchNote) {
           const autoNote = {
             classId: this.curClass,
@@ -1957,6 +2023,10 @@
               this.data.termStartDate = DEFAULT_TERM_START;
             }
 
+            if (json.maxWeeks !== undefined) {
+              this.data.maxWeeks = this.sanitizeMaxWeeks(json.maxWeeks);
+            }
+
             if (json.scheduleConfig && typeof json.scheduleConfig === 'object' && Object.keys(json.scheduleConfig).length > 0) {
               this.data.schedule = { ...DEFAULT_SCHEDULE, ...json.scheduleConfig };
             }
@@ -1987,7 +2057,6 @@
               }));
             }
 
-            // 雲端同步後強制將記分板與筆記對齊最新計算出的當週週次
             this.runScheduleClockEngine(true);
             this.saveStorage();
             this.renderTabs();
