@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>魔法學院教務魔導系統 V4.3.0</title>
+  <title>魔法學院教務魔導系統 V4.5.0</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
   <style>
@@ -174,8 +174,10 @@
       .roster-card span { font-size: 0.95rem !important; color: #ffd700 !important; font-weight: bold !important; }
     }
     
-    .mgr-box { max-width: 600px; margin: 12px auto; background: #0b251c; border: 1.5px solid var(--gold); border-radius: 8px; padding: 14px; width: 94%; }
-    .mgr-txt { width: 100%; height: 210px; background: #04130d; border: 1px solid var(--border); border-radius: 4px; color: #fff; padding: 8px; font-family: monospace; font-size: 0.88rem; outline: none; margin: 8px 0; }
+    #view-roster { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .mgr-box { max-width: 600px; margin: 10px auto; background: #0b251c; border: 1.5px solid var(--gold); border-radius: 8px; padding: 14px; width: 94%; flex-shrink: 0; }
+    .mgr-txt { width: 100%; height: 175px; background: #04130d; border: 1px solid var(--border); border-radius: 4px; color: #fff; padding: 8px; font-family: monospace; font-size: 0.88rem; outline: none; margin: 8px 0; user-select: text; }
+    .rescue-log { width: 100%; max-height: 140px; overflow-y: auto; background: #04130d; border: 1px solid var(--border); border-radius: 4px; padding: 8px; font-size: 0.76rem; color: #cbdad3; line-height: 1.5; margin: 8px 0; user-select: text; }
     
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; justify-content: center; align-items: center; }
     .modal-card { background: #0b251c; border: 2px solid var(--gold); border-radius: 8px; padding: 14px; width: 92%; max-width: 440px; color: #fff; max-height: 92dvh; overflow-y: auto; }
@@ -349,6 +351,22 @@
           <button class="btn-nav" style="flex:1; border-color:#e74c3c; color:#ff9999;" onclick="App.delClass()">🗑️ 刪除此班</button>
         </div>
       </div>
+
+      <div class="mgr-box" style="margin-bottom: 24px;">
+        <h3 style="color:var(--gold); font-size:0.96rem;">🛟 瀏覽器快取救援與成績備份中心</h3>
+        <p style="font-size:0.71rem; color:#9cb5ab; margin:3px 0 6px 0;">
+          自動掃描本機瀏覽器（手機／電腦）歷代快取中之未結算分數或歷史紀錄，並提供一鍵匯出本班／全校成績備份檔。
+        </p>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
+          <button class="btn-nav" style="flex:1; border-color:#f39c12; color:#ffd280; font-weight:bold;" onclick="App.scanLegacyCaches()">🔍 掃描本機快取</button>
+          <button class="btn-nav" id="btnRescueApply" style="flex:1; border-color:#2ecc71; color:#2ecc71; font-weight:bold; display:none;" onclick="App.rescueCacheData()">📥 匯入搶救分數</button>
+        </div>
+        <div class="rescue-log" id="rescueReportBox">尚未執行掃描。點擊上方「🔍 掃描本機快取」可檢查此裝置瀏覽器是否留有未結算分數或舊版紀錄。</div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn-nav" style="flex:1; border-color:#3498db; color:#85c1e9; font-weight:bold;" onclick="App.exportBackupFile('csv')">📊 匯出本班 CSV 成績表</button>
+          <button class="btn-nav" style="flex:1; border-color:#9b59b6; color:#d7bde2; font-weight:bold;" onclick="App.exportBackupFile('json')">📦 匯出全校 JSON 備份</button>
+        </div>
+      </div>
     </section>
 
     <div class="modal-overlay" id="copyModal">
@@ -447,12 +465,11 @@
     🚨🚨🚨 【唯一設定區】請在此貼上您的 Google Apps Script 部署網址 (/exec) 🚨🚨🚨
     ================================================================================
     */
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxhgE9QmJTsMAl7USJrAKc5Ez8iU458L84BPzrSOPJTfOaVPFapD2TFmsgglrIbk-2XsA/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxhgE9QmJTSMAI7U2q6Y0y-rV2P5L4G8/exec";
     /*
     ================================================================================
     */
-    const VERSION = "v4.3.0";
-    // 115學年度第1學期預設開學基準日（2026/08/31 週一）與學期總週數上限（21週）
+    const VERSION = "v4.5.0";
     const DEFAULT_TERM_START = "2026-08-31";
     const DEFAULT_MAX_WEEKS = 21;
     
@@ -545,6 +562,7 @@
       noteDirty: false, noteTimer: null, longFired: false,
       mqttClient: null, mqttConnected: false, lastTriggerId: 0,
       historyOverrideWeek: null,
+      rescuedItems: [],
       data: {
         classes: [], students: [], notes: [],
         classWeeks: {},
@@ -571,7 +589,6 @@
         this.initMqttBroker();
         this.fetchCloud();
 
-        // 每 30 秒檢查是否跨過週日 00:00 自動換週邊界
         setInterval(() => {
           this.runScheduleClockEngine(false);
         }, 30000);
@@ -630,9 +647,6 @@
         return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + diffToMon, 0, 0, 0, 0);
       },
 
-      /**
-       * 計算未封關前之原始推算週次
-       */
       calcRawWeekNumFromDate(dateStr, refNow = new Date()) {
         const week1Mon = this.getWeek1Monday(dateStr || DEFAULT_TERM_START);
         if (!week1Mon) return 12;
@@ -644,10 +658,6 @@
         return Number.isFinite(weekNum) && weekNum >= 1 ? weekNum : 1;
       },
 
-      /**
-       * 核心週次計算引擎（含學期總週數上限封關保護）：
-       * 達到 maxWeeks（預設 21 週）後自動停止進位新週次
-       */
       calcWeekNumFromDate(dateStr, refNow = new Date(), customMaxWeeks = null) {
         const rawWeek = this.calcRawWeekNumFromDate(dateStr, refNow);
         const cap = this.sanitizeMaxWeeks(customMaxWeeks !== null ? customMaxWeeks : this.data.maxWeeks);
@@ -670,7 +680,7 @@
       },
 
       migrateAndLoadStorage() {
-        const keysToCheck = ['magic_v430', 'magic_v420', 'magic_v410', 'magic_v400', 'magic_v390'];
+        const keysToCheck = ['magic_v450', 'magic_v440', 'magic_v430', 'magic_v420', 'magic_v410', 'magic_v400', 'magic_v390'];
         for (let i = 0; i < keysToCheck.length; i++) {
           const raw = localStorage.getItem(keysToCheck[i]);
           if (raw) {
@@ -719,7 +729,7 @@
       },
 
       saveStorage() {
-        localStorage.setItem('magic_v430', JSON.stringify(this.data));
+        localStorage.setItem('magic_v450', JSON.stringify(this.data));
       },
 
       updateTopWeekBadge() {
@@ -1138,7 +1148,9 @@
           const stage = document.getElementById('lbScrollStage');
           if (stage) stage.scrollTop = 0;
         }
-        if (v === 'roster') { this.loadRosterText(); }
+        if (v === 'roster') {
+          this.loadRosterText();
+        }
       },
 
       togglePhone(m) {
@@ -1319,7 +1331,10 @@
         if (modified.length === 0) return alert(`【${this.curClass} 班】在【${w}】目前沒有未結算的加分！`);
 
         const b = document.getElementById('btnSettle');
+        const gem = document.getElementById('syncGem');
         b.innerText = "⏳ 結算中...";
+        if (gem) gem.className = 'gem pend';
+
         try {
           const res = await fetch(GAS_API_URL, {
             method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'},
@@ -1339,14 +1354,17 @@
             this.saveStorage();
             this.renderCards();
             this.renderTabs();
+            if (gem) gem.className = 'gem';
             b.innerText = `✔ ${w}已存檔`;
             setTimeout(() => this.updateSettleUI(), 2200);
           } else {
-            alert(json.message || '結算失敗');
+            if (gem) gem.className = 'gem err';
+            alert(`❌ 雲端寫入被拒絕：${json.message || '未知錯誤'}\n您的加分仍安全保留於本機暫存中！`);
             this.updateSettleUI();
           }
         } catch(e) {
-          alert('網路逾時，加分已安全保留於本機！');
+          if (gem) gem.className = 'gem err';
+          alert('⚠️ 網路連線逾時，雲端尚未寫入！\n您的加減分已安全保留於本機（按鈕仍維持 * 號標記），請待網路穩定後再按一次「☁️ 結算」。');
           this.updateSettleUI();
         }
       },
@@ -1968,6 +1986,120 @@
           body: JSON.stringify({ action: 'update_roster', classId: this.curClass, students: parsed })
         });
         alert(`✨ ${this.curClass} 班名冊更新成功，歷史週次成績已完整受到保護！`);
+      },
+
+      scanLegacyCaches() {
+        const reportBox = document.getElementById('rescueReportBox');
+        const applyBtn = document.getElementById('btnRescueApply');
+        if (!reportBox) return;
+
+        const allKeys = ['magic_v450', 'magic_v440', 'magic_v430', 'magic_v420', 'magic_v410', 'magic_v400', 'magic_v390', 'magic_v380', 'magic_v370', 'magic_v362', 'magic_v361', 'magic_v360'];
+        const foundMap = new Map();
+        const lines = [];
+
+        allKeys.forEach(key => {
+          const raw = localStorage.getItem(key);
+          if (!raw) return;
+          try {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.buf && typeof parsed.buf === 'object') {
+              Object.keys(parsed.buf).forEach(bk => {
+                const val = Number(parsed.buf[bk]) || 0;
+                if (val !== 0 && !bk.includes('NaN')) {
+                  const parts = bk.split('_');
+                  if (parts.length >= 3) {
+                    const cid = parts[0];
+                    const wk = parts[1].replace('周', '週');
+                    const seat = parseInt(parts[2], 10);
+                    const uniqueKey = `${cid}_${wk}_${seat}`;
+                    const currentBufVal = Number(this.data.buf[uniqueKey]) || 0;
+                    if (val !== currentBufVal && !foundMap.has(uniqueKey)) {
+                      const st = this.data.students.find(s => s.classId === cid && s.seatNo === seat);
+                      const stName = st ? st.name : `#${seat}`;
+                      foundMap.set(uniqueKey, { classId: cid, weekKey: wk, seatNo: seat, name: stName, delta: val, source: key });
+                      lines.push(`• [${key}] ${cid}班 ${wk} #${seat} ${stName}：未結算暫存 ${val > 0 ? '+' + val : val} 分`);
+                    }
+                  }
+                }
+              });
+            }
+          } catch(e) {}
+        });
+
+        this.rescuedItems = Array.from(foundMap.values());
+        if (this.rescuedItems.length === 0) {
+          reportBox.innerHTML = `<span style="color:#2ecc71;">✔ 掃描完成（共檢查 ${allKeys.length} 組歷史快取槽）：</span><br>本裝置目前沒有遺漏未結算的殘留暫存分數。`;
+          if (applyBtn) applyBtn.style.display = 'none';
+        } else {
+          reportBox.innerHTML = `<span style="color:#f39c12; font-weight:bold;">⚠️ 發現 ${this.rescuedItems.length} 筆殘留未結算快取分數：</span><br>${lines.join('<br>')}`;
+          if (applyBtn) applyBtn.style.display = 'inline-block';
+        }
+      },
+
+      rescueCacheData() {
+        if (!this.rescuedItems || this.rescuedItems.length === 0) return;
+        if (!confirm(`確定將這 ${this.rescuedItems.length} 筆快取分數匯入目前本機暫存區嗎？\n\n匯入後請切換至對應班級與週次確認卡片數字，再按「☁️ 結算」寫入雲端！`)) return;
+
+        this.rescuedItems.forEach(item => {
+          const bk = `${item.classId}_${item.weekKey}_${item.seatNo}`;
+          this.data.buf[bk] = (Number(this.data.buf[bk]) || 0) + item.delta;
+        });
+
+        this.saveStorage();
+        this.renderTabs();
+        this.renderCards();
+        document.getElementById('btnRescueApply').style.display = 'none';
+        document.getElementById('rescueReportBox').innerHTML = `<span style="color:#2ecc71; font-weight:bold;">🎉 已成功將 ${this.rescuedItems.length} 筆分數匯入暫存區！請前往「後台」檢視並按「☁️ 結算」同步至雲端。</span>`;
+        this.rescuedItems = [];
+      },
+
+      exportBackupFile(format) {
+        const now = new Date();
+        const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+
+        if (format === 'json') {
+          const blob = new Blob([JSON.stringify(this.data, null, 2)], { type: 'application/json;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `魔法學院教務魔導系統_全校備份_${stamp}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          return;
+        }
+
+        const cid = this.curClass;
+        const list = this.data.students.filter(s => s.classId === cid).sort((a,b) => a.seatNo - b.seatNo);
+        if (list.length === 0) return alert('目前班級無學生資料可匯出！');
+
+        const cap = this.sanitizeMaxWeeks(this.data.maxWeeks);
+        const headers = ['班級', '座號', '姓名', '幹部每週加分', '歷史基礎分'];
+        for (let w = 1; w <= cap; w++) headers.push(`第${w}週`);
+        headers.push('定案總分');
+
+        const rows = [headers.join(',')];
+        list.forEach(s => {
+          const row = [cid, s.seatNo, `"${String(s.name).replace(/"/g, '""')}"`, Number(s.weeklyBonus) || 0, Number(s.baseScore) || 0];
+          for (let w = 1; w <= cap; w++) {
+            const wKey = `第${w}週`;
+            row.push((s.weekScores && s.weekScores[wKey] !== undefined) ? Number(s.weekScores[wKey]) : 0);
+          }
+          row.push(Number(s.totalScore) || 0);
+          rows.push(row.join(','));
+        });
+
+        const csvContent = '\uFEFF' + rows.join('\r\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `魔法學院_${cid}班成績備份_${stamp}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
       },
 
       addClass() {
